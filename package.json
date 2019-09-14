@@ -2,17 +2,6 @@
   "name": "weeb_friendly",
   "version": "0.1.0",
   "private": true,
-  "dependencies": {
-    "react": "^16.9.0",
-    "react-dom": "^16.9.0",
-    "react-scripts": "3.1.1"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
   "eslintConfig": {
     "extends": "react-app"
   },
@@ -27,5 +16,25 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "electron": "^1.4.14",
+    "react-scripts": "^3.1.1"
+  },
+  "dependencies": {
+    "bootstrap": "^4.3.1",
+    "jquery": "^3.4.1",
+    "popper": "^1.0.1",
+    "popper.js": "^1.15.0",
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2"
+  },
+  "main": "electron-starter.js",
+  "scripts": {
+    "start": "electron . & react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "electron": "electron ."
   }
 }
