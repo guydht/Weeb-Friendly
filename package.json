@@ -18,16 +18,19 @@
     ]
   },
   "devDependencies": {
-    "electron": "^1.4.14",
+    "@types/react": "^16.9.2",
+    "electron": "^6.0.9",
     "react-scripts": "^3.1.1"
   },
   "dependencies": {
     "bootstrap": "^4.3.1",
+    "eslint": "^6.4.0",
     "jquery": "^3.4.1",
-    "popper": "^1.0.1",
-    "popper.js": "^1.15.0",
-    "react": "^15.4.2",
-    "react-dom": "^15.4.2"
+    "react": "^16.9.0",
+    "react-bootstrap": "^1.0.0-beta.12",
+    "react-dom": "^16.9.0",
+    "react-router-dom": "^5.0.1",
+    "typescript": "^3.6.3"
   },
   "main": "electron-starter.js",
   "scripts": {
