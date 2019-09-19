@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-import { Modal, InputGroup, FormControl, Button, Alert } from "react-bootstrap";
+import { Modal, InputGroup, FormControl, Button, Alert, Spinner } from "react-bootstrap";
 
 import Consts from "../consts";
 
@@ -84,7 +84,7 @@ export default class Login extends Component {
                     <Button
                         style={{ float: "right" }}
                         onClick={tryLogin}>
-                        {this.state.loading ? "Loading..." : "Submit"}
+                        {this.state.loading ? <div>Loading... <Spinner></Spinner></div> : "Submit"}
                     </Button>
                     <Button
                         style={{ float: "left" }}

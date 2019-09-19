@@ -1,9 +1,8 @@
 import React, { Component } from "react";
 
-import { FormControl, Form, ListGroup, ListGroupItem } from "react-bootstrap";
+import { FormControl, Form, ListGroup, ListGroupItem, Spinner } from "react-bootstrap";
 import AnimeEntry from "../classes/AnimeEntry";
 import MALUtils from "../classes/MALUtils";
-import loadingGif from "../assets/LoadingGIF.svg";
 
 export default class SearchBar extends Component {
     state = {
@@ -34,8 +33,9 @@ export default class SearchBar extends Component {
                                     )
                                 }) : !this.state.loading ||
                                 <ListGroupItem>
-                                    <img src={loadingGif} alt="" style={{ transform: "scale(2)", float: "right", height: "26px" }} />
-                                    {this.state.loadingText}
+                                    <span>{this.state.loadingText}</span>
+                                    <Spinner animation="border" role="status" size="sm" as="span" 
+                                        style={{float: "right"}} />
                                 </ListGroupItem>
                         }
                     </ListGroup>
@@ -50,7 +50,7 @@ export default class SearchBar extends Component {
             clearTimeout(this.searchInputTimeout);
         this.setState({
             loading: true,
-            loadingText: "Waiting for typing to end...",
+            loadingText: "Loading...",
             entries: []
         });
         this.searchInputTimeout = setTimeout(
@@ -68,7 +68,7 @@ export default class SearchBar extends Component {
                 }
                 else
                     this.setState({
-                        loadingText: "Waiting for input to be longer..."
+                        loadingText: "I need a longer input..."
                     })
             }, SearchBar.SEARCH_INPUT_TIMEOUT);
     }
