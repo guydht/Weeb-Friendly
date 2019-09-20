@@ -1,11 +1,13 @@
 import React, { Component } from "react";
-
 import { FormControl, Form, ListGroup, ListGroupItem, Spinner } from "react-bootstrap";
+import { Link } from "react-router-dom";
+
 import AnimeEntry from "../classes/AnimeEntry";
 import MALUtils from "../classes/MALUtils";
 
 export default class SearchBar extends Component {
     state = {
+        displayEntries: true,
         entries: [],
         loading: false,
         loadingText: ""
@@ -13,8 +15,20 @@ export default class SearchBar extends Component {
     static SEARCH_INPUT_TIMEOUT = 250;
 
     render() {
+        const onFocus = () => {
+            this.setState({
+                displayEntries: true
+            })
+        },
+            onBlur = () => {
+                this.setState({
+                    loading: false,
+                    loadingText: "",
+                    displayEntries: false
+                })
+            };
         return (
-            <Form>
+            <Form onBlur={onBlur} onFocus={onFocus}>
                 <FormControl type="text" placeholder="Search" className="mr-sm-2"
                     onChangeCapture={(e: any) => this.searchAnime(e)}
                     onBlur={() => this.setState({ loading: false, loadingText: "" })} />
@@ -22,20 +36,25 @@ export default class SearchBar extends Component {
                     <ListGroup style={{ position: "absolute", maxHeight: "30vh", overflowY: "auto", width: "100%" }}
                         className="guydht-scrollbar">
                         {
-                            this.state.entries.length ?
+                            this.state.entries.length && this.state.displayEntries ?
                                 this.state.entries.map((entry: AnimeEntry) => {
                                     return (
                                         <ListGroupItem title={Array.from(entry.synonyms).join(", ")} key={entry.malId}>
-                                            {
-                                                entry.name
-                                            }
+                                            <Link to={{
+                                                pathname: "/anime/" + entry.malId,
+                                                state: {
+                                                    animeEntry: entry
+                                                }
+                                            }}>
+                                                {entry.name}
+                                            </Link>
                                         </ListGroupItem>
                                     )
                                 }) : !this.state.loading ||
                                 <ListGroupItem>
                                     <span>{this.state.loadingText}</span>
-                                    <Spinner animation="border" role="status" size="sm" as="span" 
-                                        style={{float: "right"}} />
+                                    <Spinner animation="border" role="status" size="sm" as="span"
+                                        style={{ float: "right" }} />
                                 </ListGroupItem>
                         }
                     </ListGroup>
