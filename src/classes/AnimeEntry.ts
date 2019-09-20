@@ -1,8 +1,10 @@
 export default class AnimeEntry {
     synonyms: Set<string> = new Set();
     malId?: string;
+    score?: number;
     malUrl?: string;
     genres?: Set<String>;
+    synopsis?: string;
     totalEpisodes?: number;
     myWatchedEpisodes?: number;
     myMalStatus?: "Completed" | "Plan to watch" | "Dropped" | "Watching" | "On Hold";
@@ -11,7 +13,7 @@ export default class AnimeEntry {
     imageURL?: string;
     private _name?: string;
     set name(val: string | undefined) {
-        if(val)
+        if (val)
             this.synonyms.add(val);
         this._name = val;
     }

@@ -1,5 +1,7 @@
 import Browser from "./components/Browser";
+import AnimeDetails from "./components/AnimeDetails";
 
 export default {
-    '/': Browser
+    '/': Browser,
+    '/anime/:id': AnimeDetails
 }
