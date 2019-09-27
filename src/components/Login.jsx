@@ -3,28 +3,33 @@ import React, { Component } from "react";
 import { Modal, InputGroup, FormControl, Button, Alert, Spinner } from "react-bootstrap";
 
 import Consts from "../consts";
+import User from "../classes/User";
 
 export default class Login extends Component {
+    static Alert_SHOW_TIMEOUT = 4000;
+
     state = {
-        isLoggedOn: Consts.MAL_USER.isLoggedOn,
+        isLoggedIn: Consts.MAL_USER.isLoggedIn,
         loading: false,
         errorMessage: null,
         successMessage: null
     };
-    static Alert_SHOW_TIMEOUT = 4000;
-    componentWillUpdate() {
-        // eslint-disable-next-line
-        this.state.isLoggedOn = Consts.MAL_USER.isLoggedOn;
+    userInput = React.createRef();
+    componentDidMount() {
+        if (this.userInput.current)
+            this.userInput.current.focus()
     }
-    componentWillMount() {
-        if (!Consts.CSRF_TOKEN) {
-            fetch("https://myanimelist.net/login.php").then(r => r.text()).then(responseText => {
+    componentDidUpdate() {
+        // eslint-disable-next-line
+        this.state.isLoggedIn = Consts.MAL_USER.isLoggedIn;
+        if (!Consts.CSRF_TOKEN)
+            fetch("https://myanimelist.net/asdasd").then(r => r.text()).then(responseText => {
                 let html = document.createElement("html");
                 html.innerHTML = responseText;
-                Consts.CSRF_TOKEN = html.querySelector("meta[name='csrf_token']").getAttribute("content");
-                localStorage.setItem(Consts.CRSF_TOKEN_STORAGE_KEY, Consts.CSRF_TOKEN);
-            }).catch(e => this.unknownError(e));
-        }
+                Consts.setCsrfToken(html.querySelector("meta[name='csrf_token']").getAttribute("content"));
+            });
+        if (this.userInput.current)
+            this.userInput.current.focus()
     }
     render() {
         const tryLogin = () => {
@@ -32,14 +37,11 @@ export default class Login extends Component {
         },
             handleClose = () => {
                 Consts.setWantsToLogin(false);
-                this.setState({ isLoggedOn: true });
+                this.setState({ isLoggedIn: false });
             };
-        if (!Consts.WANTS_TO_LOGIN_TO_MAL)
-            // eslint-disable-next-line
-            this.state.isLoggedOn = true;
         return (
             <Modal
-                show={!this.state.isLoggedOn}
+                show={!this.state.isLoggedIn && Consts.WANTS_TO_LOGIN_TO_MAL}
                 onHide={handleClose}
                 centered>
                 <Modal.Header>
@@ -55,6 +57,7 @@ export default class Login extends Component {
                         </InputGroup.Text>
                         </InputGroup.Prepend>
                         <FormControl placeholder="User"
+                            ref={this.userInput}
                             onKeyDown={e => this.listenToEnter(e)}
                             onChange={this.setUsername.bind(this)} />
                     </InputGroup>
@@ -84,7 +87,7 @@ export default class Login extends Component {
                     <Button
                         style={{ float: "right" }}
                         onClick={tryLogin}>
-                        {this.state.loading ? <div>Loading... <Spinner></Spinner></div> : "Submit"}
+                        {this.state.loading ? <div>Loading... <Spinner size="sm" animation="border" /></div> : "Submit"}
                     </Button>
                     <Button
                         style={{ float: "left" }}
@@ -114,7 +117,7 @@ export default class Login extends Component {
         ${error}`);
     }
     errorMessage(errorMessage) {
-        this.setState({ errorMessage });
+        this.setState({ errorMessage, loading: false });
     }
     alertHide() {
         if (this.state.errorMessage) {
@@ -123,8 +126,8 @@ export default class Login extends Component {
             }, Login.Alert_SHOW_TIMEOUT)
         }
     }
-    tryLogin() {
-        if (this.successMessage)
+    async tryLogin() {
+        if (this.state.successMessage)
             return;
         if (!this.checkInput())
             return this.errorMessage("Invalid Input!");
@@ -142,22 +145,44 @@ export default class Login extends Component {
             method: "POST",
             body: formData
         }).then(async response => {
-            if (response.redirected) {
+            if (response.status !== 200) return this.errorMessage("Something went wrong while trying to log in..... Check MAL's status!");
+            let responseText = await response.text();
+            if (responseText.includes("Your username or password is incorrect.") || responseText.includes("Recover your account")) {
                 this.setState({
-                    successMessage: "Login Successful!"
+                    errorMessage: "Couldn't sign in with the given credentials!",
+                    loading: false
                 });
-                Consts.setMALUser({
-                    isLoggedOn: true,
-                    username: this.username,
-                    passwrod: this.password
-                });
+
                 setTimeout(() => {
                     this.setState({
-                        isLoggedOn: Consts.MAL_USER.isLoggedOn,
-                        loading: false,
                         errorMessage: null
                     });
+                }, Login.Alert_SHOW_TIMEOUT);
+            }
+            else if (responseText.includes("Too many failed login attempts. Please try to login again after several hours., or restart your router (change your ip)")) {
+                this.setState({
+                    errorMessage: "Too many failed login attempts..... Try again after several hours",
+                    loading: false
+                });
+
+                setTimeout(() => {
+                    this.setState({
+                        errorMessage: null
+                    });
+                }, Login.Alert_SHOW_TIMEOUT);
+            }
+            else {
+                this.setState({
+                    successMessage: "Login Successful!",
+                    loading: false
+                });
+                Consts.setMALUser(new User(this.username, this.password, undefined, true));
+                setTimeout(() => {
                     this.props.reloadParent();
+                    this.setState({
+                        errorMessage: null,
+                        successMessage: null
+                    });
                 }, Login.Alert_SHOW_TIMEOUT);
             }
         }).catch(e => this.unknownError(e));

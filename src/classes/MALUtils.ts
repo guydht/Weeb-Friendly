@@ -1,9 +1,10 @@
+import mal from "node-myanimelist";
+import season from "node-myanimelist/typings/methods/jikan/season";
 import AnimeEntry from "./AnimeEntry";
-import { Search, Top, Season } from "jikan-client";
-import { Seasons as SeasonType } from "jikan-client/dist/interfaces/season/Season";
+import User, { AnimeList } from "./User";
 
 
-function getCurrentSeason(): string {
+function getCurrentSeason(): season {
     let month = new Date().getMonth();
     switch (month) {
         case 12:
@@ -18,24 +19,21 @@ function getCurrentSeason(): string {
         case 7:
         case 8:
             return 'summer';
-        case 9:
-        case 10:
-        case 11:
-            return 'fall';
     }
-    return '';
+    return "fall";
 }
 
 function jikanObjToAnimeEntry(jikanObject: any): AnimeEntry {
-    const entry = new AnimeEntry();
+    const entry = new AnimeEntry({});
     entry.name = jikanObject.title;
-    entry.imageURL = jikanObject.image_url;
+    entry.imageURL = jikanObject.image_url.split("?")[0];
     entry.malUrl = jikanObject.url;
     entry.malId = jikanObject.mal_id;
     entry.synopsis = jikanObject.synopsis;
     entry.genres = new Set(jikanObject.genres);
-    entry.totalEpisodes = jikanObject.episodes;
+    entry.totalEpisodes = jikanObject.total_episodes || jikanObject.episodes;
     entry.score = jikanObject.score;
+    entry.myMalRating = jikanObject.userScore;
     return entry
 }
 
@@ -76,7 +74,7 @@ function stringCompare(givenString: string, toCompare: string) {
 
 export default class MALUtils {
     static async searchAnime(searchString: string): Promise<AnimeEntry[]> {
-        let data = (await Search.search(searchString, "anime")).results,
+        let data = (await mal.search().anime({ q: searchString })).data.results,
             parsedData = data.sort((a: any, b: any) => {
                 return stringCompare(searchString.toLowerCase(), a.title.toLowerCase()) -
                     stringCompare(searchString.toLowerCase(), b.title.toLowerCase()) +
@@ -84,13 +82,76 @@ export default class MALUtils {
             }).map(jikanObjToAnimeEntry);
         return parsedData;
     }
-    static async topAnime(): Promise<Array<AnimeEntry>> {
-        let data= (await Top.items()) as unknown as any[]
+    static async topAnime(page = 1): Promise<Array<AnimeEntry>> {
+        let data = (await mal.top().anime().all(page)).data;
         return data.map(jikanObjToAnimeEntry);
     }
-    static async seasonalAnime(year: number = new Date().getFullYear(), season: SeasonType): Promise<AnimeEntry[]> {
-        season = season || getCurrentSeason();
-        let data = (await Season.anime(year, season)).anime;
+    static async getCurrentSeasonalAnime() {
+        return this.seasonalAnime(new Date().getFullYear(), getCurrentSeason() as season);
+    }
+    static async seasonalAnime(year: number, season: season): Promise<AnimeEntry[]> {
+        let data = (await mal.season(year, season)).data.anime;
         return data.map(jikanObjToAnimeEntry);
     }
+    static async getUserAnimeList(user: User): Promise<AnimeList> {
+        let data = (await mal.user(user.username).animelist().watching()).data.anime;
+        for (let entry of data)
+            (entry as any).userScore = entry.score;
+        user.animeList.watching = data.map(jikanObjToAnimeEntry);
+        return user.animeList;
+    }
+    static async getAnimeInfo(anime: AnimeEntry): Promise<AnimeInfo> {
+        let info = await mal.anime(anime.malId!).info();
+        return info.data;
+    }
+}
+
+export type MalLinkObject = {
+    mal_id: number;
+    name: string;
+    type: string;
+    url: string
+}
+export interface AnimeInfo {
+    aired: { from: string, to: string | null, prop: { from: Object, to: Object }, string: string };
+    airing: boolean;
+    background?: null;
+    broadcast: string;
+    duration: string;
+    ending_themes: string[];
+    episodes?: number;
+    favorites?: number;
+    genres: MalLinkObject[];
+    image_url: string;
+    licensors: MalLinkObject[];
+    mal_id: number;
+    members: number;
+    opening_themes: string[];
+    popularity: number;
+    premiered: string;
+    producers: MalLinkObject[];
+    rank: number;
+    rating: string;
+    related: {
+        Adaptation: MalLinkObject[],
+        "Alternative version": MalLinkObject[],
+        "Side story": MalLinkObject[],
+        Other: MalLinkObject[]
+    };
+    request_cache_expiry: number;
+    request_cached: boolean;
+    request_hash: string;
+    score: number;
+    scored_by: number;
+    source: string;
+    status: string;
+    studios: MalLinkObject[];
+    synopsis: string;
+    title: string;
+    title_english: string;
+    title_japanese: string;
+    title_synonyms: string[];
+    trailer_url: string;
+    type: string;
+    url: string;
 }

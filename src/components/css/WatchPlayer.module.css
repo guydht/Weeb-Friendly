@@ -1,0 +1,11 @@
+.container {
+    height: 30vh !important;
+    width: 30vh !important;
+    position: fixed !important;
+    z-index: 10;
+    bottom: 0;
+    right: 0;
+    resize: both;
+    /* top: 70vh;
+    left: calc(100vw - 30vh); */
+}

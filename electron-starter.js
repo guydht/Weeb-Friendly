@@ -1,4 +1,8 @@
-const electron = require('electron');
+const electron = require('electron'),
+    url = require("url"),
+    path = require("path");
+
+process.env.NODE_ENV = "development";
 // Module to control application life.
 const app = electron.app;
 // Module to create native browser window.
@@ -10,11 +14,20 @@ let mainWindow;
 
 function createWindow() {
     // Create the browser window.
-    mainWindow = new BrowserWindow({width: 800, height: 600, 
-        webPreferences: {webSecurity: false}});
+    mainWindow = new BrowserWindow({
+        width: 800, height: 600,
+        webPreferences: {
+            webSecurity: false,
+            nodeIntegration: true
+        }
+    });
 
     // and load the index.html of the app.
-    mainWindow.loadURL('http://localhost:3000');
+    mainWindow.loadURL(url.format({
+        pathname: process.env.NODE_ENV === "development" ?
+            "localhost:3000" : path.join(__dirname, 'build/index.html'),
+        protocol: 'http'
+    }));
 
     // Open the DevTools.
     mainWindow.webContents.openDevTools();
@@ -25,7 +38,7 @@ function createWindow() {
         // in an array if your app supports multi windows, this is the time
         // when you should delete the corresponding element.
         mainWindow = null
-    })
+    });
 }
 
 // This method will be called when Electron has finished

@@ -1,10 +1,10 @@
 import React, { Component } from "react";
-import { Carousel, Spinner, Table } from "react-bootstrap";
+import { Carousel, Table } from "react-bootstrap";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { Link } from "react-router-dom";
 import MALUtils from "../classes/MALUtils";
+import Consts from "../consts";
 import styles from "./css/SeasonalCarousel.module.css";
-
 
 function chunkArray(myArray, chunk_size) {
     var results = [],
@@ -16,43 +16,35 @@ function chunkArray(myArray, chunk_size) {
     return results;
 }
 
-export default class SeasonalCarousel extends Component {
+export default class CurrentlyWatching extends Component {
     static GRID_SIZE_X = 5;
     static GRID_SIZE_Y = 2;
 
-    state = {
-        seasonalAnimes: []
-    };
-
     componentDidMount() {
-        MALUtils.getCurrentSeasonalAnime().then(seasonalAnimes => {
-            this.setState({ seasonalAnimes });
-        })
+        if (!Consts.MAL_USER.animeList.all.length)
+            MALUtils.getUserAnimeList(Consts.MAL_USER).then(() => {
+                Consts.setMALUser(Consts.MAL_USER);
+                this.setState({})
+            });
     }
 
     render() {
-        if (!this.state.seasonalAnimes.length)
-            return (
-                <div>
-                    <small>Loading Seasonal...</small>
-                    <Spinner animation="grow" />
-                </div>
-            )
+        console.log(Consts.MAL_USER.animeList, Consts.MAL_USER.animeList.watching, Consts.MAL_USER.animeList.constructor);
         return (
             <div>
                 <h1>
-                    Current Seasonal:
-            </h1>
+                    Currently Watching:
+                    </h1>
                 <Carousel interval={null} className="px-5 mx-5 mt-5">
                     {
-                        chunkArray(this.state.seasonalAnimes, SeasonalCarousel.GRID_SIZE_X * SeasonalCarousel.GRID_SIZE_Y)
+                        chunkArray(Consts.MAL_USER.animeList.watching.sort((a, b) => a.startDate - b.startDate), CurrentlyWatching.GRID_SIZE_X * CurrentlyWatching.GRID_SIZE_Y)
                             .map((arrayChunk, i) => {
                                 return (
                                     <Carousel.Item key={i} className={styles.carousel}>
                                         <Table responsive={false} className={styles.table}>
                                             <tbody>
                                                 {
-                                                    chunkArray(arrayChunk, SeasonalCarousel.GRID_SIZE_X).map((chunk, i) => {
+                                                    chunkArray(arrayChunk, CurrentlyWatching.GRID_SIZE_X).map((chunk, i) => {
                                                         return (
                                                             <tr key={i}>
                                                                 {

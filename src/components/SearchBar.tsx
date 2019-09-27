@@ -6,13 +6,14 @@ import AnimeEntry from "../classes/AnimeEntry";
 import MALUtils from "../classes/MALUtils";
 
 export default class SearchBar extends Component {
+    static SEARCH_INPUT_TIMEOUT = 250;
+
     state = {
         displayEntries: true,
         entries: [],
         loading: false,
         loadingText: ""
     };
-    static SEARCH_INPUT_TIMEOUT = 250;
 
     render() {
         const onFocus = () => {
