@@ -26,7 +26,7 @@ export default class ChooseDirectoryText extends Component {
 
     setDownloadsFolder(folderPath: string) {
         Consts.setDownloadsFolder(folderPath);
-        this.setState({ changeFolder: false })
+        this.setState({ changeFolder: false });
     }
 
     render() {
@@ -44,7 +44,8 @@ export default class ChooseDirectoryText extends Component {
                             displayEntries: false
                         });
                         this.setDownloadsFolder(this.textInput.current.value);
-                        window.location.reload();
+                        if(this.textInput.current && this.textInput.current.value !== Consts.DOWNLOADS_FOLDER)
+                            window.location.reload();
                     }
                 });
             };

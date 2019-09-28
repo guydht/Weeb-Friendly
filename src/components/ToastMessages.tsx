@@ -31,7 +31,8 @@ export default class ToastMessage extends Component {
                 style={{
                     position: 'fixed',
                     top: "5vh",
-                    right: 0
+                    right: 0,
+                    zIndex: 9999999
                 }}
             >
                 {this.state.toasts.map((toast, i) => {

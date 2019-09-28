@@ -1,3 +1,5 @@
+import MALUtils from "./MALUtils";
+
 export default class AnimeEntry {
     static STATUSES: ("Completed" | "Plan to watch" | "Dropped" | "Watching" | "On Hold")[] = ["Watching", "Completed", "On Hold", "Dropped", "Plan to watch"];
     static SCORES = ["Appaling", "Horrible", "Very Bad", "Bad", "Average", "Fine", "Good", "Very Good", "Great", "Masterpiece"];
@@ -18,8 +20,8 @@ export default class AnimeEntry {
         myMalRating = undefined,
         myRewatchAmount = undefined,
         imageURL = undefined,
-        _name = undefined
-
+        name = undefined,
+        sync = true
     }) {
         this.score = score;
         this.malId = malId;
@@ -37,7 +39,9 @@ export default class AnimeEntry {
         this.myMalRating = myMalRating;
         this.myRewatchAmount = myRewatchAmount;
         this.imageURL = imageURL;
-        this._name = _name;
+        this.name = name;
+        if (sync && malId && name)
+            this.sync();
     }
     synonyms: Set<string> = new Set();
     malId?: number;
@@ -65,4 +69,11 @@ export default class AnimeEntry {
         return this._name;
     }
     obj?: any;
+    sync() {
+        Object.entries(MALUtils.syncAnime(this)).forEach(([key, value]) => {
+            if(value)
+                (this as any)[key] = value;
+        });
+        return this;
+    }
 }

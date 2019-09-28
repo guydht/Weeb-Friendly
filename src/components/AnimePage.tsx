@@ -25,20 +25,21 @@ export default class AnimePage extends Component {
 
     state = {
         info: {} as AnimeById,
-        anime: MALUtils.syncAnime(((this.props as any).location.state || {}).animeEntry as AnimeEntry)
+        anime: ((this.props as any).location.state || {}).animeEntry as AnimeEntry
     }
 
     componentDidMount() {
-        MALUtils.getAnimeInfo(this.state.anime).then((info) => {
-            this.setState({
-                info,
-                anime: MALUtils.syncAnime(this.state.anime)
+        if(this.state.anime)
+            MALUtils.getAnimeInfo(this.state.anime).then((info) => {
+                this.setState({
+                    info,
+                    anime: this.state.anime
+                });
             });
-        });
     }
 
     render() {
-        if (!this.state.anime.malId) {
+        if (!this.state.anime || !this.state.anime.malId) {
             (this.props as any).history.push('/');
             return null;
         }

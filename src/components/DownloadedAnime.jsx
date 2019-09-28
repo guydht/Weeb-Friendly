@@ -2,7 +2,11 @@ import React, { Component } from "react";
 import { Button, ButtonGroup, Container, FormControl, InputGroup, Row } from "react-bootstrap";
 import Form from "react-bootstrap/FormGroup";
 import { LazyLoadComponent } from "react-lazy-load-image-component";
+import { withRouter } from "react-router";
+import AnimeEntry from "../classes/AnimeEntry";
 import DownloadedItem from "../classes/DownloadedItem";
+import { waitFor } from "../classes/jifa";
+import MALUtils from "../classes/MALUtils";
 import VideoThumbnail from "../classes/VideoThumbnail";
 import Consts from "../consts";
 import styles from "./css/DownloadedAnime.module.css";
@@ -18,12 +22,15 @@ var walkDir = function (dir) {
         if (stat.isDirectory())
             results = results.concat(walkDir(file));
         else
-            results.push(new DownloadedItem(file, filename.replace(path.extname(filename), ""), stat.birthtime));
+            results.push(new DownloadedItem(
+                file, filename.replace(path.extname(filename), ""), stat.birthtime,
+                new AnimeEntry({})
+            ));
     });
     return results;
 }
 
-export default class DownloadedAnime extends Component {
+export default withRouter(class DownloadedAnime extends Component {
 
     filterElement = React.createRef();
 
@@ -45,6 +52,12 @@ export default class DownloadedAnime extends Component {
             }
         ]
     };
+    componentDidMount() {
+        if (this.downloadedItems.every(ele => !ele.malId) || MALUtils.storageSize === 0)
+            waitFor(() => MALUtils.storageSize > 0, () => {
+                this.setState({});
+            });
+    }
 
     render() {
         return (
@@ -55,7 +68,7 @@ export default class DownloadedAnime extends Component {
                 <Container>
                     <Row>
                         <InputGroup className="mx-5 d-block">
-                            <ButtonGroup style={{float: "left"}}>
+                            <ButtonGroup style={{ float: "left" }}>
                                 {
                                     this.state.sortOptions.map((props, i) => {
                                         return (
@@ -78,9 +91,10 @@ export default class DownloadedAnime extends Component {
                     <Row>
                         <div className={styles.grid + " guydht-scrollbar mx-5"}>
                             {
-                                this.sortedItems.map((downloadedItem, i) => {
+                                this.sortedItems.map(downloadedItem => {
                                     return (
                                         <div key={downloadedItem.absolutePath} className={styles.gridElement + " m-3"}
+                                            onDoubleClick={() => this.showAnime(downloadedItem)}
                                             onClick={() => this.showVideo(downloadedItem)}>
                                             <LazyLoadComponent>
                                                 <VideoThumbnail
@@ -101,6 +115,22 @@ export default class DownloadedAnime extends Component {
                 </Container>
             </div>
         )
+    }
+    showAnime(downloadedItem) {
+        downloadedItem.createAnimeEntry();
+        console.log(downloadedItem);
+        this.downloadedItems[this.downloadedItems.indexOf(downloadedItem)] = downloadedItem;
+        if (downloadedItem.animeEntry.malId) {
+            this.props.history.push({
+                pathname: "/anime/" + downloadedItem.animeEntry.malId,
+                state: {
+                    animeEntry: downloadedItem.animeEntry
+                },
+                anime: downloadedItem.animeEntry
+            });
+        }
+        else
+            window.displayToast({ title: "Can't find Anime!", body: `Sorry! Can't find ${downloadedItem.fileName} in MyAnimeList!` })
     }
     showVideo(videoItem) {
         window.setAppState({
@@ -137,4 +167,4 @@ export default class DownloadedAnime extends Component {
     get currentOption() {
         return this.state.sortOptions.find(ele => ele.active);
     }
-}
+});
