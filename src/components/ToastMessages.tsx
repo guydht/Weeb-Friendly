@@ -53,11 +53,13 @@ export default class ToastMessage extends Component {
         return this.state.toasts.findIndex(ele => ele.title === toast.title && ele.body === toast.body);
     }
     displayToast(toast: toast, timeout: number = ToastMessage.DEFAULT_TOAST_TIMEOUT) {
+        //for persistent toast just pass null through "timeout" variable.
         toast.id = uuid();
         this.setState({
             toasts: this.state.toasts.concat({ ...toast, opacity: 1 })
         });
-        setTimeout(() => this.fadeToastOut(toast), timeout);
+        if (timeout)
+            setTimeout(() => this.fadeToastOut(toast), timeout);
     }
     fadeToastOut(toast: toast) {
         let toasts = this.state.toasts;
