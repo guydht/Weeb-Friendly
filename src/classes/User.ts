@@ -1,55 +1,93 @@
 import AnimeEntry from "./AnimeEntry";
 export class AnimeList {
-    constructor({ _watching = [], _completed = [], _dropped = [], all = new Set(), _planToWatch = [], _onHold = [] }) {
-        this._watching = _watching.map(e => new AnimeEntry(e));
+    constructor({ _watching = {}, _completed = {}, _dropped = {}, _all = {}, _plantowatch = {}, _onhold = {} }) {
+        this._all = _all;
+        this._watching = _watching;
         this._completed = _completed;
         this._dropped = _dropped;
+        this._onhold = _onhold;
+        this._plantowatch = _plantowatch;
     }
-    private _watching: AnimeEntry[] = [];
-    private _completed: AnimeEntry[] = [];
-    private _dropped: AnimeEntry[] = [];
-    all: Set<AnimeEntry> = new Set();
-    private _planToWatch: AnimeEntry[] = [];
-    private _onHold: AnimeEntry[] = [];
+    private _watching: Record<string | number, AnimeEntry>;
+    private _completed: Record<string | number, AnimeEntry>;
+    private _dropped: Record<string | number, AnimeEntry>;
+    private _all: Record<string | number, AnimeEntry> = {};
+    private _plantowatch: Record<string | number, AnimeEntry>;
+    private _onhold: Record<string | number, AnimeEntry>;
 
-    set watching(value: AnimeEntry[]) {
-        this._watching = value;
-        value.forEach(a => this.all.add(a));
+    set all(value: Record<string | number, AnimeEntry>) {
+        let allKeys = Object.entries(value);
+        allKeys.forEach(([key, value]) => {
+            this._all[key] = value;
+            switch ((value as AnimeEntry).myMalStatus) {
+                case "Watching":
+                    (this._watching as any)[key] = value;
+                    break
+                case "Completed":
+                    (this._completed as any)[key] = value;
+                    break;
+                case "Dropped":
+                    (this._dropped as any)[key] = value;
+                    break;
+                case "On Hold":
+                    (this._onhold as any)[key] = value;
+                    break;
+                case "Plan to watch":
+                    (this._plantowatch as any)[key] = value;
+            }
+        })
     }
-    get watching(): AnimeEntry[] {
+    get all(): Record<string | number, AnimeEntry> {
+        return this._all;
+    }
+    set watching(value: Record<string | number, AnimeEntry>) {
+        this._watching = value;
+        Object.values(value).forEach(a => this.all[a.malId!.toString()] = a);
+    }
+    get watching(): Record<string | number, AnimeEntry> {
         return this._watching;
     }
 
-    set completed(value: AnimeEntry[]) {
+    set completed(value: Record<string | number, AnimeEntry>) {
         this._completed = value;
-        value.forEach(a => this.all.add(a));
+        Object.values(value).forEach(a => this.all[a.malId!.toString()] = a);
     }
-    get completed(): AnimeEntry[] {
+    get completed(): Record<string | number, AnimeEntry> {
         return this._completed;
     }
 
-    set dropped(value: AnimeEntry[]) {
+    set dropped(value: Record<string | number, AnimeEntry>) {
         this._dropped = value;
-        value.forEach(a => this.all.add(a));
+        Object.values(value).forEach(a => this.all[a.malId!.toString()] = a);
     }
-    get dropped(): AnimeEntry[] {
+    get dropped(): Record<string | number, AnimeEntry> {
         return this._dropped;
     }
 
-    set planToWatch(value: AnimeEntry[]) {
-        this._planToWatch = value;
-        value.forEach(a => this.all.add(a));
+    set plantowatch(value: Record<string | number, AnimeEntry>) {
+        this._plantowatch = value;
+        Object.values(value).forEach(a => this.all[a.malId!.toString()] = a);
     }
-    get planToWatch(): AnimeEntry[] {
-        return this._planToWatch;
+    get plantowatch(): Record<string | number, AnimeEntry> {
+        return this._plantowatch;
     }
 
-    set onHold(value: AnimeEntry[]) {
-        this._onHold = value;
-        value.forEach(a => this.all.add(a));
+    set onhold(value: Record<string | number, AnimeEntry>) {
+        this._onhold = value;
+        Object.values(value).forEach(a => this.all[a.malId!.toString()] = a);
     }
-    get onHold(): AnimeEntry[] {
-        return this._onHold;
+    get onhold(): Record<string | number, AnimeEntry> {
+        return this._onhold;
+    }
+    set ptw(value: Record<string | number, AnimeEntry>) {
+        this._plantowatch = value;
+        Object.values(value).forEach(a => this.all[a.malId!.toString()] = a);
+    }
+    get ptw(): Record<string | number, AnimeEntry> {
+        return this._plantowatch;
+    }
+    static fromJson({ _watching = {}, _completed = {}, _dropped = {}, _all = {}, _plantowatch = {}, _onhold = {} }): AnimeList {
+        return new AnimeList({ _watching, _completed, _dropped, _all, _plantowatch, _onhold });
     }
 }
 export class User {
@@ -66,7 +104,7 @@ export class User {
     isLoggedIn = false;
     last_time_updated: Date;
     static fromJson({ username = '', password = '', animeList = {}, isLoggedIn = false, last_time_updated = new Date() }) {
-        let typedAnimeList = new AnimeList(animeList);
+        let typedAnimeList = AnimeList.fromJson(animeList);
         return new User(username, password, typedAnimeList, isLoggedIn, last_time_updated);
     }
 }

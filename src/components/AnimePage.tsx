@@ -1,7 +1,8 @@
+import { AnimeById } from "jikants/dist/src/interfaces/anime/ById";
 import React, { Component } from "react";
 import { Col, Image, Row, Tab, Tabs } from "react-bootstrap";
 import AnimeEntry from "../classes/AnimeEntry";
-import MALUtils, { AnimeInfo } from "../classes/MALUtils";
+import MALUtils from "../classes/MALUtils";
 import Recommendations from "./AnimeHome/ Recommendations";
 import Details from "./AnimeHome/Details";
 import Episodes from "./AnimeHome/Episodes";
@@ -13,7 +14,7 @@ import Stats from "./AnimeHome/Stats";
 import styles from "./css/AnimeDetails.module.css";
 
 export interface AnimeProps {
-    info: AnimeInfo;
+    info: AnimeById;
     anime: AnimeEntry;
 }
 
@@ -23,21 +24,21 @@ export default class AnimePage extends Component {
     private PAGE_LINKS = { Details, Episodes: Episodes, Reviews, Recommendations, Stats, News, Forum, Pictures }
 
     state = {
-        info: {} as AnimeInfo,
-        anime: ((this.props as any).location.state || {}).animeEntry as AnimeEntry
+        info: {} as AnimeById,
+        anime: MALUtils.syncAnime(((this.props as any).location.state || {}).animeEntry as AnimeEntry)
     }
 
     componentDidMount() {
-        if (this.state.anime)
-            MALUtils.getAnimeInfo(this.state.anime).then((info) => {
-                this.setState({
-                    info
-                });
+        MALUtils.getAnimeInfo(this.state.anime).then((info) => {
+            this.setState({
+                info,
+                anime: MALUtils.syncAnime(this.state.anime)
             });
+        });
     }
 
     render() {
-        if (!this.state.anime) {
+        if (!this.state.anime.malId) {
             (this.props as any).history.push('/');
             return null;
         }

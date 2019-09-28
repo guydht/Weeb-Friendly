@@ -1,4 +1,6 @@
 export default class AnimeEntry {
+    static STATUSES: ("Completed" | "Plan to watch" | "Dropped" | "Watching" | "On Hold")[] = ["Watching", "Completed", "On Hold", "Dropped", "Plan to watch"];
+    static SCORES = ["Appaling", "Horrible", "Very Bad", "Bad", "Average", "Fine", "Good", "Very Good", "Great", "Masterpiece"];
     constructor({
         synonyms = new Set<string>(),
         malId = undefined,
@@ -8,7 +10,9 @@ export default class AnimeEntry {
         synopsis = undefined,
         totalEpisodes = undefined,
         startDate = undefined,
+        endDate = undefined,
         userStartDate = undefined,
+        userEndDate = undefined,
         myWatchedEpisodes = undefined,
         myMalStatus = undefined,
         myMalRating = undefined,
@@ -25,7 +29,9 @@ export default class AnimeEntry {
         this.synopsis = synopsis;
         this.totalEpisodes = totalEpisodes;
         this.startDate = startDate;
+        this.endDate = endDate;
         this.userStartDate = userStartDate;
+        this.userEndDate = userEndDate;
         this.myWatchedEpisodes = myWatchedEpisodes;
         this.myMalStatus = myMalStatus;
         this.myMalRating = myMalRating;
@@ -41,7 +47,9 @@ export default class AnimeEntry {
     synopsis?: string;
     totalEpisodes?: number;
     startDate?: Date;
+    endDate?: Date;
     userStartDate?: Date;
+    userEndDate?: Date;
     myWatchedEpisodes?: number;
     myMalStatus?: "Completed" | "Plan to watch" | "Dropped" | "Watching" | "On Hold";
     myMalRating?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
@@ -56,4 +64,5 @@ export default class AnimeEntry {
     get name(): string | undefined {
         return this._name;
     }
+    obj?: any;
 }
