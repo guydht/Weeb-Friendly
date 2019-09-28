@@ -34,7 +34,7 @@ export default class SeasonalCarousel extends Component {
         if (!this.state.seasonalAnimes.length)
             return (
                 <div>
-                    <small>Loading Seasonal...</small>
+                    <small className="d-block">Loading Seasonal...</small>
                     <Spinner animation="grow" />
                 </div>
             )

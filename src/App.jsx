@@ -2,12 +2,10 @@ import React, { Component } from 'react';
 import { HashRouter, Route } from "react-router-dom";
 import Login from './components/Login';
 import NavBar from './components/NavBar';
+import ToastMessage from './components/ToastMessages';
 import Watch from './components/Watch';
 import "./css/GuydhtScrollbar.css";
 import routerConfig from "./routerConfig";
-
-
-
 
 
 export default class App extends Component {
@@ -36,6 +34,7 @@ export default class App extends Component {
           this.state.showVideo &&
           <Watch downloadedItem={this.state.videoItem} />
         }
+        <ToastMessage />
       </div>
     )
   }

@@ -1,9 +1,9 @@
 import React, { Component } from "react";
-import { FormControl, Form, ListGroup, ListGroupItem, Spinner } from "react-bootstrap";
+import { Form, FormControl, ListGroup, ListGroupItem, Spinner } from "react-bootstrap";
 import { Link } from "react-router-dom";
-
 import AnimeEntry from "../classes/AnimeEntry";
 import MALUtils from "../classes/MALUtils";
+
 
 export default class SearchBar extends Component {
     static SEARCH_INPUT_TIMEOUT = 250;
@@ -22,25 +22,27 @@ export default class SearchBar extends Component {
             })
         },
             onBlur = () => {
-                this.setState({
-                    loading: false,
-                    loadingText: "",
-                    displayEntries: false
-                })
+                setTimeout(() => {
+                    this.setState({
+                        loading: false,
+                        loadingText: "",
+                        displayEntries: false
+                    });
+                });
             };
         return (
             <Form onBlur={onBlur} onFocus={onFocus}>
                 <FormControl type="text" placeholder="Search" className="mr-sm-2"
                     onChangeCapture={(e: any) => this.searchAnime(e)}
                     onBlur={() => this.setState({ loading: false, loadingText: "" })} />
-                <ListGroup style={{ position: "relative", height: 0 }}>
+                <ListGroup style={{ position: "relative", height: 0, zIndex: 99 }}>
                     <ListGroup style={{ position: "absolute", maxHeight: "30vh", overflowY: "auto", width: "100%" }}
                         className="guydht-scrollbar">
                         {
                             this.state.entries.length && this.state.displayEntries ?
                                 this.state.entries.map((entry: AnimeEntry) => {
                                     return (
-                                        <ListGroupItem title={Array.from(entry.synonyms).join(", ")} key={entry.malId}>
+                                        <ListGroupItem onClick={() => console.log(entry)} title={Array.from(entry.synonyms).join(", ")} key={entry.malId}>
                                             <Link to={{
                                                 pathname: "/anime/" + entry.malId,
                                                 state: {

@@ -1,7 +1,6 @@
 import User from './classes/User';
 let storage = window.require("electron-json-config");
 
-console.log(storage.set("mal_user", {}));
 export default class Consts {
     static HORRIBLE_SUBS_URL = "";
 

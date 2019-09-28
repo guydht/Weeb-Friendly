@@ -19,7 +19,7 @@ export default class MovableComponent extends Component<MovableComponentProps> {
     render() {
         let { movable, resizable } = this.props,
             props: any = { ...this.props };
-        for (let prop of ['movable', 'resizable'])
+        for (let prop of ['movable', 'resizable', 'onDragStart', 'onDragFinish', 'onDragMove'])
             delete props[prop];
         return (
             <div className={`${movable ? 'movable' : ''} ${resizable ? 'resizable' : ''}`}

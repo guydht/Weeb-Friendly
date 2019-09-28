@@ -8,8 +8,11 @@ export default class VideoPlayer extends Component {
         setTimeout(() => {
             asd(this.props.name, document.getElementById("videoPlayer"), this.props.src);
         });
+        let props = { ...this.props };
+        for (let prop of ["src", "name"])
+            delete props[prop]
         return (
-            <div id="videoPlayer"></div>
+            <div id="videoPlayer" {...props}></div>
             //     <div className={styles.wrapper}><video tabIndex="1" className={styles.video}></video>
             //         <div className={styles.subsText}></div>
             //         <div className={styles.info} style={{ display: "none" }}>
