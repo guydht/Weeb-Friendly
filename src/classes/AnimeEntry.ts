@@ -1,10 +1,9 @@
 import MALUtils from "./MALUtils";
 
 export default class AnimeEntry {
-    static STATUSES: ("Completed" | "Plan to watch" | "Dropped" | "Watching" | "On Hold")[] = ["Watching", "Completed", "On Hold", "Dropped", "Plan to watch"];
     static SCORES = ["Appaling", "Horrible", "Very Bad", "Bad", "Average", "Fine", "Good", "Very Good", "Great", "Masterpiece"];
     constructor({
-        synonyms = new Set<string>(),
+        synonyms = undefined,
         malId = undefined,
         score = undefined,
         malUrl = undefined,
@@ -21,26 +20,47 @@ export default class AnimeEntry {
         myRewatchAmount = undefined,
         imageURL = undefined,
         name = undefined,
+        _name = undefined,
         sync = true
+    }: {
+        synonyms?: Set<string>,
+        malId?: number,
+        score?: number,
+        malUrl?: string,
+        genres?: Set<string>,
+        synopsis?: string,
+        totalEpisodes?: number,
+        startDate?: Date,
+        endDate?: Date,
+        userStartDate?: Date,
+        userEndDate?: Date,
+        myWatchedEpisodes?: number,
+        myMalStatus?: "Completed" | "Plan To Watch" | "Dropped" | "Watching" | "On Hold",
+        myMalRating?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10,
+        myRewatchAmount?: number,
+        imageURL?: string,
+        name?: string,
+        _name?: string,
+        sync?: boolean
     }) {
         this.score = score;
         this.malId = malId;
         this.malUrl = malUrl;
         this.genres = genres;
-        this.synonyms = synonyms;
+        this.synonyms = synonyms && synonyms[Symbol.iterator] ? new Set(synonyms) : new Set();
         this.synopsis = synopsis;
         this.totalEpisodes = totalEpisodes;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.userStartDate = userStartDate;
-        this.userEndDate = userEndDate;
+        this.startDate = new Date(startDate!);
+        this.endDate = new Date(endDate!);
+        this.userStartDate = new Date(userStartDate!);
+        this.userEndDate = new Date(userEndDate!);
         this.myWatchedEpisodes = myWatchedEpisodes;
         this.myMalStatus = myMalStatus;
         this.myMalRating = myMalRating;
         this.myRewatchAmount = myRewatchAmount;
         this.imageURL = imageURL;
-        this.name = name;
-        if (sync && malId && name)
+        this.name = name || _name;
+        if (sync && (malId || name))
             this.sync();
     }
     synonyms: Set<string> = new Set();
@@ -55,7 +75,7 @@ export default class AnimeEntry {
     userStartDate?: Date;
     userEndDate?: Date;
     myWatchedEpisodes?: number;
-    myMalStatus?: "Completed" | "Plan to watch" | "Dropped" | "Watching" | "On Hold";
+    myMalStatus?: "Completed" | "Plan To Watch" | "Dropped" | "Watching" | "On Hold";
     myMalRating?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
     myRewatchAmount?: number;
     imageURL?: string;
@@ -68,10 +88,9 @@ export default class AnimeEntry {
     get name(): string | undefined {
         return this._name;
     }
-    obj?: any;
     sync() {
         Object.entries(MALUtils.syncAnime(this)).forEach(([key, value]) => {
-            if(value)
+            if (value)
                 (this as any)[key] = value;
         });
         return this;

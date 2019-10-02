@@ -12,13 +12,14 @@ export default class Watch extends Component {
         videoOpacity: 1
     };
     removingVideo = false;
+    movingElement = React.createRef();
     componentDidUpdate() {
         if (this.removingVideo)
             return this.removingVideo = false;
         if (!this.state.showingVideo && !this.removingVideo) {
             this.setState({
                 showingVideo: true
-            })
+            });
         }
     };
     render() {
@@ -35,11 +36,16 @@ export default class Watch extends Component {
                 });
             }, 500);
         };
+        let styleObject = { transition: "opacity .5s", opacity: this.state.videoOpacity, display: this.state.showingVideo ? "" : "none" };
+        for (let key in Consts.WATCH_PLAYER_SIZE)
+            styleObject[key] = Consts.WATCH_PLAYER_SIZE[key];
         return (
             <MovableComponent
-                style={{ transition: "opacity .5s", opacity: this.state.videoOpacity, display: this.state.showingVideo ? "" : "none" }}
+                style={styleObject}
                 className={styles.container}
-                onDragFinish={this.onDragFinish}
+                onDragFinish={this.onDragFinish.bind(this)}
+                onResizeFinish={this.onResizeFinish.bind(this)}
+                ref={this.movingElement}
                 resizable={true}>
                 <span
                     style={{ position: "relative", zIndex: 1, float: "right", cursor: "pointer" }}
@@ -48,16 +54,28 @@ export default class Watch extends Component {
                 </span>
                 <VideoPlayer
                     style={{ zIndex: 0 }}
-                    src={Consts.FILE_URL_PROTOCOL + this.props.downloadedItem.absolutePath} name={this.props.downloadedItem.fileName} />
+                    src={this.props.downloadedItem.videoSrc || Consts.FILE_URL_PROTOCOL + this.props.downloadedItem.absolutePath}
+                    name={this.props.downloadedItem.fileName} />
             </MovableComponent>
         )
     }
+    onResizeFinish(_, didMoveInGesture) {
+        if (didMoveInGesture && this.movingElement.current && this.movingElement.current.element.current) {
+            let rect = this.movingElement.current.element.current.getBoundingClientRect().toJSON();
+            delete rect.bottom;
+            delete rect.right;
+            delete rect.x;
+            delete rect.y;
+            Consts.setWatchPlayerSize(rect);
+        }
+    }
     onDragFinish(e, didMoveInGesture) {
         if (didMoveInGesture) {
-            let target = e.target,
-                pausedStatus = target.paused;
-            let waitInterval = waitFor(() => target.paused !== pausedStatus, () => pausedStatus ? target.pause() : target.play(), 10);
+            let video = document.querySelector("video"),
+                pausedStatus = video.paused;
+            let waitInterval = waitFor(() => video.paused !== pausedStatus, () => pausedStatus ? video.pause() : video.play(), 10);
             setTimeout(() => clearInterval(waitInterval), 500);
+            this.onResizeFinish(e, didMoveInGesture);
         }
     }
 }

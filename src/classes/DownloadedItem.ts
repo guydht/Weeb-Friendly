@@ -10,11 +10,5 @@ export default class DownloadedItem {
     absolutePath: string;
     fileName: string;
     lastUpdated: Date;
-    animeEntry?: AnimeEntry;
-    createAnimeEntry() {
-        this.animeEntry = new AnimeEntry({});
-        this.animeEntry.name = this.fileName.substring(0, this.fileName.search(/episode .+/i));
-        this.animeEntry.sync();
-        return this.animeEntry;
-    }
+    animeEntry: AnimeEntry;
 }

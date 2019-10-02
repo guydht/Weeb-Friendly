@@ -1,10 +1,15 @@
-import React, { Component } from "react";
+import React, { Component, RefObject } from "react";
 import { Badge, Col, Container, FormControl, Row } from "react-bootstrap";
 import AnimeEntry from "../../classes/AnimeEntry";
+import MALUtils, { MALStatuses } from "../../classes/MALUtils";
 import Consts from "../../consts";
 import { AnimeProps } from "../AnimePage";
 
 export default class Details extends Component<AnimeProps> {
+
+    scoreElement = React.createRef() as RefObject<any>;
+    statusElement = React.createRef() as RefObject<any>;
+    episodElement = React.createRef() as RefObject<any>;
 
     state = {
         anime: this.props.anime,
@@ -12,6 +17,7 @@ export default class Details extends Component<AnimeProps> {
     };
 
     render() {
+        console.log(this.state);
         return (
             <Container>
                 <Row className="mt-4" style={{ fontSize: "130%" }}>
@@ -37,35 +43,63 @@ export default class Details extends Component<AnimeProps> {
                     </Col>
                 </Row>
                 {
-                    Consts.MAL_USER.isLoggedIn && Consts.MAL_USER.animeList.all[this.state.anime.malId!] && <Row>
-                        <Col>
-                            <FormControl as="select" className="w-auto" defaultValue={this.state.anime.myMalStatus}>
-                                {
-                                    AnimeEntry.STATUSES.map(status => <option key={status} value={status}>{status}</option>)
-                                }
-                                <option></option>
-                            </FormControl>
-                        </Col>
-                        <Col>
-                            <FormControl as="select" className="w-auto" defaultValue={(this.state.anime.myMalRating || 0).toString()}>
-                                <option value="0">Select</option>
-                                {
-                                    AnimeEntry.SCORES.map((score, i) =>
-                                        <option key={score} value={i + 1}>{`(${i + 1}) ${score}`}</option>
-                                    )
-                                }
-                            </FormControl>
-                        </Col>
-                        <Col>
-                            <FormControl type="number"
-                                style={{ background: "transparent", width: "1.5em" }}
-                                plaintext
-                                className="d-inline guydhtNoSpinner"
-                                defaultValue={(this.state.anime.myWatchedEpisodes || 0).toString()} />/{this.state.anime.totalEpisodes}
-                        </Col>
-                    </Row>
+                    Consts.MAL_USER.isLoggedIn && Consts.MAL_USER.animeList.all[this.state.anime.malId!] && (
+                        <Row>
+                            <Col>
+                                <FormControl onChange={this.updateAnime.bind(this)} ref={this.statusElement}
+                                    as="select" className="w-auto" defaultValue={(MALStatuses as any)[this.state.anime.myMalStatus!]}>
+                                    {
+                                        Object.keys(MALStatuses).filter(ele => isNaN(Number(ele))).map(status => (
+                                            <option key={status} value={(MALStatuses as any)[status]}>{status}</option>
+                                        ))
+                                    }
+                                </FormControl>
+                            </Col>
+                            <Col>
+                                <FormControl onChange={this.updateAnime.bind(this)} ref={this.scoreElement} as="select"
+                                    className="w-auto" defaultValue={(this.state.anime.myMalRating || 0).toString()}>
+                                    <option value="0">Select</option>
+                                    {
+                                        AnimeEntry.SCORES.map((score, i) =>
+                                            <option key={score} value={i + 1}>{`(${i + 1}) ${score}`}</option>
+                                        )
+                                    }
+                                </FormControl>
+                            </Col>
+                            <Col>
+                                <FormControl
+                                    type="number"
+                                    max={this.state.anime.totalEpisodes}
+                                    min={0}
+                                    style={{ background: "transparent", width: "1.5em" }}
+                                    plaintext
+                                    onChange={this.updateAnime.bind(this)}
+                                    className="d-inline guydhtNoSpinner"
+                                    ref={this.episodElement}
+                                    defaultValue={(this.state.anime.myWatchedEpisodes || 0).toString()} />/{this.state.anime.totalEpisodes}
+                            </Col>
+                        </Row>
+                    )
                 }
             </Container >
         )
+    }
+    updateTimeout?: number;
+    static UPDATE_TIMEOUT_MS = 2000;
+    updateAnime() {
+        if (!this.statusElement.current || !this.episodElement.current || !this.scoreElement.current) return;
+        clearTimeout(this.updateTimeout);
+        this.updateTimeout = window.setTimeout(() => {
+            MALUtils.updateAnime(this.state.anime, {
+                episodes: Number(this.episodElement.current.value),
+                status: Number(this.statusElement.current.value),
+                score: Number(this.scoreElement.current.value)
+            }).then(ok => {
+                if (ok)
+                    (window as any).displayToast({ title: 'Successfully updated!', body: `Succesfully update ${this.state.anime.name}!` })
+                else
+                    (window as any).displayToast({ title: 'Something Went Wrong!', body: `MyanimeList sent error code :(` })
+            });
+        }, Details.UPDATE_TIMEOUT_MS);
     }
 }

@@ -1,6 +1,7 @@
 import { AnimeById } from "jikants/dist/src/interfaces/anime/ById";
 import React, { Component } from "react";
 import { Col, Image, Row, Tab, Tabs } from "react-bootstrap";
+import { LazyLoadComponent } from "react-lazy-load-image-component";
 import AnimeEntry from "../classes/AnimeEntry";
 import MALUtils from "../classes/MALUtils";
 import Recommendations from "./AnimeHome/ Recommendations";
@@ -11,7 +12,6 @@ import News from "./AnimeHome/News";
 import Pictures from "./AnimeHome/Pictures";
 import Reviews from "./AnimeHome/Reviews";
 import Stats from "./AnimeHome/Stats";
-import styles from "./css/AnimeDetails.module.css";
 
 export interface AnimeProps {
     info: AnimeById;
@@ -29,7 +29,7 @@ export default class AnimePage extends Component {
     }
 
     componentDidMount() {
-        if(this.state.anime)
+        if (this.state.anime)
             MALUtils.getAnimeInfo(this.state.anime).then((info) => {
                 this.setState({
                     info,
@@ -39,14 +39,27 @@ export default class AnimePage extends Component {
     }
 
     render() {
+        console.log(this.state);
         if (!this.state.anime || !this.state.anime.malId) {
+            let id = (this.props as any).match.params.id;
+            if (id) {
+                let anime = new AnimeEntry({ malId: Number(id) });
+                MALUtils.getAnimeInfo(anime).then((info) => {
+                    anime = new AnimeEntry({ malId: Number(id) });
+                    this.setState({
+                        info,
+                        anime: anime
+                    });
+                });
+                return null;
+            }
             (this.props as any).history.push('/');
             return null;
         }
         return (
-            <div className="mx-auto" style={{ width: "fit-content" }}>
+            <div className="mx-auto px-4" style={{ width: "fit-content" }}>
                 <Row>
-                    <h2 className={styles.title}>
+                    <h2>
                         {
                             this.state.anime.name
                         }
@@ -56,14 +69,16 @@ export default class AnimePage extends Component {
                     <Col md="auto">
                         <Image src={this.state.info.image_url} />
                     </Col>
-                    <Col md="auto">
+                    <Col md="auto" style={{ flex: 1 }}>
                         <Tabs id="mal-links" defaultActiveKey={"Details"}>
                             {
                                 Object.entries(this.PAGE_LINKS).map(([name, MyComponent], i) => {
                                     if (this.state.info.score)
                                         return (
                                             <Tab eventKey={name} title={name} mountOnEnter={true} key={i}>
-                                                <MyComponent anime={this.state.anime} info={this.state.info} />
+                                                <LazyLoadComponent>
+                                                    <MyComponent anime={this.state.anime} info={this.state.info} />
+                                                </LazyLoadComponent>
                                             </Tab>
                                         )
                                     return (

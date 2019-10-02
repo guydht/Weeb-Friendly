@@ -21,16 +21,15 @@ export default class CurrentlyWatching extends Component {
     static GRID_SIZE_Y = 2;
 
     componentDidMount() {
-        console.log({...Consts.MAL_USER.animeList});
         if (!Object.keys(Consts.MAL_USER.animeList.all).length)
             MALUtils.getUserAnimeList(Consts.MAL_USER, 'all').then(() => {
                 Consts.setMALUser(Consts.MAL_USER);
-                this.setState({})
+                this.setState({});
             });
         else if (!Object.keys(Consts.MAL_USER.animeList.watching).length)
             MALUtils.getUserAnimeList(Consts.MAL_USER, 'watching').then(() => {
                 Consts.setMALUser(Consts.MAL_USER);
-                this.setState({})
+                this.setState({});
             });
     }
 
@@ -42,7 +41,8 @@ export default class CurrentlyWatching extends Component {
                     </h1>
                 <Carousel interval={null} className="px-5 mx-5 mt-5">
                     {
-                        chunkArray(Object.values(Consts.MAL_USER.animeList.watching).sort((a, b) => a.startDate - b.startDate), CurrentlyWatching.GRID_SIZE_X * CurrentlyWatching.GRID_SIZE_Y)
+                        chunkArray(Object.values(Consts.MAL_USER.animeList.watching).sort(
+                            (a, b) => a.userStartDate - b.userStartDate || a.myWatchedEpisodes - b.myWatchedEpisodes), CurrentlyWatching.GRID_SIZE_X * CurrentlyWatching.GRID_SIZE_Y)
                             .map((arrayChunk, i) => {
                                 return (
                                     <Carousel.Item key={i} className={styles.carousel}>

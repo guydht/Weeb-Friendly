@@ -6,6 +6,8 @@ import ToastMessage from './components/ToastMessages';
 import Watch from './components/Watch';
 import "./css/GuydhtScrollbar.css";
 import routerConfig from "./routerConfig";
+import DownloadManager from './components/DownloadManager';
+import Consts from './consts';
 
 
 export default class App extends Component {
@@ -15,6 +17,7 @@ export default class App extends Component {
   }
   componentDidMount() {
     window.setAppState = this.setState.bind(this);
+    // window.consts = Consts;
   }
   render() {
     return (
@@ -34,6 +37,7 @@ export default class App extends Component {
           this.state.showVideo &&
           <Watch downloadedItem={this.state.videoItem} />
         }
+        <DownloadManager />
         <ToastMessage />
       </div>
     )

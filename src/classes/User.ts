@@ -32,7 +32,7 @@ export class AnimeList {
                 case "On Hold":
                     (this._onhold as any)[key] = value;
                     break;
-                case "Plan to watch":
+                case "Plan To Watch":
                     (this._plantowatch as any)[key] = value;
             }
         })
@@ -42,7 +42,7 @@ export class AnimeList {
     }
     set watching(value: Record<string | number, AnimeEntry>) {
         this._watching = value;
-        Object.values(value).forEach(a => this.all[a.malId!.toString()] = a);
+        Object.values(value).forEach(val => this.all[val.malId!.toString()] = val);
     }
     get watching(): Record<string | number, AnimeEntry> {
         return this._watching;
@@ -50,7 +50,7 @@ export class AnimeList {
 
     set completed(value: Record<string | number, AnimeEntry>) {
         this._completed = value;
-        Object.values(value).forEach(a => this.all[a.malId!.toString()] = a);
+        Object.values(value).forEach(val => this.all[val.malId!.toString()] = val);
     }
     get completed(): Record<string | number, AnimeEntry> {
         return this._completed;
@@ -58,7 +58,7 @@ export class AnimeList {
 
     set dropped(value: Record<string | number, AnimeEntry>) {
         this._dropped = value;
-        Object.values(value).forEach(a => this.all[a.malId!.toString()] = a);
+        Object.values(value).forEach(val => this.all[val.malId!.toString()] = val);
     }
     get dropped(): Record<string | number, AnimeEntry> {
         return this._dropped;
@@ -66,7 +66,7 @@ export class AnimeList {
 
     set plantowatch(value: Record<string | number, AnimeEntry>) {
         this._plantowatch = value;
-        Object.values(value).forEach(a => this.all[a.malId!.toString()] = a);
+        Object.values(value).forEach(val => this.all[val.malId!.toString()] = val);
     }
     get plantowatch(): Record<string | number, AnimeEntry> {
         return this._plantowatch;
@@ -74,20 +74,24 @@ export class AnimeList {
 
     set onhold(value: Record<string | number, AnimeEntry>) {
         this._onhold = value;
-        Object.values(value).forEach(a => this.all[a.malId!.toString()] = a);
+        Object.values(value).forEach(val => this.all[val.malId!.toString()] = val);
     }
     get onhold(): Record<string | number, AnimeEntry> {
         return this._onhold;
     }
     set ptw(value: Record<string | number, AnimeEntry>) {
         this._plantowatch = value;
-        Object.values(value).forEach(a => this.all[a.malId!.toString()] = a);
+        Object.values(value).forEach(val => this.all[val.malId!.toString()] = val);
     }
     get ptw(): Record<string | number, AnimeEntry> {
         return this._plantowatch;
     }
-    static fromJson({ _watching = {}, _completed = {}, _dropped = {}, _all = {}, _plantowatch = {}, _onhold = {} }): AnimeList {
-        return new AnimeList({ _watching, _completed, _dropped, _all, _plantowatch, _onhold });
+    static fromJson(data: { _watching: any, _completed: any, _dropped: any, _all: any, _plantowatch: any, _onhold: any }): AnimeList {
+        for (let listType in data)
+            if (typeof (data as any)[listType] === "object")
+                for (let key in (data as any)[listType])
+                    (data as any)[listType][key] = new AnimeEntry((data as any)[listType][key]);
+        return new AnimeList(data);
     }
 }
 export class User {
@@ -104,8 +108,16 @@ export class User {
     isLoggedIn = false;
     last_time_updated: Date;
     static fromJson({ username = '', password = '', animeList = {}, isLoggedIn = false, last_time_updated = new Date() }) {
-        let typedAnimeList = AnimeList.fromJson(animeList);
+        let typedAnimeList = AnimeList.fromJson(animeList as any || {});
         return new User(username, password, typedAnimeList, isLoggedIn, last_time_updated);
+    }
+    readyForJson() {
+        function JSONReplacer(key: any, value: any) {
+            if (typeof value === "object" && value[Symbol.iterator])
+                return [...value];
+            return value;
+        }
+        return JSON.parse(JSON.stringify(this, JSONReplacer))
     }
 }
 export default User;

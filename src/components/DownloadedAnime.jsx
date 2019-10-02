@@ -1,31 +1,39 @@
 import React, { Component } from "react";
 import { Button, ButtonGroup, Container, FormControl, InputGroup, Row } from "react-bootstrap";
 import Form from "react-bootstrap/FormGroup";
-import { LazyLoadComponent } from "react-lazy-load-image-component";
 import { withRouter } from "react-router";
 import AnimeEntry from "../classes/AnimeEntry";
+import DownloadedFileThumbnail from "../classes/DownloadedFileThumbnail";
 import DownloadedItem from "../classes/DownloadedItem";
 import { waitFor } from "../classes/jifa";
 import MALUtils from "../classes/MALUtils";
-import VideoThumbnail from "../classes/VideoThumbnail";
 import Consts from "../consts";
 import styles from "./css/DownloadedAnime.module.css";
 
 const fs = window.require("fs"),
     path = window.require("path");
-var walkDir = function (dir) {
+export var walkDir = function (dir) {
     var results = [];
     var list = fs.readdirSync(dir);
     list.forEach(function (filename) {
-        let file = path.join(dir, filename);
+        let file = path.posix.join(dir, filename);
         var stat = fs.statSync(file);
         if (stat.isDirectory())
             results = results.concat(walkDir(file));
-        else
+        else {
+            let withoutExtension = filename.replace(path.posix.extname(filename), ""),
+                animeEntry = new AnimeEntry({});
+            animeEntry.name = withoutExtension.substring(0, withoutExtension.lastIndexOf(" Episode "));
+            setImmediate(() => {
+                animeEntry.sync();
+            });
             results.push(new DownloadedItem(
-                file, filename.replace(path.extname(filename), ""), stat.birthtime,
-                new AnimeEntry({})
+                file,
+                withoutExtension,
+                stat.birthtime,
+                animeEntry
             ));
+        }
     });
     return results;
 }
@@ -58,6 +66,9 @@ export default withRouter(class DownloadedAnime extends Component {
                 this.setState({});
             });
     }
+    componentDidUpdate() {
+        this.downloadedItems = walkDir(Consts.DOWNLOADS_FOLDER);
+    }
 
     render() {
         return (
@@ -67,7 +78,7 @@ export default withRouter(class DownloadedAnime extends Component {
                 </h1>
                 <Container>
                     <Row>
-                        <InputGroup className="mx-5 d-block">
+                        <InputGroup className="mx-5 mb-2 d-block">
                             <ButtonGroup style={{ float: "left" }}>
                                 {
                                     this.state.sortOptions.map((props, i) => {
@@ -93,20 +104,7 @@ export default withRouter(class DownloadedAnime extends Component {
                             {
                                 this.sortedItems.map(downloadedItem => {
                                     return (
-                                        <div key={downloadedItem.absolutePath} className={styles.gridElement + " m-3"}
-                                            onDoubleClick={() => this.showAnime(downloadedItem)}
-                                            onClick={() => this.showVideo(downloadedItem)}>
-                                            <LazyLoadComponent>
-                                                <VideoThumbnail
-                                                    videoUrl={Consts.FILE_URL_PROTOCOL + downloadedItem.absolutePath}
-                                                    alt={downloadedItem.fileName}
-                                                    renderedHeight={220}
-                                                    className={styles.thumbnail}
-                                                />
-                                            </LazyLoadComponent>
-                                            <div className={styles.cover}></div>
-                                            <span className={styles.title}>{downloadedItem.fileName}</span>
-                                        </div>
+                                        <DownloadedFileThumbnail key={downloadedItem.absolutePath} downloadedItem={downloadedItem} className="m-1" />
                                     )
                                 })
                             }
@@ -115,28 +113,6 @@ export default withRouter(class DownloadedAnime extends Component {
                 </Container>
             </div>
         )
-    }
-    showAnime(downloadedItem) {
-        downloadedItem.createAnimeEntry();
-        console.log(downloadedItem);
-        this.downloadedItems[this.downloadedItems.indexOf(downloadedItem)] = downloadedItem;
-        if (downloadedItem.animeEntry.malId) {
-            this.props.history.push({
-                pathname: "/anime/" + downloadedItem.animeEntry.malId,
-                state: {
-                    animeEntry: downloadedItem.animeEntry
-                },
-                anime: downloadedItem.animeEntry
-            });
-        }
-        else
-            window.displayToast({ title: "Can't find Anime!", body: `Sorry! Can't find ${downloadedItem.fileName} in MyAnimeList!` })
-    }
-    showVideo(videoItem) {
-        window.setAppState({
-            showVideo: true,
-            videoItem
-        })
     }
     setSort(propIndex) {
         let options = this.state.sortOptions.map((prop, i) => {

@@ -1,6 +1,10 @@
-import User from './classes/User';
+import { Torrent } from 'webtorrent';
+import TorrentManager from './classes/TorrentManager';
+import User, { AnimeList } from './classes/User';
+import { hasInternet } from './classes/utils';
 let storage = window.require("electron-json-config");
 
+const ANIMELIST_VAlIDITY_TIMEOUT_IN_HOURS = 24;
 export default class Consts {
     static HORRIBLE_SUBS_URL = "";
 
@@ -13,11 +17,11 @@ export default class Consts {
     }
 
     static MAL_USER_STORAGE_KEY = "mal_user";
-    static MAL_USER: User = User.fromJson(storage.get(Consts.MAL_USER_STORAGE_KEY, {}));
+    static MAL_USER: User = getUserFromStorage();
 
     static setMALUser(val: User) {
         Consts.MAL_USER = val;
-        storage.set(Consts.MAL_USER_STORAGE_KEY, val);
+        storage.set(Consts.MAL_USER_STORAGE_KEY, val.readyForJson());
     }
 
     static CSRF_TOKEN_STORAGE_KEY = "csrf-storage";
@@ -54,6 +58,40 @@ export default class Consts {
         storage.set(Consts.DOWNLOADS_FOLDER_STORAGE_KEY, val);
     }
 
-    static FILE_URL_PROTOCOL = "file://";
+    static WATCH_PLAYER_SIZE_STORAGE_KEY = "player_size";
+    static WATCH_PLAYER_SIZE = storage.get(Consts.WATCH_PLAYER_SIZE_STORAGE_KEY) || {};
+    static setWatchPlayerSize(size: object) {
+        Consts.WATCH_PLAYER_SIZE = size;
+        storage.set(Consts.WATCH_PLAYER_SIZE_STORAGE_KEY, size);
+    }
 
+    static SAVED_TORRENTS_STORAGE_KEY = "saved_torrents";
+    static SAVED_TORRENTS = new Set<Torrent>((storage.get(Consts.SAVED_TORRENTS_STORAGE_KEY) || []).map(
+        (ele: Torrent) => TorrentManager.add(ele.magnetURI, (ele as any).torrentName)
+    ));
+    static setSavedTorrents(torrents: Set<Torrent>) {
+        Consts.SAVED_TORRENTS = torrents;
+        setImmediate(() => {
+            storage.set(Consts.SAVED_TORRENTS_STORAGE_KEY, Array.from(torrents).map(torrent => {
+                return { torrentName: (torrent as any).torrentName, magnetURI: torrent.magnetURI }
+            }));
+        });
+    }
+
+    static FILE_URL_PROTOCOL = "file://";
+}
+function getUserFromStorage(): User {
+    let storageData = storage.get(Consts.MAL_USER_STORAGE_KEY, {}),
+        user = User.fromJson(storageData),
+        fetchedDate: Date | null = storageData.animeList ? new Date(storageData.animeList.fetchedDate) : null;
+    Object.defineProperty(user.animeList, "fetchedDate", { value: fetchedDate });
+    if (fetchedDate) {
+        fetchedDate.setHours(fetchedDate.getHours() + ANIMELIST_VAlIDITY_TIMEOUT_IN_HOURS);
+        hasInternet().then(ok => {
+            if (ok && fetchedDate && fetchedDate < new Date())
+                user.animeList = new AnimeList({});
+        });
+    }
+    console.log(user);
+    return user;
 }

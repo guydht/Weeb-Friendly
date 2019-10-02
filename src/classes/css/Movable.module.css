@@ -1,0 +1,84 @@
+.container {
+    will-change: left, top, height, width;
+}
+
+.directions {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    --directions-size: 15px;
+}
+
+.directions>* {
+    position: absolute;
+}
+
+.nw, .ne, .se, .sw {
+    width: var(--directions-size);
+    height: var(--directions-size);
+    z-index: 2;
+}
+
+.n, .s {
+    width: 100%;
+    z-index: 1;
+    height: var(--directions-size);
+}
+
+.e, .w {
+    height: 100%;
+    width: var(--directions-size);
+    z-index: 1;
+}
+
+.nw, .w, .n {
+    top: 0;
+    left: 0;
+}
+
+.ne, .e {
+    top: 0;
+    left: calc(100% - var(--directions-size));
+}
+
+.se {
+    top: calc(100% - var(--directions-size));
+    left: calc(100% - var(--directions-size));
+}
+
+.s, .sw {
+    top: calc(100% - var(--directions-size));
+    left: 0;
+}
+
+.nw {
+    cursor: nw-resize;
+}
+
+.n {
+    cursor: n-resize;
+}
+
+.ne {
+    cursor: ne-resize;
+}
+
+.e {
+    cursor: e-resize;
+}
+
+.se {
+    cursor: se-resize;
+}
+
+.s {
+    cursor: s-resize;
+}
+
+.sw {
+    cursor: sw-resize;
+}
+
+.w {
+    cursor: w-resize;
+}
