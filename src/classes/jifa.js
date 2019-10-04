@@ -21,6 +21,7 @@ function asd(AnimeName, elementContainer, videoURL) {
     }
     #guydhtVideoSubsText{
         top: unset;
+        transition: font-size 0s;
         user-select: none;
         bottom: calc(1% + 30px);
         position: absolute;
