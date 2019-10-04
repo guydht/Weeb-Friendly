@@ -28,23 +28,12 @@ export default class AnimePage extends Component {
         anime: ((this.props as any).location.state || {}).animeEntry as AnimeEntry
     }
 
-    componentDidMount() {
-        if (this.state.anime)
-            MALUtils.getAnimeInfo(this.state.anime).then((info) => {
-                this.setState({
-                    info,
-                    anime: this.state.anime
-                });
-            });
-    }
-
     render() {
-        console.log(this.state);
         if (!this.state.anime || !this.state.anime.malId) {
             let id = (this.props as any).match.params.id;
             if (id) {
                 let anime = new AnimeEntry({ malId: Number(id) });
-                MALUtils.getAnimeInfo(anime).then((info) => {
+                MALUtils.getAnimeInfo(anime as AnimeEntry & { malId: number }).then(info => {
                     anime = new AnimeEntry({ malId: Number(id) });
                     this.setState({
                         info,
@@ -67,22 +56,18 @@ export default class AnimePage extends Component {
                 </Row>
                 <Row>
                     <Col md="auto">
-                        <Image src={this.state.info.image_url} />
+                        <Image src={this.state.info && this.state.info.image_url} />
                     </Col>
                     <Col md="auto" style={{ flex: 1 }}>
                         <Tabs id="mal-links" defaultActiveKey={"Details"}>
                             {
                                 Object.entries(this.PAGE_LINKS).map(([name, MyComponent], i) => {
-                                    if (this.state.info.score)
-                                        return (
-                                            <Tab eventKey={name} title={name} mountOnEnter={true} key={i}>
-                                                <LazyLoadComponent>
-                                                    <MyComponent anime={this.state.anime} info={this.state.info} />
-                                                </LazyLoadComponent>
-                                            </Tab>
-                                        )
                                     return (
-                                        <Tab eventKey={name} title={name} key={i} />
+                                        <Tab eventKey={name} title={name} mountOnEnter={true} key={i}>
+                                            <LazyLoadComponent>
+                                                <MyComponent anime={this.state.anime} info={this.state.info} />
+                                            </LazyLoadComponent>
+                                        </Tab>
                                     )
                                 })
                             }

@@ -169,6 +169,8 @@ export default class MALUtils {
     }
     static async getAnimeInfo(anime: AnimeEntry) {
         let data = (await mal.Anime.byId(anime.malId!))!;
+        if (!data)
+            return data;
         anime.score = data.score;
         anime.name = data.title;
         anime.startDate = data.aired.from;

@@ -84,5 +84,46 @@ function hasInternet() {
     });
 }
 
-export { objectToFormData, stringCompare, stringRelativeSimilarity, levenshteinDistance, getCurrentSeason, hasInternet };
+class CacheLocalStorage {
+    static DEFAULT_TTL_DAYS = 30;
+    storageKey: string;
+    cacheTTLDays: number;
+    storage: any;
+    stoarge: any;
+    constructor(storageKey: string, cacheTTLDays: number, initialStorage: any) {
+        if (!storageKey)
+            throw new Error("You must give me a valid key to store in localStorage!");
+        this.storageKey = storageKey
+        this.cacheTTLDays = cacheTTLDays || CacheLocalStorage.DEFAULT_TTL_DAYS;
+        this.storage = initialStorage || JSON.parse(localStorage.getItem(storageKey) || "false") || {};
+        for (let key in this.storage)
+            this.storage[key][0] = new Date(this.storage[key][0]);
+    }
+    cleanCache() {
+        for (let key in this.storage)
+            if (this.storage[key][0] < new Date())
+                delete this.stoarge[key];
+        this.syncWithLocalStorage();
+    }
+    syncWithLocalStorage() {
+        localStorage.setItem(this.storageKey, JSON.stringify(this.storage));
+    }
+    setItem(key: string | number, item: any) {
+        this.cleanCache();
+        this.storage[key] = [ttl_date(this.cacheTTLDays), item];
+        this.syncWithLocalStorage();
+    }
+    getItem(key: string | number) {
+        this.cleanCache();
+        return (this.storage[key] || [])[1];
+    }
+}
 
+function ttl_date(days: number) {
+    let date = new Date();
+    date.setDate(date.getDate() + days);
+    return date;
+}
+
+
+export { objectToFormData, stringCompare, stringRelativeSimilarity, levenshteinDistance, getCurrentSeason, hasInternet, CacheLocalStorage };

@@ -1,18 +1,26 @@
 import React, { Component } from "react";
 import { asd } from "../classes/jifa";
+import { CacheLocalStorage } from "../classes/utils";
 
 
 export default class VideoPlayer extends Component {
 
+    videoWrapper = React.createRef();
+
+    componentDidMount() {
+        asd(this.props.name, this.videoWrapper.current, this.props.src);
+    }
+
+    componentWillUnmount() {
+        new CacheLocalStorage("videoLastTime").setItem(this.props.name, this.videoWrapper.current.querySelector("video").currentTime);
+    }
+
     render() {
-        setTimeout(() => {
-            asd(this.props.name, document.getElementById("videoPlayer"), this.props.src);
-        });
         let props = { ...this.props };
         for (let prop of ["src", "name"])
-            delete props[prop]
+            delete props[prop];
         return (
-            <div id="videoPlayer" {...props}></div>
+            <div ref={this.videoWrapper} {...props}></div>
             //     <div className={styles.wrapper}><video tabIndex="1" className={styles.video}></video>
             //         <div className={styles.subsText}></div>
             //         <div className={styles.info} style={{ display: "none" }}>

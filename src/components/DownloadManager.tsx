@@ -11,11 +11,10 @@ export default class DownloadManager extends Component {
     };
 
     componentDidMount() {
-        setInterval(() => {
-            this.setState({
-                torrents: TorrentManager.getAll()
-            });
-        }, 100);
+        const updateState = () => this.setState({ torrents: TorrentManager.getAll() });
+        TorrentManager.addEventListener(TorrentManager.Listener.addedTorrent, updateState);
+        TorrentManager.addEventListener(TorrentManager.Listener.removedTorrent, updateState);
+        TorrentManager.addEventListener(TorrentManager.Listener.updatedTorrent, updateState);
     };
     render() {
         return (
@@ -77,7 +76,7 @@ export default class DownloadManager extends Component {
     }
     currentServers = new Set();
     playTorrent(torrent: Torrent) {
-        if(!torrent.files.length) return (window as any).displayToast({title: "Couldn't start playnig torrent", body: "Can't find downloaded files!"})
+        if (!torrent.files.length) return (window as any).displayToast({ title: "Couldn't start playnig torrent", body: "Can't find downloaded files!" })
         let url = "";
         if (torrent.paused)
             url = torrent.files[0].path;

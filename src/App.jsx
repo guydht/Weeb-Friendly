@@ -7,7 +7,6 @@ import Watch from './components/Watch';
 import "./css/GuydhtScrollbar.css";
 import routerConfig from "./routerConfig";
 import DownloadManager from './components/DownloadManager';
-import Consts from './consts';
 
 
 export default class App extends Component {

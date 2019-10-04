@@ -36,9 +36,11 @@ export default class Watch extends Component {
                 });
             }, 500);
         };
-        let styleObject = { transition: "opacity .5s", opacity: this.state.videoOpacity, display: this.state.showingVideo ? "" : "none" };
+        let styleObject = { transition: "opacity .5s", opacity: this.state.videoOpacity };
         for (let key in Consts.WATCH_PLAYER_SIZE)
             styleObject[key] = Consts.WATCH_PLAYER_SIZE[key];
+        if(!this.state.showingVideo)
+            return null;
         return (
             <MovableComponent
                 style={styleObject}

@@ -79,45 +79,45 @@ export default class MovableComponent extends Component<MovableComponentProps> {
                 didMoveInGesture = true;
                 switch (direction) {
                     case Directions.nw:
-                        this.element.current.style.width = `${startPosWidth + startX - (e.screenX || 0)}px`;
-                        this.element.current.style.height = `${startPosHeight + startY - (e.screenY || 0)}px`;
-                        this.element.current.style.left = `${Math.max(0, startPosX - startX + (e.screenX || 0))}px`;
-                        this.element.current.style.top = `${Math.max(0, startPosY - startY + (e.screenY || 0))}px`;
+                        this.element.current.style.width = startPosWidth + startX - (e.screenX || 0) + "px";
+                        this.element.current.style.height = startPosHeight + startY - (e.screenY || 0) + "px";
+                        this.element.current.style.left = Math.max(0, startPosX - startX + (e.screenX || 0)) + "px";
+                        this.element.current.style.top = Math.max(0, startPosY - startY + (e.screenY || 0)) + "px";
                         break;
                     case Directions.n:
-                        this.element.current.style.height = `${startPosHeight + startY - (e.screenY || 0)}px`;
-                        this.element.current.style.top = `${Math.max(0, startPosY - startY + (e.screenY || 0))}px`;
+                        this.element.current.style.height = startPosHeight + startY - (e.screenY || 0) + "px";
+                        this.element.current.style.top = Math.max(0, startPosY - startY + (e.screenY || 0)) + "px";
                         break;
                     case Directions.ne:
-                        this.element.current.style.width = `${startPosWidth - startX + (e.screenX || 0)}px`;
-                        this.element.current.style.height = `${startPosHeight + startY - (e.screenY || 0)}px`;
-                        this.element.current.style.top = `${Math.max(0, startPosY - startY + (e.screenY || 0))}px`;
+                        this.element.current.style.width = startPosWidth - startX + (e.screenX || 0) + "px";
+                        this.element.current.style.height = startPosHeight + startY - (e.screenY || 0) + "px";
+                        this.element.current.style.top = Math.max(0, startPosY - startY + (e.screenY || 0)) + "px";
                         break;
                     case Directions.e:
-                        this.element.current.style.width = `${startPosWidth - startX + (e.screenX || 0)}px`;
+                        this.element.current.style.width = startPosWidth - startX + (e.screenX || 0) + "px";
                         break;
                     case Directions.se:
-                        this.element.current.style.width = `${startPosWidth - startX + (e.screenX || 0)}px`;
-                        this.element.current.style.height = `${startPosHeight - startY + (e.screenY || 0)}px`;
+                        this.element.current.style.width = startPosWidth - startX + (e.screenX || 0) + "px";
+                        this.element.current.style.height = startPosHeight - startY + (e.screenY || 0) + "px";
                         break;
                     case Directions.s:
-                        this.element.current.style.height = `${startPosHeight - startY + (e.screenY || 0)}px`;
+                        this.element.current.style.height = startPosHeight - startY + (e.screenY || 0) + "px";
                         break;
                     case Directions.sw:
-                        this.element.current.style.height = `${startPosHeight - startY + (e.screenY || 0)}px`;
-                        this.element.current.style.left = `${Math.max(0, startPosX - startX + (e.screenX || 0))}px`;
-                        this.element.current.style.width = `${startPosWidth + startX - (e.screenX || 0)}px`;
+                        this.element.current.style.height = startPosHeight - startY + (e.screenY || 0) + "px";
+                        this.element.current.style.left = Math.max(0, startPosX - startX + (e.screenX || 0)) + "px";
+                        this.element.current.style.width = startPosWidth + startX - (e.screenX || 0) + "px";
                         break;
                     case Directions.w:
-                        this.element.current.style.left = `${Math.max(0, startPosX - startX + (e.screenX || 0))}px`;
-                        this.element.current.style.width = `${startPosWidth + startX - (e.screenX || 0)}px`;
+                        this.element.current.style.left = Math.max(0, startPosX - startX + (e.screenX || 0)) + "px";
+                        this.element.current.style.width = startPosWidth + startX - (e.screenX || 0) + "px";
                 }
                 let currentHeight = Number(this.element.current.style.height!.replace("px", "")),
                     currentWidth = Number(this.element.current.style.width!.replace("px", ""));
                 if (Number(this.element.current.style.top!.replace("px", "")) + currentHeight > window.innerHeight)
-                    this.element.current.style.top = `${window.innerHeight - currentHeight}px`;
+                    this.element.current.style.top = window.innerHeight - currentHeight + "px";
                 if (Number(this.element.current.style.left!.replace("px", "")) + currentWidth > window.innerWidth)
-                    this.element.current.style.left = `${window.innerWidth - currentWidth}px`;
+                    this.element.current.style.left = window.innerWidth - currentWidth + "px";
                 e.stopPropagation();
                 if (this.props.onResizeMove)
                     this.props.onResizeMove(e, direction);
@@ -145,21 +145,20 @@ export default class MovableComponent extends Component<MovableComponentProps> {
             startPosX = 0,
             startPosY = 0;
         if (this.element.current) {
-            let rect = this.element.current.getBoundingClientRect();
-            startPosX = rect.left;
-            startPosY = rect.top;
+            startPosX = this.element.current.offsetLeft;
+            startPosY = this.element.current.offsetTop;
         }
         const onMouseMove = (e: MouseEvent) => {
             if (this.element.current) {
                 didMoveInGesture = true;
-                this.element.current.style.left = `${Math.max(0, startPosX - startX + (e.screenX || 0))}px`;
-                this.element.current.style.top = `${Math.max(0, startPosY - startY + (e.screenY || 0))}px`;
+                this.element.current.style.left = Math.max(0, startPosX - startX + (e.screenX || 0)) + "px";
+                this.element.current.style.top = Math.max(0, startPosY - startY + (e.screenY || 0)) + "px";
                 let currentHeight = this.element.current.clientHeight,
                     currentWidth = this.element.current.clientWidth;
                 if (Number(this.element.current.style.top!.replace("px", "")) + currentHeight > window.innerHeight)
-                    this.element.current.style.top = `${window.innerHeight - currentHeight}px`;
+                    this.element.current.style.top = window.innerHeight - currentHeight + "px";
                 if (Number(this.element.current.style.left!.replace("px", "")) + currentWidth > window.innerWidth)
-                    this.element.current.style.left = `${window.innerWidth - currentWidth}px`;
+                    this.element.current.style.left = window.innerWidth - currentWidth + "px";
                 if (this.props.onDragMove)
                     this.props.onDragMove(e);
                 else

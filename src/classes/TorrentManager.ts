@@ -5,6 +5,21 @@ const webtorrent = window.require("webtorrent"),
     path = window.require("path"),
     fs = window.require("fs").promises;
 
+enum ListenerTypes {
+    addedTorrent,
+    removedTorrent,
+    updatedTorrent
+}
+
+class Listener {
+    constructor({ type, func }: { type: ListenerTypes, func: Function }) {
+        this.type = type;
+        this.func = func;
+    }
+    type: ListenerTypes;
+    func: Function;
+}
+
 export default class TorrentManager {
     private static client = new webtorrent();
     static add(magnetURL: string, name: string) {
@@ -50,4 +65,41 @@ export default class TorrentManager {
         Consts.setSavedTorrents(Consts.SAVED_TORRENTS);
         this.add(torrent.magnetURI, (torrent as any).torrentName);
     }
+
+    private static listeners: Listener[] = [];
+    static addEventListener(type: ListenerTypes, listenerFunc: Function) {
+        let listener = new Listener({
+            type,
+            func: listenerFunc
+        });
+        TorrentManager.listeners.push(listener);
+    };
+    private static currentTorrentState = new Set<Torrent>();
+    static changeInterval = setInterval(() => {
+        let added = Array.from(Consts.SAVED_TORRENTS).filter(ele => !TorrentManager.currentTorrentState.has(ele)),
+            removed = Array.from(TorrentManager.currentTorrentState).filter(ele => !Consts.SAVED_TORRENTS.has(ele));
+        added.forEach(torrent => {
+            TorrentManager.dispatchEvent(torrent, ListenerTypes.addedTorrent);
+        });
+        removed.forEach(torrent => {
+            TorrentManager.dispatchEvent(torrent, ListenerTypes.removedTorrent);
+        });
+        Consts.SAVED_TORRENTS.forEach(torrent => {
+            let importantProperties = [''],
+                current = Array.from(TorrentManager.currentTorrentState).find(ele => ele.magnetURI === torrent.magnetURI),
+                updatedProps = importantProperties.filter(property => {
+                    return (torrent as any)[property] !== (current as any)[property]
+                });
+            if (updatedProps.length)
+                TorrentManager.dispatchEvent([torrent, updatedProps], ListenerTypes.updatedTorrent);
+        })
+        TorrentManager.currentTorrentState = new Set(Consts.SAVED_TORRENTS);
+    }, 100);
+    private static dispatchEvent(data: any, type: ListenerTypes) {
+        TorrentManager.listeners.forEach(listener => {
+            if (listener.type === type)
+                listener.func(data);
+        });
+    }
+    static Listener = ListenerTypes;
 }

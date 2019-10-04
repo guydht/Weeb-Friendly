@@ -87,6 +87,7 @@ export default withRouter(class DownloadedFileThumbnail extends Component {
         })
     }
 });
+
 function Confirm(String, sendResponse, timer, yesText, noText) {
     String = String.charAt(0).toUpperCase() + String.replace(/\s\w|^./g, letter => letter.toUpperCase()).slice(1);
     var div = document.createElement("div"),
@@ -101,16 +102,16 @@ function Confirm(String, sendResponse, timer, yesText, noText) {
         i = 0,
         array = [],
         asd = "<div style='position:absolute; bottom:0; width:100%; height:5px; background-color:rgba(255,255,255,0.3); opacity:0; overflow: hidden;' id='progressBar'><div style='width:100%; height:100%; background-color: rgba(0, 0, 0, 0.4); position: relative; left: -100%;' id='progress'></div></div>";
-    for (var i = 0; i < elements.length; i++)
+    for (i = 0; i < elements.length; i++)
         if (elements[i].style.top.includes("%")) array[i] = parseInt(elements[i].style.top.replace("%", ""));
         else array[i] = 100 / (window.innerHeight / (Number(elements[i].style.top.replace("px", "")) + 50));
-    if (yesText == null || yesText == "") yesText = "Yes";
-    if (noText == null || noText == "") noText = "No";
+    if (yesText === null || yesText === "") yesText = "Yes";
+    if (noText === null || noText === "") noText = "No";
     array.sort(function (a, b) {
         return a - b
     });
-    for (var i = 0; i < elements.length; i++) {
-        if (top == array[i]) top = top + 15;
+    for (i = 0; i < elements.length; i++) {
+        if (top === array[i]) top = top + 15;
         else break;
     }
     div.innerHTML = "<h1 style='color:white; pointer-events: none; font-size:20px; line-height:normal; margin-bottom: 20px;'>" + String + "</h1><button class='Yes' style='color:white; border:none; float: left; margin-left: 100px; height:25px; margin-top: -5px; border-radius:7px; width:50px; background:rgba(81, 163, 81, 0.5); font-size: 13px; box-shadow: 0 0 12px rgb(153, 153, 153); left:15px; transition:all .5s; outline: 0; position:absolute; bottom: 8px;'>" + yesText + "</button><button class='No' style='color:white; border:none; float: right; margin-right: 100px; height:25px; margin-top: -5px; border-radius:7px; width:50px; background:rgba(163,81, 81, 0.5); font-size: 13px; box-shadow: 0 0 12px rgb(153, 153, 153); right:15px; transition:all .5s; outline: 0; position:absolute; bottom: 8px;' >" + noText + "</button>" + asd;
@@ -120,12 +121,12 @@ function Confirm(String, sendResponse, timer, yesText, noText) {
     div.onmouseenter = div.onmouseover = function () {
         this.style.opacity = 1;
         this.style.boxShadow = "0 0 12px rgb(30, 30, 30)";
-        if (timer == true) clearInterval(loadConfirm);
+        if (timer === true) clearInterval(loadConfirm);
     };
     div.onmouseleave = function () {
         this.style.opacity = 0.8;
         this.style.boxShadow = "0 0 12px rgb(153, 153, 153)";
-        if (timer == true) loadConfirm = setInterval(loadingConfirm, 25);
+        if (timer === true) loadConfirm = setInterval(loadingConfirm, 25);
     };
     document.body.appendChild(div);
     div.children[1].onmouseover = div.children[2].onmouseover = function () {
@@ -173,7 +174,7 @@ function Confirm(String, sendResponse, timer, yesText, noText) {
     setTimeout(function () {
         div.style.opacity = 0.8;
     }, 0);
-    if (timer == true) {
+    if (timer === true) {
         div.querySelector("#progressBar").style.opacity = "1";
         var loadConfirm = setInterval(loadingConfirm, 25);
         div.onmouseup = function () {

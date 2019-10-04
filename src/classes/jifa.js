@@ -1,3 +1,4 @@
+import { CacheLocalStorage } from "./utils";
 function asd(AnimeName, elementContainer, videoURL) {
     const fs = window.require("fs"),
         MatroskaSubtitles = window.require('matroska-subtitles'),
@@ -53,7 +54,7 @@ function asd(AnimeName, elementContainer, videoURL) {
         transform: translateY(-50%);
     }
     `;
-    container.innerHTML = '<div id="guydhtVideoWrapper"><video tabIndex="1" id="guydhtVideoMyVideo"></video><div id="guydhtVideoSubsContainer"></div><div id="guydhtVideoInfo" style="display: none;"><div id="guydhtVideoTimer"></div><span class="guydhtVideoClear"></span><div id="guydhtVideoVolume"></div><span class="guydhtVideoClear"></span></div><div id="guydhtVideoUpperSlider"><input value="' + AnimeName + '" id="guydhtVideoName"></input></div><div id="guydhtVideoSlider"><div id="guydhtVideoPlayPauseButton" class="guydhtVideoPlay"></div><div id="guydhtVideoVolumeControl"><svg height="100%" viewBox="0 0 100 100" width="100%"><path></path></svg></div><div id="guydhtVideoVolumeSlider"><div id="guydhtVideoVolumeHandle"></div></div><div id="guydhtVideoAnotherTimerContainer"><div id="guydhtVideoAnotherTimer"></div></div><div id="guydhtVideoFullscreen"><svg height="100%" width="100%"><path d="m 10,16 2,0 0,-4 4,0 0,-2 L 10,10 l 0,6 0,0 z"></path><path d="m 20,10 0,2 4,0 0,4 2,0 L 26,10 l -6,0 0,0 z"></path><path d="m 24,24 -4,0 0,2 L 26,26 l 0,-6 -2,0 0,4 0,0 z"></path><path d="M 12,20 10,20 10,26 l 6,0 0,-2 -4,0 0,-4 0,0 z"></path></svg></div><div id="guydhtVideoSettings"><svg viewbox="0 0 36 36" height="100%" width="35px"><path d="m 23.94,18.78 c .03,-0.25 .05,-0.51 .05,-0.78 0,-0.27 -0.02,-0.52 -0.05,-0.78 l 1.68,-1.32 c .15,-0.12 .19,-0.33 .09,-0.51 l -1.6,-2.76 c -0.09,-0.17 -0.31,-0.24 -0.48,-0.17 l -1.99,.8 c -0.41,-0.32 -0.86,-0.58 -1.35,-0.78 l -0.30,-2.12 c -0.02,-0.19 -0.19,-0.33 -0.39,-0.33 l -3.2,0 c -0.2,0 -0.36,.14 -0.39,.33 l -0.30,2.12 c -0.48,.2 -0.93,.47 -1.35,.78 l -1.99,-0.8 c -0.18,-0.07 -0.39,0 -0.48,.17 l -1.6,2.76 c -0.10,.17 -0.05,.39 .09,.51 l 1.68,1.32 c -0.03,.25 -0.05,.52 -0.05,.78 0,.26 .02,.52 .05,.78 l -1.68,1.32 c -0.15,.12 -0.19,.33 -0.09,.51 l 1.6,2.76 c .09,.17 .31,.24 .48,.17 l 1.99,-0.8 c .41,.32 .86,.58 1.35,.78 l .30,2.12 c .02,.19 .19,.33 .39,.33 l 3.2,0 c .2,0 .36,-0.14 .39,-0.33 l .30,-2.12 c .48,-0.2 .93,-0.47 1.35,-0.78 l 1.99,.8 c .18,.07 .39,0 .48,-0.17 l 1.6,-2.76 c .09,-0.17 .05,-0.39 -0.09,-0.51 l -1.68,-1.32 0,0 z m -5.94,2.01 c -1.54,0 -2.8,-1.25 -2.8,-2.8 0,-1.54 1.25,-2.8 2.8,-2.8 1.54,0 2.8,1.25 2.8,2.8 0,1.54 -1.25,2.8 -2.8,2.8 l 0,0 z" /></svg><div id="guydhtVideoSettingsWindow"><ul id="guydhtVideoSettingsList"><li><div id="guydhtVideoStretch">Stretch Video</div><span id="guydhtVideoStretchVideo"></span></li><div></div></li></ul></div></div><div id="guydhtThumbnailContainer"><img></img></div><div id="guydhtVideoTimeTooltip"></div><div id="guydhtVideoWidthLimiter"><div id="guydhtVideoProgressContainer"><div id="guydhtVideoShadowLineForProgress"></div><div id="guydhtVideoProgress"></div><div id="guydhtVideoProgressCircle"></div></div></div></div><div id="guydhtVideoMiddleTooltiper"><div id="guydhtVideoMiddleText"></div></div></div>';
+    container.innerHTML = '<div id="guydhtVideoWrapper"><video tabIndex="1" id="guydhtVideoMyVideo"></video><div id="guydhtVideoSubsContainer"></div><div id="guydhtVideoInfo" style="display: none;"><div id="guydhtVideoTimer"></div><span class="guydhtVideoClear"></span><div id="guydhtVideoVolume"></div><span class="guydhtVideoClear"></span></div><div id="guydhtVideoUpperSlider"><div id="guydhtVideoName">' + AnimeName + '</div></div><div id="guydhtVideoSlider"><div id="guydhtVideoPlayPauseButton" class="guydhtVideoPlay"></div><div id="guydhtVideoVolumeControl"><svg height="100%" viewBox="0 0 100 100" width="100%"><path></path></svg></div><div id="guydhtVideoVolumeSlider"><div id="guydhtVideoVolumeHandle"></div></div><div id="guydhtVideoAnotherTimerContainer"><div id="guydhtVideoAnotherTimer"></div></div><div id="guydhtVideoFullscreen"><svg height="100%" width="100%"><path d="m 10,16 2,0 0,-4 4,0 0,-2 L 10,10 l 0,6 0,0 z"></path><path d="m 20,10 0,2 4,0 0,4 2,0 L 26,10 l -6,0 0,0 z"></path><path d="m 24,24 -4,0 0,2 L 26,26 l 0,-6 -2,0 0,4 0,0 z"></path><path d="M 12,20 10,20 10,26 l 6,0 0,-2 -4,0 0,-4 0,0 z"></path></svg></div><div id="guydhtVideoSettings"><svg viewbox="0 0 36 36" height="100%" width="35px"><path d="m 23.94,18.78 c .03,-0.25 .05,-0.51 .05,-0.78 0,-0.27 -0.02,-0.52 -0.05,-0.78 l 1.68,-1.32 c .15,-0.12 .19,-0.33 .09,-0.51 l -1.6,-2.76 c -0.09,-0.17 -0.31,-0.24 -0.48,-0.17 l -1.99,.8 c -0.41,-0.32 -0.86,-0.58 -1.35,-0.78 l -0.30,-2.12 c -0.02,-0.19 -0.19,-0.33 -0.39,-0.33 l -3.2,0 c -0.2,0 -0.36,.14 -0.39,.33 l -0.30,2.12 c -0.48,.2 -0.93,.47 -1.35,.78 l -1.99,-0.8 c -0.18,-0.07 -0.39,0 -0.48,.17 l -1.6,2.76 c -0.10,.17 -0.05,.39 .09,.51 l 1.68,1.32 c -0.03,.25 -0.05,.52 -0.05,.78 0,.26 .02,.52 .05,.78 l -1.68,1.32 c -0.15,.12 -0.19,.33 -0.09,.51 l 1.6,2.76 c .09,.17 .31,.24 .48,.17 l 1.99,-0.8 c .41,.32 .86,.58 1.35,.78 l .30,2.12 c .02,.19 .19,.33 .39,.33 l 3.2,0 c .2,0 .36,-0.14 .39,-0.33 l .30,-2.12 c .48,-0.2 .93,-0.47 1.35,-0.78 l 1.99,.8 c .18,.07 .39,0 .48,-0.17 l 1.6,-2.76 c .09,-0.17 .05,-0.39 -0.09,-0.51 l -1.68,-1.32 0,0 z m -5.94,2.01 c -1.54,0 -2.8,-1.25 -2.8,-2.8 0,-1.54 1.25,-2.8 2.8,-2.8 1.54,0 2.8,1.25 2.8,2.8 0,1.54 -1.25,2.8 -2.8,2.8 l 0,0 z" /></svg><div id="guydhtVideoSettingsWindow"><ul id="guydhtVideoSettingsList"><li><div id="guydhtVideoStretch">Stretch Video</div><span id="guydhtVideoStretchVideo"></span></li><div></div></li></ul></div></div><div id="guydhtThumbnailContainer"><img></img></div><div id="guydhtVideoTimeTooltip"></div><div id="guydhtVideoWidthLimiter"><div id="guydhtVideoProgressContainer"><div id="guydhtVideoShadowLineForProgress"></div><div id="guydhtVideoProgress"></div><div id="guydhtVideoProgressCircle"></div></div></div></div><div id="guydhtVideoMiddleTooltiper"><div id="guydhtVideoMiddleText"></div></div></div>';
     container.appendChild(style);
     container.style = "background: none;";
     // eslint-disable-next-line
@@ -120,7 +121,6 @@ function asd(AnimeName, elementContainer, videoURL) {
                 text = text.replace(/\\N/g, "<br>").replace(/(?<=\{\\i1\}).+(?=\{\\i0\})/g, t => `<i>${t}</i>`);
                 text = text.replace(/\{\\i0\}|\{\\i1\}|^\{\\an[1-9]\}/g, "");
                 subElement.innerHTML = text;
-                dragElement(subElement);
                 subs.append(subElement);
             });
             toRemove.forEach(subtitle => {
@@ -554,7 +554,6 @@ function asd(AnimeName, elementContainer, videoURL) {
                 progressBar.style.transform = "scaleX(" + (video.currentTime / video.duration) + ")";
                 progressBarCircle.style.left = (video.currentTime / video.duration) * 100 + "%";
             });
-            cacheStorage.setItem(AnimeName, video.currentTime);
         };
         video.addEventListener("timeupdate", updateProgress);
         video.onload = setTimer;
@@ -1129,82 +1128,3 @@ function transitionSVG(current, newPath, time, transition) {
 }
 export { asd, targetIsNotThis, transitionSVG, secondsToTimeDisplay, waitFor };
 
-class CacheLocalStorage {
-    static DEFAULT_TTL_DAYS = 30;
-    constructor(storageKey, cacheTTLDays, initialStorage) {
-        if (!storageKey)
-            throw new Error("You must give me a valid key to store in localStorage!");
-        this.storageKey = storageKey
-        this.cacheTTLDays = cacheTTLDays || CacheLocalStorage.DEFAULT_TTL_DAYS;
-        this.storage = initialStorage || JSON.parse(localStorage.getItem(storageKey)) || {};
-        for (let key in this.storage)
-            this.storage[key][0] = new Date(this.storage[key][0]);
-    }
-    cleanCache() {
-        for (let key in this.storage)
-            if (this.storage[key][0] < new Date())
-                delete this.stoarge[key];
-        this.syncWithLocalStorage();
-    }
-    syncWithLocalStorage() {
-        localStorage.setItem(this.storageKey, JSON.stringify(this.storage));
-    }
-    setItem(key, item) {
-        this.cleanCache();
-        this.storage[key] = [ttl_date(this.cacheTTLDays), item];
-        this.syncWithLocalStorage();
-    }
-    getItem(key) {
-        this.cleanCache();
-        return (this.storage[key] || [])[1];
-    }
-}
-
-function ttl_date(days) {
-    let date = new Date();
-    date.setDate(date.getDate() + days);
-    return date;
-}
-function dragElement(elmnt) {
-    var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-    if (document.getElementById(elmnt.id + "header")) {
-        // if present, the header is where you move the DIV from:
-        document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
-    } else {
-        // otherwise, move the DIV from anywhere inside the DIV:
-        elmnt.onmousedown = dragMouseDown;
-    }
-
-    function dragMouseDown(e) {
-        e = e || window.event;
-        e.preventDefault();
-        // get the mouse cursor position at startup:
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        document.onmouseup = closeDragElement;
-        // call a function whenever the cursor moves:
-        document.onmousemove = elementDrag;
-        e.stopPropagation();
-    }
-
-    function elementDrag(e) {
-        e = e || window.event;
-        e.preventDefault();
-        // calculate the new cursor position:
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        // set the element's new position:
-        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-        e.stopPropagation();
-    }
-
-    function closeDragElement(e) {
-        // stop moving when mouse button is released:
-        document.onmouseup = null;
-        document.onmousemove = null;
-        e.stopPropagation();
-    }
-}
