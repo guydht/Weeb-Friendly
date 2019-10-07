@@ -147,7 +147,7 @@ export default class Episodes extends Component<AnimeProps, { episodes: SearchRe
         })
     }
     startDownload(magnetLink: string, episode: SearchResult) {
-        console.log(TorrentManager.add(magnetLink, `${episode.episodeData.seriesName} Episode ${episode.episodeData.episodeNumber}`));
+        TorrentManager.add(magnetLink, `${episode.episodeData.seriesName} Episode ${episode.episodeData.episodeNumber}`);
         (window as any).displayToast({
             title: "Download Successfully started",
             body: `Started downloading ${episode.episodeData.seriesName} Episode ${episode.episodeData.episodeNumber}.`

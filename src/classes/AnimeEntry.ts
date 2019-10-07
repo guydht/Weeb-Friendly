@@ -47,8 +47,8 @@ export default class AnimeEntry {
         this.score = score;
         this.malId = malId;
         this.malUrl = malUrl;
-        this.genres = genres ? new Set(genres) : new Set();
-        this.synonyms = synonyms ? new Set(synonyms) : new Set();
+        this.genres = new Set(genres);
+        this.synonyms = new Set(synonyms);
         this.synopsis = synopsis;
         this.totalEpisodes = totalEpisodes;
         this.startDate = new Date(startDate!);
@@ -64,7 +64,7 @@ export default class AnimeEntry {
         if (sync && (malId || name))
             this.sync();
     }
-    synonyms: Set<string> = new Set();
+    synonyms: Set<string>;
     malId?: number;
     score?: number;
     malUrl?: string;

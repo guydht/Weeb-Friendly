@@ -1,11 +1,12 @@
 import React, { Component, RefObject } from "react";
-import { Badge, Button, Col, Container, FormControl, Row } from "react-bootstrap";
+import { Badge, Button, Col, Container, FormControl, Modal, Row } from "react-bootstrap";
 import AnimeEntry from "../../classes/AnimeEntry";
 import { MALStatuses } from "../../classes/MALStatuses";
 import MALUtils from "../../classes/MALUtils";
 import { hasInternet } from "../../classes/utils";
 import Consts from "../../consts";
 import { AnimeProps } from "../AnimePage";
+import styles from "./css/details.module.css";
 
 export default class Details extends Component<AnimeProps> {
 
@@ -44,7 +45,12 @@ export default class Details extends Component<AnimeProps> {
                                 <Row>
                                     <Col>Season: <strong>{this.state.info.premiered || "Unknown"}</strong></Col>
                                     <Col>Type: <strong>{this.state.info.type || "Unknown"}</strong></Col>
-                                    <Col>Studio: <strong>{this.state.info.studios ? this.state.info.studios[0].name : "Unknown"}</strong></Col>
+                                    <Col>Studio: <strong>{this.state.info.studios.length ? this.state.info.studios[0].name : "Unknown"}</strong></Col>
+                                </Row>
+                                <Row>
+                                    <Col>Status: <strong>{this.state.info.status}</strong></Col>
+                                    <Col>Genres: <strong>{this.state.info.genres.map(ele => ele.name).join(", ")}</strong></Col>
+                                    <Col>Aired: <strong>{this.state.info.aired.string}</strong></Col>
                                 </Row>
                             </Col>
                         </Row>
@@ -106,6 +112,45 @@ export default class Details extends Component<AnimeProps> {
                             }
                         </Row>
                 }
+                <Row>
+                    <Modal.Dialog className={styles.modal}>
+                        <Modal.Header>
+                            <Modal.Title>Synopsis</Modal.Title>
+                        </Modal.Header>
+
+                        <Modal.Body>
+                            <p>
+                                {
+                                    this.state.info.synopsis
+                                }
+                            </p>
+                        </Modal.Body>
+                    </Modal.Dialog>
+                </Row>
+                {
+                    !!Object.values(this.state.info.related).length &&
+                    <Row>
+                        <Modal.Dialog className={styles.modal}>
+                            <Modal.Header>
+                                <Modal.Title>Related</Modal.Title>
+                            </Modal.Header>
+
+                            <Modal.Body>
+                                {
+                                    Object.entries(this.state.info.related).map(([type, data]) => {
+                                        return (
+                                            <p key={type}>
+                                                {type}: {
+                                                    data.map((ele: { name: any; }) => ele.name).join(", ")
+                                                }
+                                            </p>
+                                        )
+                                    })
+                                }
+                            </Modal.Body>
+                        </Modal.Dialog>
+                    </Row>
+                }
             </Container >
         )
     }
@@ -117,7 +162,6 @@ export default class Details extends Component<AnimeProps> {
                 let watching = Consts.MAL_USER.animeList.watching;
                 watching[anime.malId!] = anime;
                 Consts.MAL_USER.animeList.watching = Consts.MAL_USER.animeList.watching;
-                console.log(Consts.MAL_USER);
                 Consts.setMALUser(Consts.MAL_USER);
                 this.setState({});
             }

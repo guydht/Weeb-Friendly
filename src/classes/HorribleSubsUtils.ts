@@ -39,7 +39,7 @@ function siResultToSearchResult(siResult: any): SearchResult {
     };
     result.animeEntry = new AnimeEntry({
         name: result.episodeData.seriesName
-    });
+    }).sync();
     return result;
 }
 

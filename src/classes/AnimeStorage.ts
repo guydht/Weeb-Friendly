@@ -22,11 +22,11 @@ let storageObject = window.require("electron-json-config"),
                 _addToStorage(anime as any);
             return anime;
         }
-        anime.synonyms.forEach(ele => current!.synonyms.add(ele));
+        current.synonyms.forEach(ele => anime.synonyms.add(ele));
         Object.entries(anime).forEach(([key, value]) => {
             if (value)
                 (current as any)[key] = value;
-        })
+        });
         _addToStorage(current as any);
         return current;
     },
@@ -62,7 +62,7 @@ let storageObject = window.require("electron-json-config"),
     };
 (window as any).animeStorage = _ANIMES;
 setInterval(() => {
-    if (needsUpdating || true) {
+    if (needsUpdating) {
         let copy: { [key: number]: [Date, AnimeEntry] } = {};
         _ANIMES.forEach(([date, anime], animeId) => {
             copy[animeId] = [date, anime.readyForJSON()];
@@ -73,8 +73,10 @@ setInterval(() => {
 }, 1000);
 setImmediate(() => {
     ((Object.entries(storageObject.get(_storageKey) || {})) as any[]).forEach(([animeId, [date, anime]]) => {
+        (anime as any).sync = false;
         _ANIMES.set(Number(animeId), [new Date(date), new AnimeEntry(anime as any)]);
     });
 });
+
 export { storageObject, sync, get, size };
 

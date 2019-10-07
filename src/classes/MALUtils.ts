@@ -54,7 +54,7 @@ export default class MALUtils {
             fromData.imageURL = ele.image_url;
             fromData.malId = ele.mal_id;
             fromData.name = ele.title;
-            return AnimeStorage.sync(fromData);
+            return fromData.sync();
         });
     }
     static async getCurrentSeasonalAnime() {

@@ -27,14 +27,14 @@ export default class AnimePage extends Component {
         info: undefined,
         anime: ((this.props as any).location.state || {}).animeEntry as AnimeEntry
     }
-    componentDidMount(){
+    componentDidMount() {
     }
 
     render() {
         if (!this.state.anime || !this.state.anime.malId || !this.state.info) {
             let id = (this.props as any).match.params.id;
             if (id) {
-                let anime = new AnimeEntry({ malId: Number(id) });
+                let anime = new AnimeEntry({ malId: Number(id) }).sync();
                 MALUtils.getAnimeInfo(anime as AnimeEntry & { malId: number }).then(info => {
                     this.setState({
                         info,
