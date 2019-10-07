@@ -37,6 +37,7 @@ export default withRouter(class DownloadedFileThumbnail extends Component {
         )
     }
     showAnime(downloadedItem) {
+        downloadedItem.animeEntry.sync();
         if (downloadedItem.animeEntry.malId) {
             this.props.history.push({
                 pathname: "/anime/" + downloadedItem.animeEntry.malId,
@@ -47,7 +48,6 @@ export default withRouter(class DownloadedFileThumbnail extends Component {
             });
         }
         else {
-            // Vinland Saga Episode 12
             MALUtils.searchAnime(downloadedItem.animeEntry.name).then(results => {
                 results = results.filter(ele => stringRelativeSimilarity(downloadedItem.animeEntry.name.toLowerCase(),
                     ele.name.toLowerCase()) >= MALUtils.MINIMUM_ANIMENAME_SIMILARITY);
@@ -105,8 +105,8 @@ function Confirm(String, sendResponse, timer, yesText, noText) {
     for (i = 0; i < elements.length; i++)
         if (elements[i].style.top.includes("%")) array[i] = parseInt(elements[i].style.top.replace("%", ""));
         else array[i] = 100 / (window.innerHeight / (Number(elements[i].style.top.replace("px", "")) + 50));
-    if (yesText === null || yesText === "") yesText = "Yes";
-    if (noText === null || noText === "") noText = "No";
+    if (!yesText) yesText = "Yes";
+    if (!noText) noText = "No";
     array.sort(function (a, b) {
         return a - b
     });

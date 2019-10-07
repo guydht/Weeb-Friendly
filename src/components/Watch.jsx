@@ -34,6 +34,9 @@ export default class Watch extends Component {
                     showingVideo: false,
                     videoOpacity: 1
                 });
+                window.setAppState({
+                    showVideo: false
+                });
             }, 500);
         };
         let styleObject = { transition: "opacity .5s", opacity: this.state.videoOpacity };

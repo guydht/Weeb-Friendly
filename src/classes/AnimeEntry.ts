@@ -1,4 +1,5 @@
-import MALUtils from "./MALUtils";
+import { sync } from "./AnimeStorage";
+import { MALStatuses } from "./MALStatuses";
 
 export default class AnimeEntry {
     static SCORES = ["Appaling", "Horrible", "Very Bad", "Bad", "Average", "Fine", "Good", "Very Good", "Great", "Masterpiece"];
@@ -35,7 +36,7 @@ export default class AnimeEntry {
         userStartDate?: Date,
         userEndDate?: Date,
         myWatchedEpisodes?: number,
-        myMalStatus?: "Completed" | "Plan To Watch" | "Dropped" | "Watching" | "On Hold",
+        myMalStatus?: MALStatuses,
         myMalRating?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10,
         myRewatchAmount?: number,
         imageURL?: string,
@@ -46,8 +47,8 @@ export default class AnimeEntry {
         this.score = score;
         this.malId = malId;
         this.malUrl = malUrl;
-        this.genres = genres;
-        this.synonyms = synonyms && synonyms[Symbol.iterator] ? new Set(synonyms) : new Set();
+        this.genres = genres ? new Set(genres) : new Set();
+        this.synonyms = synonyms ? new Set(synonyms) : new Set();
         this.synopsis = synopsis;
         this.totalEpisodes = totalEpisodes;
         this.startDate = new Date(startDate!);
@@ -75,7 +76,7 @@ export default class AnimeEntry {
     userStartDate?: Date;
     userEndDate?: Date;
     myWatchedEpisodes?: number;
-    myMalStatus?: "Completed" | "Plan To Watch" | "Dropped" | "Watching" | "On Hold";
+    myMalStatus?: MALStatuses;
     myMalRating?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
     myRewatchAmount?: number;
     imageURL?: string;
@@ -89,10 +90,21 @@ export default class AnimeEntry {
         return this._name;
     }
     sync() {
-        Object.entries(MALUtils.syncAnime(this)).forEach(([key, value]) => {
+        Object.entries(sync(this)).forEach(([key, value]) => {
             if (value)
                 (this as any)[key] = value;
         });
         return this;
+    }
+    readyForJSON() {
+        function JSONReplacer(key: any, value: any) {
+            if (value && typeof value === "object" && value[Symbol.iterator])
+                return [...value];
+            return value;
+        }
+        let copy: any = { ...this };
+        copy.synonyms = [...this.synonyms];
+        copy.genres = [...(this.genres || [])];
+        return copy;
     }
 }

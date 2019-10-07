@@ -4,25 +4,37 @@ import DownloadedFileThumbnail from "../../classes/DownloadedFileThumbnail";
 import DownloadedItem from "../../classes/DownloadedItem";
 import HorribleSubsUtils, { SearchResult } from "../../classes/HorribleSubsUtils";
 import TorrentManager from "../../classes/TorrentManager";
+import { groupBy, stringCompare } from "../../classes/utils";
 import Consts from "../../consts";
 import { AnimeProps } from "../AnimePage";
 import { walkDir } from "../DownloadedAnime";
 import styles from "./Episodes.module.css";
 import { ReactComponent as DownloadIcon } from "./icons/download.svg";
 
-export default class Download extends Component<AnimeProps, { episodes: SearchResult[], loading: boolean }> {
+export default class Episodes extends Component<AnimeProps, { episodes: SearchResult[], loading: boolean }> {
     state = {
         anime: this.props.anime,
         info: this.props.info,
         episodes: [],
         loading: true
     };
-    downloadedFromSeries: DownloadedItem[] = walkDir(Consts.DOWNLOADS_FOLDER).filter(item => item.animeEntry.name === (this.props.anime.name!.match(/[a-zA-Z0-9\s]*/g) || []).join(""));
+    downloadedFromSeries: DownloadedItem[] = [];
 
     componentDidMount() {
-        HorribleSubsUtils.search((this.state.anime.name!.match(/[a-zA-Z0-9\s]*/g) || []).join("")).then(episodes => {
+        this.state.anime.sync();
+        // eslint-disable-next-line
+        HorribleSubsUtils.search(this.state.anime).then(episodes => {
+            let groupedBySeries = groupBy(episodes, ['episodeData', 'seriesName']);
+            if (groupedBySeries.length > 1)
+                episodes = groupedBySeries.sort((a, b) => {
+                    let aVal = Math.max(...a.map(ele => stringCompare(ele.episodeData.seriesName, this.state.anime.name!))),
+                        bVal = Math.max(...b.map(ele => stringCompare(ele.episodeData.seriesName, this.state.anime.name!)));
+                    return aVal - bVal;
+                })[0];
+            this.downloadedFromSeries = walkDir(Consts.DOWNLOADS_FOLDER).filter(item => item.animeEntry.sync().malId === this.state.anime.malId ||
+                (item.animeEntry.name.match(/[a-zA-Z0-9\s]*/g) || []).join("") === (this.state.anime.name!.match(/[a-zA-Z0-9\s]*/g) || []).join(""));
             this.setState({
-                episodes,
+                episodes: episodes.sort((a, b) => b.episodeData.episodeNumber - a.episodeData.episodeNumber),
                 loading: false
             });
         });
@@ -45,7 +57,7 @@ export default class Download extends Component<AnimeProps, { episodes: SearchRe
         return (
             <Container className={styles.grid + " mx-1 mt-3"}>
                 {
-                    this.groupByQuality(this.state.episodes).map((episode, i) => {
+                    Episodes.groupByQuality(this.state.episodes).map((episode, i) => {
                         return (
                             <Card key={i} className={styles.gridElement + " m-1"}>
                                 <Card.Header>
@@ -118,20 +130,16 @@ export default class Download extends Component<AnimeProps, { episodes: SearchRe
             return (downloadedItem.fileName.match(/(?<=episode\s)[0-9]+/gi) || [])[0] === episode.episodeData.episodeNumber.toString();
         });
     }
-    groupByQuality(episodes: SearchResult[]): Array<SearchResult & {
+    static groupByQuality(episodes: SearchResult[]): Array<SearchResult & {
         episodeData: { qualities: number[] }, seedersArr: number[], leechersArr: number[], links: {
             page: string,
             file: string,
             magnet: string
         }[]
     }> {
-        let obj = new Map<number, SearchResult[]>();
-        for (let episode of episodes) {
-            obj.set(episode.episodeData.episodeNumber, [episode].concat(obj.get(episode.episodeData.episodeNumber) || []));
-        }
-        return [...obj.values()].map(episodes => {
+        return groupBy(episodes.map(ele => { return { ...ele, asd: ele.episodeData.seriesName + ele.episodeData.episodeNumber } }), ['asd']).map(episodes => {
             let result: any = episodes[0];
-            result.episodeData.qualities = episodes.map(episode => episode.episodeData.quality);
+            result.episodeData.qualities = episodes.map(episode => episode.episodeData.quality).sort((a, b) => a - b);
             result.seedersArr = episodes.map(episode => episode.seeders);
             result.leechersArr = episodes.map(episode => episode.leechers);
             result.links = episodes.map(episode => episode.link);

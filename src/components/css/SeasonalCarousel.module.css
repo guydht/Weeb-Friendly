@@ -28,9 +28,11 @@
 
 .td {
     height: 250px;
+    width: 20%;
     transition: background-color .1s;
     position: relative;
     z-index: 5;
+    overflow: hidden;
 }
 
 .table {

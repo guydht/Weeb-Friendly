@@ -19,6 +19,8 @@ export default class App extends Component {
     // window.consts = Consts;
   }
   render() {
+    // eslint-disable-next-line
+    if(!this.state.showVideo) this.state.videoItem = null;
     return (
       <div className="guydht-scrollbar">
         <HashRouter>

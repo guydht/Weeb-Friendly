@@ -51,8 +51,10 @@ export default class TorrentManager {
         return Array.from(Consts.SAVED_TORRENTS);
     }
     static remove(torrent: Torrent) {
+        let pathName = path.join(torrent.path, torrent.name);
+        console.log(torrent, pathName);
         torrent.destroy();
-        fs.unlink(path.join(torrent.path, torrent.name));
+        fs.unlink(pathName);
         Consts.SAVED_TORRENTS.delete(torrent);
         Consts.setSavedTorrents(Consts.SAVED_TORRENTS);
     }
@@ -85,16 +87,16 @@ export default class TorrentManager {
             TorrentManager.dispatchEvent(torrent, ListenerTypes.removedTorrent);
         });
         Consts.SAVED_TORRENTS.forEach(torrent => {
-            let importantProperties = [''],
-                current = Array.from(TorrentManager.currentTorrentState).find(ele => ele.magnetURI === torrent.magnetURI),
+            let importantProperties = ['received', 'ready', '_peersLength', 'done', 'paused', 'destroyed'],
+                current = Array.from(TorrentManager.currentTorrentState).find(ele => ele.magnetURI === torrent.magnetURI) || {},
                 updatedProps = importantProperties.filter(property => {
                     return (torrent as any)[property] !== (current as any)[property]
                 });
             if (updatedProps.length)
                 TorrentManager.dispatchEvent([torrent, updatedProps], ListenerTypes.updatedTorrent);
         })
-        TorrentManager.currentTorrentState = new Set(Consts.SAVED_TORRENTS);
-    }, 100);
+        TorrentManager.currentTorrentState = new Set([...Consts.SAVED_TORRENTS].map(ele => Object.assign({}, ele)));
+    }, 500);
     private static dispatchEvent(data: any, type: ListenerTypes) {
         TorrentManager.listeners.forEach(listener => {
             if (listener.type === type)

@@ -1,83 +1,19 @@
 import mal from "jikants";
+import { AnimeById } from "jikants/dist/src/interfaces/anime/ById";
+import { Reviews } from "jikants/dist/src/interfaces/anime/Reviews";
+import { Forum } from "jikants/dist/src/interfaces/manga/Forum";
 import { Seasons } from "jikants/dist/src/interfaces/season/Season";
 import { AnimeListTypes } from "jikants/dist/src/interfaces/user/AnimeList";
 import Consts from "../consts";
 import AnimeEntry from "./AnimeEntry";
-import User, { AnimeList } from "./User";
-import { getCurrentSeason, stringCompare, stringRelativeSimilarity } from "./utils";
+import AnimeList from "./AnimeList";
+import * as AnimeStorage from "./AnimeStorage";
+import User from "./User";
+import { getCurrentSeason, stringCompare } from "./utils";
+import { MALStatuses } from "./MALStatuses";
 
-export enum MALStatuses {
-    Watching = 1,
-    Completed = 2,
-    "On-Hold" = 3,
-    Dropped = 4,
-    "Plan To Watch" = 6
-};
-const AnimeStorage = {
-    STORAGE_TTL_IN_SECONDS: 3600,
-    _ANIMES: new Map<number, [Date, AnimeEntry]>(),
-    similarNames: new Map<string, AnimeEntry>(),
-    cleanDate: new Date(),
-    cleanOld() {
-        if (AnimeStorage.cleanDate < new Date()) return;
-        AnimeStorage.cleanDate = AnimeStorage._TTL_DATE(10);
-        AnimeStorage._ANIMES.forEach(([date], key) => {
-            if (date < new Date())
-                AnimeStorage._ANIMES.delete(key)
-        });
-    },
-    sync(anime: AnimeEntry): AnimeEntry {
-        AnimeStorage.cleanOld();
-        if (!anime) return new AnimeEntry({ sync: false });
-        let current = AnimeStorage.get(anime);
-        if (!current) {
-            AnimeStorage._ANIMES.set(anime.malId!, [AnimeStorage._TTL_DATE(AnimeStorage.STORAGE_TTL_IN_SECONDS), anime]);
-            return anime;
-        }
-        let newEntries = { ...anime },
-            newCurrent: any = new AnimeEntry({});
-        Object.entries(current).concat(Object.entries(newEntries)).forEach(([key, value]) => {
-            if (value)
-                (newCurrent as any)[key] = value;
-        });
-        AnimeStorage._ANIMES.set(anime.malId!, [AnimeStorage._TTL_DATE(AnimeStorage.STORAGE_TTL_IN_SECONDS), newCurrent]);
-        return newCurrent;
-    },
-    get(anime: AnimeEntry): AnimeEntry | undefined {
-        AnimeStorage.cleanOld();
-        if (anime.malId)
-            return (AnimeStorage._ANIMES.get(anime.malId) || [])[1];
-        if (anime.name) {
-            let alreadySimilar = AnimeStorage.similarNames.get(anime.name!);
-            if (alreadySimilar) {
-                return alreadySimilar;
-            }
-            let mostSimilar: { similarity: number, anime?: AnimeEntry } = { similarity: 0 };
-            for (let storedAnime of AnimeStorage._ANIMES.values()) {
-                let similarity = stringRelativeSimilarity(anime.name!.toLowerCase(), storedAnime[1].name!.toLowerCase());
-                if (similarity > mostSimilar.similarity && similarity > 0.8) {
-                    mostSimilar = {
-                        similarity,
-                        anime: storedAnime[1]
-                    };
-                }
-            };
-            if (mostSimilar.anime) {
-                AnimeStorage.similarNames.set(anime.name, mostSimilar.anime!);
-                return mostSimilar.anime;
-            }
-            AnimeStorage.similarNames.set(anime.name, anime);
-        }
-    },
-    get size() {
-        AnimeStorage.cleanOld();
-        return AnimeStorage._ANIMES.size;
-    },
-    _TTL_DATE(seconds: number) {
-        let date = new Date();
-        date.setSeconds(date.getSeconds() + seconds);
-        return date;
-    }
+type HasMalId = {
+    malId: Number
 }
 
 export default class MALUtils {
@@ -163,12 +99,11 @@ export default class MALUtils {
         }, {});
         if (data.anime.length === this.MAX_ANIMES_PER_PAGE)
             await this.getUserAnimeList(user, listType, page + 1);
-
-        Object.defineProperty(user.animeList, "fetchedDate", { value: new Date(), writable: true, configurable: true });
+        user.animeList.fetchedDate = new Date();
         return user.animeList;
     }
-    static async getAnimeInfo(anime: AnimeEntry) {
-        let data = (await mal.Anime.byId(anime.malId!))!;
+    static async getAnimeInfo(anime: AnimeEntry & HasMalId): Promise<AnimeById | undefined> {
+        let data = (await mal.Anime.byId(anime.malId));
         if (!data)
             return data;
         anime.score = data.score;
@@ -183,21 +118,60 @@ export default class MALUtils {
         return data;
     }
     static UPDATE_ANIME_URL = "https://myanimelist.net/ownlist/anime/edit.json";
-    static async updateAnime(anime: AnimeEntry, { episodes, status, score }: { episodes: number, status: MALStatuses, score: number }): Promise<boolean> {
-        let request = await fetch(this.UPDATE_ANIME_URL, {
-            method: "POST",
-            body: JSON.stringify({
-                anime_id: anime.malId!,
+    static ADD_ANIME_URL = "https://myanimelist.net/ownlist/anime/add.json";
+    static async updateAnime(anime: AnimeEntry & HasMalId, { episodes, status, score }: { episodes: number, status: MALStatuses, score: number }): Promise<boolean> {
+        let startDate = new Date(),
+            body: any = {
+                anime_id: anime.malId,
                 status: status,
                 score: score,
                 num_watched_episodes: episodes,
                 csrf_token: Consts.CSRF_TOKEN
+            };
+        if (episodes === 1)
+            body['start_date'] = {
+                month: startDate.getMonth(),
+                day: startDate.getDate(),
+                year: startDate.getFullYear()
+            }
+        let request = await fetch(this.UPDATE_ANIME_URL, {
+            method: "POST",
+            body: JSON.stringify(body)
+        });
+        if (request.ok) {
+            anime.myWatchedEpisodes = episodes;
+            (anime.myMalStatus as any) = status;
+            (anime.myMalRating as any) = score;
+            if (episodes === 1) anime.startDate = startDate;
+        }
+        return request.ok;
+    }
+    static async addAnime(anime: AnimeEntry & HasMalId) {
+        let request = await fetch(this.ADD_ANIME_URL, {
+            method: "POST",
+            body: JSON.stringify({
+                anime_id: anime.malId,
+                status: MALStatuses["Plan To Watch"],
+                score: 0,
+                num_watched_episodes: 0,
+                csrf_token: Consts.CSRF_TOKEN
             })
         });
-        console.log(request);
-        return request.ok;
+        if (request.ok) {
+            anime.myMalStatus = MALStatuses.Watching;
+            anime.myWatchedEpisodes = 0;
+        }
+        return request.ok || (await request.json()).errors[0].message === "The anime is already in your list.";
+    }
+    static async animeForum(anime: AnimeEntry & HasMalId): Promise<Forum | undefined> {
+        let data = await mal.Anime.forum(anime.malId);
+        return data;
+    }
+    static async animeReviews(anime: AnimeEntry & HasMalId): Promise<Reviews | undefined> {
+        let data = await mal.Anime.reviews(anime.malId);
+        return data;
     }
     static syncAnime = AnimeStorage.sync;
     static getAnime = AnimeStorage.get;
-    static get storageSize() { return AnimeStorage.size; };
+    static get storageSize() { return AnimeStorage.size(); };
 }

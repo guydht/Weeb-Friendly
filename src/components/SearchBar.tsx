@@ -1,11 +1,21 @@
 import React, { Component } from "react";
-import { Form, FormControl, ListGroup, ListGroupItem, Spinner } from "react-bootstrap";
+import { Col, Form, FormControl, ListGroup, ListGroupItem, Row, Spinner } from "react-bootstrap";
+import { LazyLoadImage } from "react-lazy-load-image-component";
 import { Link } from "react-router-dom";
 import AnimeEntry from "../classes/AnimeEntry";
 import MALUtils from "../classes/MALUtils";
+import styles from "./css/SearchBar.module.css";
 
+interface SearchBarProps {
+    placeholder?: string;
+    gotoAnimePageOnChoose?: boolean;
+    onItemClick?: (animeEntry: AnimeEntry) => any;
+    onInputClick?: (e: React.MouseEvent) => any;
+    showImage?: boolean;
+    style?: object;
+}
 
-export default class SearchBar extends Component {
+export default class SearchBar extends Component<SearchBarProps> {
     static SEARCH_INPUT_TIMEOUT = 250;
 
     state = {
@@ -31,33 +41,49 @@ export default class SearchBar extends Component {
                 });
             };
         return (
-            <Form onBlur={onBlur} onFocus={onFocus}>
-                <FormControl type="text" placeholder="Search" className="mr-sm-2"
-                    onChangeCapture={(e: any) => this.searchAnime(e)}
+            <Form onBlur={onBlur} onFocus={onFocus} {...(this.props.style || {})}>
+                <FormControl type="text" placeholder={this.props.placeholder || "Search"} className="mr-sm-2"
+                    onClick={(e: React.MouseEvent) => (this.props.onInputClick || function () { })(e) && this.searchAnime(e)}
+                    onChange={(e: any) => this.searchAnime(e)}
                     onBlur={() => this.setState({ loading: false, loadingText: "" })} />
-                <ListGroup style={{ position: "relative", height: 0, zIndex: 99 }}>
-                    <ListGroup style={{ position: "absolute", maxHeight: "30vh", overflowY: "auto", width: "100%" }}
-                        className="guydht-scrollbar">
+                <ListGroup className={styles.container}>
+                    <ListGroup className={styles.wrapper + " guydht-scrollbar"}>
                         {
                             this.state.entries.length && this.state.displayEntries ?
                                 this.state.entries.map((entry: AnimeEntry) => {
                                     return (
-                                        <ListGroupItem onClick={() => console.log(entry)} title={Array.from(entry.synonyms).join(", ")} key={entry.malId}>
-                                            <Link to={{
-                                                pathname: "/anime/" + entry.malId,
-                                                state: {
-                                                    animeEntry: entry
-                                                }
-                                            }}>
-                                                {entry.name}
-                                            </Link>
+                                        <ListGroupItem onClick={() => (this.props.onItemClick || function () { })(entry)}
+                                            title={Array.from(entry.synonyms).join(", ")} key={entry.malId}>
+                                            <Row>
+                                                <Col>
+                                                    {
+                                                        this.props.showImage && (
+                                                            <LazyLoadImage className={styles.image} src={entry.imageURL} />
+                                                        )
+                                                    }
+                                                </Col>
+                                                <Col>
+                                                    {
+                                                        (this.props.gotoAnimePageOnChoose !== false) ?
+                                                            <Link to={{
+                                                                pathname: "/anime/" + entry.malId,
+                                                                state: {
+                                                                    animeEntry: entry
+                                                                }
+                                                            }}>
+                                                                {entry.name}
+                                                            </Link>
+                                                            : entry.name
+                                                    }
+                                                </Col>
+                                            </Row>
                                         </ListGroupItem>
                                     )
                                 }) : !this.state.loading ||
                                 <ListGroupItem>
                                     <span>{this.state.loadingText}</span>
                                     <Spinner animation="border" role="status" size="sm" as="span"
-                                        style={{ float: "right" }} />
+                                        className={styles.spinner} />
                                 </ListGroupItem>
                         }
                     </ListGroup>

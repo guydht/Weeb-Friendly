@@ -1,9 +1,11 @@
 import React, { Component } from "react";
 import { Jumbotron } from "react-bootstrap";
+import { hasInternet } from "../classes/utils";
 import Consts from "../consts";
 import CurrentlyWatching from "./CurrentlyWatching";
-import SeasonalCarousel from "./SeasonalCarousel";
 import DownloadedAnime from "./DownloadedAnime";
+import LatestTorrents from "./LatestTorrents";
+import SeasonalCarousel from "./SeasonalCarousel";
 
 
 export default class Browser extends Component {
@@ -19,7 +21,14 @@ export default class Browser extends Component {
                     Consts.MAL_USER.isLoggedIn &&
                     <CurrentlyWatching />
                 }
-                <SeasonalCarousel />
+                {
+                    hasInternet() && (
+                        <div>
+                            <SeasonalCarousel />
+                            <LatestTorrents />
+                        </div>
+                    )
+                }
             </Jumbotron>
         )
     }

@@ -4,17 +4,8 @@ import { LazyLoadImage } from "react-lazy-load-image-component";
 import { Link } from "react-router-dom";
 import MALUtils from "../classes/MALUtils";
 import styles from "./css/SeasonalCarousel.module.css";
+import { chunkArray } from "../classes/utils";
 
-
-function chunkArray(myArray, chunk_size) {
-    var results = [],
-        arrayCopy = [...myArray];
-
-    while (arrayCopy.length)
-        results.push(arrayCopy.splice(0, chunk_size));
-
-    return results;
-}
 
 export default class SeasonalCarousel extends Component {
     static GRID_SIZE_X = 5;

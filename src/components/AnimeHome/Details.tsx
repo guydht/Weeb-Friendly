@@ -1,7 +1,8 @@
 import React, { Component, RefObject } from "react";
 import { Badge, Button, Col, Container, FormControl, Row } from "react-bootstrap";
 import AnimeEntry from "../../classes/AnimeEntry";
-import MALUtils, { MALStatuses } from "../../classes/MALUtils";
+import { MALStatuses } from "../../classes/MALStatuses";
+import MALUtils from "../../classes/MALUtils";
 import { hasInternet } from "../../classes/utils";
 import Consts from "../../consts";
 import { AnimeProps } from "../AnimePage";
@@ -18,7 +19,6 @@ export default class Details extends Component<AnimeProps> {
     };
 
     render() {
-        console.log(this.state);
         return (
             <Container>
                 {
@@ -26,22 +26,25 @@ export default class Details extends Component<AnimeProps> {
                         <Row className="mt-4" style={{ fontSize: "130%" }}>
                             <Col md="auto" className="text-center">
                                 <Badge>Score</Badge>
-                                <h5>{this.state.info.score}</h5>
-                                <small>{this.state.info.scored_by} Users</small>
+                                <h5>{this.state.info.score || "Unknown"}</h5>
+                                {
+                                    this.state.info.scored_by &&
+                                    <small>{this.state.info.scored_by} Users</small>
+                                }
                             </Col>
                             <Col style={{
                                 display: "flex",
                                 flexDirection: "column"
                             }}>
                                 <Row>
-                                    <Col>Ranked: <strong>{this.state.info.rank}</strong></Col>
-                                    <Col>Popularity: <strong>{this.state.info.popularity}</strong></Col>
-                                    <Col>Members: <strong>{this.state.info.members}</strong></Col>
+                                    <Col>Ranked: <strong>{this.state.info.rank || "Unknown"}</strong></Col>
+                                    <Col>Popularity: <strong>{this.state.info.popularity || "Unknown"}</strong></Col>
+                                    <Col>Members: <strong>{this.state.info.members || "Unknown"}</strong></Col>
                                 </Row>
                                 <Row>
-                                    <Col>Season: <strong>{this.state.info.premiered}</strong></Col>
-                                    <Col>Type: <strong>{this.state.info.type}</strong></Col>
-                                    <Col>Studio <strong>{this.state.info.studios[0].name}</strong></Col>
+                                    <Col>Season: <strong>{this.state.info.premiered || "Unknown"}</strong></Col>
+                                    <Col>Type: <strong>{this.state.info.type || "Unknown"}</strong></Col>
+                                    <Col>Studio: <strong>{this.state.info.studios ? this.state.info.studios[0].name : "Unknown"}</strong></Col>
                                 </Row>
                             </Col>
                         </Row>
@@ -94,7 +97,7 @@ export default class Details extends Component<AnimeProps> {
                     ) : <Row>
                             {
                                 hasInternet() ? (
-                                    <Button>Add to MyAnimeList</Button>
+                                    <Button onClick={() => this.addAnime(this.state.anime)}>Add to MyAnimeList</Button>
                                 ) : (
                                         <span>
                                             Can't add to MyAnimeList since you dont have internet connectivity!
@@ -108,6 +111,18 @@ export default class Details extends Component<AnimeProps> {
     }
     updateTimeout?: number;
     static UPDATE_TIMEOUT_MS = 2000;
+    addAnime(anime: AnimeEntry) {
+        MALUtils.addAnime(anime as any).then(ok => {
+            if (ok) {
+                let watching = Consts.MAL_USER.animeList.watching;
+                watching[anime.malId!] = anime;
+                Consts.MAL_USER.animeList.watching = Consts.MAL_USER.animeList.watching;
+                console.log(Consts.MAL_USER);
+                Consts.setMALUser(Consts.MAL_USER);
+                this.setState({});
+            }
+        })
+    }
     updateAnime() {
         if (!this.statusElement.current || !this.episodElement.current || !this.scoreElement.current) return;
         clearTimeout(this.updateTimeout);

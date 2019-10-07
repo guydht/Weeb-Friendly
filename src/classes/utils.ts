@@ -126,4 +126,24 @@ function ttl_date(days: number) {
 }
 
 
-export { objectToFormData, stringCompare, stringRelativeSimilarity, levenshteinDistance, getCurrentSeason, hasInternet, CacheLocalStorage };
+function chunkArray<T>(myArray: T[], chunk_size: number): T[][] {
+    var results = [],
+        arrayCopy = [...myArray];
+
+    while (arrayCopy.length)
+        results.push(arrayCopy.splice(0, chunk_size));
+    return results;
+}
+
+function groupBy<T>(arr: T[], propertyPath: string[]): T[][] {
+    let obj = new Map<any, T[]>();
+    for (let ele of arr) {
+        let value: any = (ele as any)[propertyPath[0]];
+        for (let property of propertyPath.slice(1))
+            value = value[property];
+        obj.set(value, [ele].concat(obj.get(value) || []));
+    }
+    return [...obj.values()];
+}
+
+export { objectToFormData, stringCompare, stringRelativeSimilarity, levenshteinDistance, getCurrentSeason, hasInternet, CacheLocalStorage, chunkArray , groupBy};

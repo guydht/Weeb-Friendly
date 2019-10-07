@@ -24,17 +24,18 @@ export default class AnimePage extends Component {
     private PAGE_LINKS = { Details, Episodes: Episodes, Reviews, Recommendations, Stats, News, Forum, Pictures }
 
     state = {
-        info: {} as AnimeById,
+        info: undefined,
         anime: ((this.props as any).location.state || {}).animeEntry as AnimeEntry
+    }
+    componentDidMount(){
     }
 
     render() {
-        if (!this.state.anime || !this.state.anime.malId) {
+        if (!this.state.anime || !this.state.anime.malId || !this.state.info) {
             let id = (this.props as any).match.params.id;
             if (id) {
                 let anime = new AnimeEntry({ malId: Number(id) });
                 MALUtils.getAnimeInfo(anime as AnimeEntry & { malId: number }).then(info => {
-                    anime = new AnimeEntry({ malId: Number(id) });
                     this.setState({
                         info,
                         anime: anime
@@ -56,7 +57,7 @@ export default class AnimePage extends Component {
                 </Row>
                 <Row>
                     <Col md="auto">
-                        <Image src={this.state.info && this.state.info.image_url} />
+                        <Image src={this.state.info && (this.state.info as any).image_url} />
                     </Col>
                     <Col md="auto" style={{ flex: 1 }}>
                         <Tabs id="mal-links" defaultActiveKey={"Details"}>
@@ -65,7 +66,7 @@ export default class AnimePage extends Component {
                                     return (
                                         <Tab eventKey={name} title={name} mountOnEnter={true} key={i}>
                                             <LazyLoadComponent>
-                                                <MyComponent anime={this.state.anime} info={this.state.info} />
+                                                <MyComponent anime={this.state.anime} info={this.state.info! as AnimeById} />
                                             </LazyLoadComponent>
                                         </Tab>
                                     )
