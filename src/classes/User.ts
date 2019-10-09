@@ -17,11 +17,6 @@ export class User {
         return new User(username, password, typedAnimeList, isLoggedIn, last_time_updated);
     }
     readyForJson() {
-        function JSONReplacer(key: any, value: any) {
-            if (value && typeof value === "object" && value[Symbol.iterator])
-                return [...value];
-            return value;
-        }
         let copy: any = { ...this };
         copy.animeList = this.animeList.readyForJson();
         return copy;

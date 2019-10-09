@@ -31,6 +31,7 @@ export default class MovableComponent extends Component<MovableComponentProps> {
         resizable: false
     }
     private element = React.createRef<HTMLDivElement>();
+    style: any;
 
     render() {
         let { movable, resizable } = this.props,
@@ -74,7 +75,28 @@ export default class MovableComponent extends Component<MovableComponentProps> {
             startPosWidth = rect.width;
             startPosHeight = rect.height;
         }
+        let overElement: EventTarget = e.target;
+        function cancelMouse(e: Event) {
+            overElement.removeEventListener("mousedown", cancelMouse);
+            overElement.removeEventListener("mouseup", cancelMouse);
+            overElement.removeEventListener("click", cancelMouse);
+            e.stopImmediatePropagation();
+            e.stopPropagation();
+            e.preventDefault();
+            onMouseUp(e as MouseEvent);
+        }
+        function cancelMouseOfElement(element: EventTarget) {
+            overElement.removeEventListener("mousedown", cancelMouse);
+            overElement.removeEventListener("mouseup", cancelMouse);
+            overElement.removeEventListener("click", cancelMouse);
+            overElement = element;
+            overElement.addEventListener("mousedown", cancelMouse, { once: true });
+            overElement.addEventListener("mouseup", cancelMouse, { once: true });
+            overElement.addEventListener("click", cancelMouse, { once: true });
+        }
+        cancelMouseOfElement(e.target!);
         const onMouseMove = (e: MouseEvent) => {
+            cancelMouseOfElement(e.target!);
             if (this.element.current) {
                 didMoveInGesture = true;
                 switch (direction) {
@@ -118,20 +140,16 @@ export default class MovableComponent extends Component<MovableComponentProps> {
                     this.element.current.style.top = window.innerHeight - currentHeight + "px";
                 if (Number(this.element.current.style.left!.replace("px", "")) + currentWidth > window.innerWidth)
                     this.element.current.style.left = window.innerWidth - currentWidth + "px";
-                e.stopPropagation();
                 if (this.props.onResizeMove)
                     this.props.onResizeMove(e, direction);
             }
         }
         const onMouseUp = (e: MouseEvent) => {
             window.removeEventListener("mousemove", onMouseMove);
-            window.removeEventListener("mouseup", onMouseUp);
             if (this.props.onResizeFinish)
                 this.props.onResizeFinish(e, didMoveInGesture, direction);
-            e.stopPropagation();
         }
         window.addEventListener("mousemove", onMouseMove);
-        window.addEventListener("mouseup", onMouseUp);
         e.stopPropagation();
         if (this.props.onResizeStart)
             this.props.onResizeStart(e, direction);
@@ -148,7 +166,30 @@ export default class MovableComponent extends Component<MovableComponentProps> {
             startPosX = this.element.current.offsetLeft;
             startPosY = this.element.current.offsetTop;
         }
+        let overElement: EventTarget = e.target;
+        function cancelMouse(e: Event) {
+            overElement.removeEventListener("mousedown", cancelMouse);
+            overElement.removeEventListener("mouseup", cancelMouse);
+            overElement.removeEventListener("click", cancelMouse);
+            if (didMoveInGesture) {
+                e.stopImmediatePropagation();
+                e.stopPropagation();
+                e.preventDefault();
+            }
+            onMouseUp(e as MouseEvent);
+        }
+        function cancelMouseOfElement(element: EventTarget) {
+            overElement.removeEventListener("mousedown", cancelMouse);
+            overElement.removeEventListener("mouseup", cancelMouse);
+            overElement.removeEventListener("click", cancelMouse);
+            overElement = element;
+            overElement.addEventListener("mousedown", cancelMouse, { once: true });
+            overElement.addEventListener("mouseup", cancelMouse, { once: true });
+            overElement.addEventListener("click", cancelMouse, { once: true });
+        }
+        cancelMouseOfElement(e.target!);
         const onMouseMove = (e: MouseEvent) => {
+            cancelMouseOfElement(e.target!);
             if (this.element.current) {
                 didMoveInGesture = true;
                 this.element.current.style.left = Math.max(0, startPosX - startX + (e.screenX || 0)) + "px";
@@ -161,8 +202,6 @@ export default class MovableComponent extends Component<MovableComponentProps> {
                     this.element.current.style.left = window.innerWidth - currentWidth + "px";
                 if (this.props.onDragMove)
                     this.props.onDragMove(e);
-                else
-                    e.stopPropagation();
             }
         }
         const onMouseUp = (e: MouseEvent) => {

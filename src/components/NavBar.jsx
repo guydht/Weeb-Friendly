@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Button, Nav, Navbar as BootstrapNavbar, NavDropdown } from "react-bootstrap";
 import User from "../classes/User";
-import Consts from "../consts";
+import Consts from "../classes/Consts";
 import ChooseDirectoryText from "./ChooseDirectoryText";
 import SearchBar from "./SearchBar.tsx";
 

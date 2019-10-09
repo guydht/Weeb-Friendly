@@ -19,7 +19,9 @@ export default class AnimeList {
 
     set all(value: Record<number, AnimeEntry>) {
         let allKeys = Object.entries(value);
-        allKeys.forEach(([key, value]) => {
+        Object.values(allKeys).forEach(([strKey, value]) => {
+            let key = Number(strKey);
+            value.sync();
             (this._all as any)[key] = value;
             switch ((value as AnimeEntry).myMalStatus) {
                 case MALStatuses.Watching:
@@ -44,7 +46,7 @@ export default class AnimeList {
     }
     set watching(value: Record<number, AnimeEntry>) {
         this._watching = value;
-        Object.values(value).forEach(val => this.all[val.malId!] = val);
+        Object.values(value).forEach(val => this._all[val.malId!] = val);
     }
     get watching(): Record<number, AnimeEntry> {
         return this._watching;
@@ -52,7 +54,7 @@ export default class AnimeList {
 
     set completed(value: Record<number, AnimeEntry>) {
         this._completed = value;
-        Object.values(value).forEach(val => this.all[val.malId!] = val);
+        Object.values(value).forEach(val => this._all[val.malId!] = val);
     }
     get completed(): Record<number, AnimeEntry> {
         return this._completed;
@@ -60,7 +62,7 @@ export default class AnimeList {
 
     set dropped(value: Record<number, AnimeEntry>) {
         this._dropped = value;
-        Object.values(value).forEach(val => this.all[val.malId!] = val);
+        Object.values(value).forEach(val => this._all[val.malId!] = val);
     }
     get dropped(): Record<number, AnimeEntry> {
         return this._dropped;
@@ -68,7 +70,7 @@ export default class AnimeList {
 
     set plantowatch(value: Record<number, AnimeEntry>) {
         this._plantowatch = value;
-        Object.values(value).forEach(val => this.all[val.malId!] = val);
+        Object.values(value).forEach(val => this._all[val.malId!] = val);
     }
     get plantowatch(): Record<number, AnimeEntry> {
         return this._plantowatch;
@@ -76,20 +78,26 @@ export default class AnimeList {
 
     set onhold(value: Record<number, AnimeEntry>) {
         this._onhold = value;
-        Object.values(value).forEach(val => this.all[val.malId!] = val);
+        Object.values(value).forEach(val => this._all[val.malId!] = val);
     }
     get onhold(): Record<number, AnimeEntry> {
         return this._onhold;
     }
     set ptw(value: Record<number, AnimeEntry>) {
         this._plantowatch = value;
-        Object.values(value).forEach(val => this.all[val.malId!] = val);
+        Object.values(value).forEach(val => this._all[val.malId!] = val);
     }
     get ptw(): Record<number, AnimeEntry> {
         return this._plantowatch;
     }
-    static fromJson({ _all: data }: { _all: number[] }): AnimeList {
-        return new AnimeList({ _all: data.map(id => new AnimeEntry({ malId: Number(id) })) });
+    static fromJson({ _all: data = [] }: { _all: number[] }): AnimeList {
+        let list = new AnimeList({});
+        let obj: Record<number, AnimeEntry> = {};
+        data.forEach(id => {
+            obj[Number(id)] = new AnimeEntry({ malId: Number(id) });
+        })
+        list.all = obj;
+        return list;
     }
     readyForJson() {
         return { _all: Object.keys(this.all) };

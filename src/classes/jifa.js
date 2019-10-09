@@ -1,65 +1,27 @@
 import { CacheLocalStorage } from "./utils";
+
 function asd(AnimeName, elementContainer, videoURL) {
-    const fs = window.require("fs"),
-        MatroskaSubtitles = window.require('matroska-subtitles'),
-        path = window.require("path"),
-        request = window.require("request");
-    let subtitleParser = new MatroskaSubtitles();
+    // const fs = window.require("fs"),
+    //     MatroskaSubtitles = window.require('matroska-subtitles'),
+    //     path = window.require("path"),
+    //     request = window.require("request");
     var container = document.createElement("div"),
         style = document.createElement("style");
-    style.innerHTML = `#guydhtVideoWrapper *{transition: inherit;}#guydhtVideoSlider *:not(path){user-select: none; position: relative; display: block;}#guydhtVideoSlider *:hover, #guydhtVideoSlider *:active{opacity: 1;}#guydhtVideoMyVideo{outline: none; position: absolute; width: 100%; height: 100%; top: 0; left: 0;}#guydhtVideoWrapper{box-sizing: border-box; outline: none; top: 0; left: 0; transition: all 0.5s, border 0s, margin: 0s; position: absolute;width: 100%;height: 100%; background: black;}#guydhtVideoInfo{position: absolute;top: 5px;left: 10px;color: white;font-size: 20px;z-index: 2;background-color: rgba(0, 0, 0, 0.15);box-shadow: 0 0 15px 5px rgba(0, 0, 0, 0.3);}#guydhtVideoVolume{opacity: 0;display: inline-block;}#guydhtVideoTimer{display: inline;}span.guydhtVideoClear{display: inline-block;width: 10px;pointer-events: none;}#guydhtVideoSlider{transition: all 0.35s;position: absolute;width: 100%;cursor: auto;height: 40px;left: 0;font-size: 16px;bottom: 0;color:white;background : linear-gradient(to bottom,rgba(0,0,0,0) 0%,rgba(0,0,0,0.45) 95%,rgb(0,0,0) 100%);}#guydhtVideoSlider:hover, #guydhtVideoSlider:active, #guydhtVideoUpperSlider:hover, #guydhtVideoUpperSlider:active{opacity: 1 !important;}#guydhtVideoProgress, #guydhtVideoShadowLineForProgress{transform-origin: 0; transform: translate(0); background : rgb(255,0,0);position: absolute !important;height: 2px;left: 0;width: 100%;top: 50%; z-index: 4;transition: all 0s}#guydhtVideoProgress{transform: scale(0); will-change: transform;}#guydhtVideoProgressContainer:active #guydhtVideoProgress{transition: all 0.1s !important;}#guydhtVideoProgressContainer:hover #guydhtVideoProgress{background: rgb(255, 0, 0);}#guydhtVideoProgressContainer:hover #guydhtVideoProgressCircle, #guydhtVideoProgressContainer:active #guydhtVideoProgressCircle{opacity: 1;}#guydhtVideoProgressCircle{position: absolute !important;opacity: 0;transition: all 0s;z-index: 7;border-radius: 50%;width: 10px;height: 10px;display: inline-block;background: rgb(255, 0, 0);top: calc(50% - 5px);margin-left: -5px;}#guydhtVideoShadowLineForProgress{width: 100%;background: rgb(100, 100, 100);z-index: 2;}#guydhtVideoProgressContainer{width: calc(100% - 20px);left: 10px;height: 100%;}#guydhtVideoPlayPauseButton{cursor: pointer; float: left; left: 5px;height: 100%;width: 35px;}#guydhtVideoAnotherTimerContainer{font-size: 100%; float: left; left: 10px; height: 100%;}#guydhtVideoAnotherTimer{cursor: default; user-select: text !important; top: 50%; transform: translateY(-50%);}#guydhtVideoMiddleTooltiper{pointer-events: none; position: absolute; transition: all 1s; height: 60px; width: 60px; background: rgb(0,0,0); opacity: 0; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; border-radius: 50%;}#guydhtVideoMiddleText{transition: all 0s;}#guydhtVideoFullscreen{cursor: pointer; position:relative;float:right;width:40px;height: 100%;margin-left: -6px;}#guydhtVideoWidthLimiter{overflow: hidden;left: 10px;position: relative;height: 100%;}#guydhtVideoTimeTooltip{position: absolute !important;top:-25%;opacity:0;display: none;color:white;background: black;font-size: 13px;width: 47px;transform: translate(-50%, -50%);transition: all 0s;box-shadow: 0 0 15px 2px rgba(180, 180, 180, 0.4);text-align: center;padding: 4px;}#guydhtVideoTimeTooltip:after{content: " ";position: absolute;top: 100%;left: 50%;margin-left: -5px;border-width: 5px;border-style: solid;border-color: black transparent transparent transparent;}#guydhtVideoProgressContainer:hover #guydhtVideoShadowLineForProgress, #guydhtVideoProgressContainer:active #guydhtVideoShadowLineForProgress{background: rgba(200, 200, 200, 0.8);}.guydhtVideoBuffered{top: 50%; background: rgb(255,255,255); position: absolute !important; height:2px; z-index: 3; transition: all 0s !important; transform: translate(0,0) !important;}.guydhtVideoLoading{pointer-events: none; box-sizing: content-box; height: 0; width: 6vh; padding-bottom: 6vh; top: 50%; left: 50%; transform: translate(-50%, -50%); position: absolute; border-radius:50%; border: 10px solid rgb(40,40,40);}.guydhtVideoLoading:before, .guydhtVideoLoading:after{border: 10px solid transparent; border-top-color:rgb(100,100,100); animation: spin 1.2s cubic-bezier(0.6,0.2,0,0.8) infinite, fadeSpinner 1.2s cubic-bezier(0.6,0.2,0,0.8) infinite; border-radius:50%; position:absolute; left:50%; top:50%; content:""; width:100%; height:100%; transform: translate(-50%, -50%);}.guydhtVideoLoading:before{animation-delay: 0.35s;}@keyframes spin{0%{transform: translate(-50%, -50%) rotate(0deg);} 100%{transform : translate(-50%, -50%) rotate(360deg);}}@keyframes fadeSpinner{15%{border-top-color: rgb(100,100,100)} 35%{border-top-color: rgb(255,255,255)} 60%{border-top-color: rgb(100,100,100);}}}{}#guydhtVideoVolumeSlider{overflow: hidden; width: 0; float: left; height: 100%;}#guydhtVideoVolumeControl{cursor: pointer; height: 100%; width: 35px; float: left; margin-left: 5px;}#guydhtVideoVolumeHandle{cursor: pointer; margin-left: -6px; left: 100%; height: 12px; width: 12px; border-radius: 50%; background: white;top: calc(50% - 8px);}#guydhtVideoVolumeHandle:before, #guydhtVideoVolumeHandle:after{background: rgba(255, 255, 255, 0.2); height: 3px; width: 100px; content: ""; position: absolute; top: 6px; left: 6px;}#guydhtVideoVolumeHandle:before{background: white; left: -100px;}#guydhtVideoVolumeControl:hover ~ #guydhtVideoVolumeSlider, #guydhtVideoVolumeSlider:hover, #guydhtVideoVolumeSlider:active{width: 50px;}#guydhtVideoWrapper svg:hover{fill: rgb(255, 255, 255);}#guydhtVideoWrapper svg{fill: rgb(200, 200, 200); opacity: .9; transition: all .25s !important;}#guydhtVideoWrapper svg:hover{opacity: 1;}#guydhtVideoMiddleText svg{opacity:1 !important;}#guydhtVideoStretchVideo{float: right; border: rgba(255, 255, 255, 0.5) 2px solid; height: 20px; width: 20px ; margin: 0 10px -5px 0;}#guydhtVideoStretchText{margin: 0 5px; font-size: 11.5px;}.guydhtVideoSVGText{font-size: 10px; top: 53%; left: 50%; position: absolute; transform: translate(-50%, -50%);}#guydhtThumbnailContainer canvas{height: 100px; width: 177px; transform: translate(-50%, -50%);}#guydhtThumbnailContainer{height: 0; width: 0; background: rgba(0, 0, 0, 0.7); position: absolute !important; top: -110%; transition: all 0s; display: none; opacity: 0;}#guydhtVideoUpperSlider{overflow: hidden; transition: all 0.35s; height: 40px; top: 0; color: white; width: 100%;}#guydhtVideoName{margin: 10px; margin-top: 0; position: relative; background : linear-gradient(to top,rgba(0,0,0,0) 0%,rgba(0,0,0,0.45) 95%,rgb(0,0,0) 100%); font: normal normal normal normal 175% Roboto, Arial, Helvetica, sans-serif; cursor: pointer; border: 0; color: white; width: 100%;}#guydhtVideoWrapper.fullscreened #guydhtVideoName{font-size: 27px;}#guydhtVideoUpperSlider:hover{z-index: 99999999999999999999999999999999999999;}#guydhtVideoUpperSlider.opacityOn{opacity: 1 !important;}.guydhtVideoDontShow{opacity: 0 !important; visibility: hidden !important; pointer-events: none;}#guydhtVideoSettings svg{float: right; cursor: pointer;}#guydhtVideoSettings svg:hover{transform:rotate(60deg);}#guydhtVideoSettingsWindow > ul{margin: 10px 0 10px 0;}#guydhtVideoSettingsWindow:hover{background: black;}#guydhtVideoSettingsWindow{overflow: hidden; opacity: 0; position: absolute !important; right: 2%; bottom: 5px; background: rgba(0, 0, 0, 0.8); border-radius: 8%; pointer-events: none;}#guydhtVideoSettings{outline: none;}#guydhtVideoSettings li:hover{background: rgba(255, 255, 255, 0.3);}#guydhtVideoSettings li{display: table; cursor: pointer; width: calc(100% - 10px); padding: 10px 0 10px 10px;}#guydhtVideoSettings li div{display: table-cell; width:50%; padding: 5px 0;}#guydhtVideoSettings li div:nth-child(2){background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMTAwJSIgdmVyc2lvbj0iMS4xIiB2aWV3Qm94PSIwIDAgMzIgMzIiIHdpZHRoPSIxMDAlIj48cGF0aCBkPSJtIDEyLjU5LDIwLjM0IDQuNTgsLTQuNTkgLTQuNTgsLTQuNTkgMS40MSwtMS40MSA2LDYgLTYsNiB6IiBmaWxsPSIjZmZmIiAvPjwvc3ZnPg==); background-position-x: right; background-repeat: no-repeat;}#guydhtVideoSettingsList{padding: 0 10px 0 15px;}#guydhtVideoSettingWindowHead div{background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMTAwJSIgdmVyc2lvbj0iMS4xIiB2aWV3Qm94PSIwIDAgMzIgMzIiIHdpZHRoPSIxMDAlIj48cGF0aCBkPSJNIDE5LjQxLDIwLjA5IDE0LjgzLDE1LjUgMTkuNDEsMTAuOTEgMTgsOS41IGwgLTYsNiA2LDYgeiIgZmlsbD0iI2ZmZiIgLz48L3N2Zz4=); background-position: left center; background-repeat: no-repeat; padding-left: 27px !important;}#guydhtVideoSettingWindowHead{border-bottom: rgba(255, 255, 255, 0.6) solid 1px;}
-    
-    #guydhtVideoSubsContainer {
-        color: white;
-        transition: all 0.5s, font-size 0.1s;
-        font-size: 2rem;
-        left: 0;
-        top: 0;
-        position: absolute;
+    style.innerHTML = `#guydhtVideoWrapper *{transition: inherit;}#guydhtVideoSlider *:not(path){user-select: none; position: relative; display: block;}#guydhtVideoSlider *:hover, #guydhtVideoSlider *:active{opacity: 1;}#guydhtVideoMyVideo{outline: none; position: absolute; width: 100%; height: 100%; top: 0; left: 0;}#guydhtVideoWrapper{box-sizing: border-box; outline: none; top: 0; left: 0; transition: all 0.5s, border 0s, margin: 0s; position: absolute;width: 100%;height: 100%; background: black;}#guydhtVideoInfo{position: absolute;top: 5px;left: 10px;color: white;font-size: 20px;z-index: 2;background-color: rgba(0, 0, 0, 0.15);box-shadow: 0 0 15px 5px rgba(0, 0, 0, 0.3);}#guydhtVideoVolume{opacity: 0;display: inline-block;}#guydhtVideoTimer{display: inline;}span.guydhtVideoClear{display: inline-block;width: 10px;pointer-events: none;}#guydhtVideoSlider{transition: all 0.35s;position: absolute;width: 100%;cursor: auto;height: 40px;left: 0;font-size: 16px;bottom: 0;color:white;background : linear-gradient(to bottom,rgba(0,0,0,0) 0%,rgba(0,0,0,0.45) 95%,rgb(0,0,0) 100%);}#guydhtVideoSlider:hover, #guydhtVideoSlider:active, #guydhtVideoUpperSlider:hover, #guydhtVideoUpperSlider:active{opacity: 1 !important;}#guydhtVideoProgress, #guydhtVideoShadowLineForProgress{transform-origin: 0; transform: translate(0); background : rgb(255,0,0);position: absolute !important;height: 2px;left: 0;width: 100%;top: 50%; z-index: 4;transition: all 0s}#guydhtVideoProgress{transform: scale(0); will-change: transform;}#guydhtVideoProgressContainer:active #guydhtVideoProgress{transition: all 0.1s !important;}#guydhtVideoProgressContainer:hover #guydhtVideoProgress{background: rgb(255, 0, 0);}#guydhtVideoProgressContainer:hover #guydhtVideoProgressCircle, #guydhtVideoProgressContainer:active #guydhtVideoProgressCircle{opacity: 1;}#guydhtVideoProgressCircle{position: absolute !important;opacity: 0;transition: all 0s;z-index: 7;border-radius: 50%;width: 10px;height: 10px;display: inline-block;background: rgb(255, 0, 0);top: calc(50% - 5px);margin-left: -5px;}#guydhtVideoShadowLineForProgress{width: 100%;background: rgb(100, 100, 100);z-index: 2;}#guydhtVideoProgressContainer{width: calc(100% - 20px);left: 10px;height: 100%;}#guydhtVideoPlayPauseButton{cursor: pointer; float: left; left: 5px;height: 100%;width: 35px;}#guydhtVideoAnotherTimerContainer{font-size: 100%; float: left; left: 10px; height: 100%;}#guydhtVideoAnotherTimer{cursor: default; user-select: text !important; top: 50%; transform: translateY(-50%);}#guydhtVideoMiddleTooltiper{pointer-events: none; position: absolute; transition: all 1s; height: 60px; width: 60px; background: rgb(0,0,0); opacity: 0; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; border-radius: 50%;}#guydhtVideoMiddleText{transition: all 0s;}#guydhtVideoFullscreen{cursor: pointer; position:relative;float:right;width:40px;height: 100%;margin-left: -6px;}#guydhtVideoWidthLimiter{overflow: hidden;left: 10px;position: relative;height: 100%;}#guydhtVideoTimeTooltip{position: absolute !important;top:-25%;opacity:0;display: none;color:white;background: black;font-size: 13px;width: 47px;transform: translate(-50%, -50%);transition: all 0s;box-shadow: 0 0 15px 2px rgba(180, 180, 180, 0.4);text-align: center;padding: 4px;}#guydhtVideoTimeTooltip:after{content: " ";position: absolute;top: 100%;left: 50%;margin-left: -5px;border-width: 5px;border-style: solid;border-color: black transparent transparent transparent;}#guydhtVideoProgressContainer:hover #guydhtVideoShadowLineForProgress, #guydhtVideoProgressContainer:active #guydhtVideoShadowLineForProgress{background: rgba(200, 200, 200, 0.8);}.guydhtVideoBuffered{top: 50%; background: rgb(255,255,255); position: absolute !important; height:2px; z-index: 3; transition: all 0s !important; transform: translate(0,0) !important;}.guydhtVideoLoading{pointer-events: none; box-sizing: content-box; height: 0; width: 6vh; padding-bottom: 6vh; top: 50%; left: 50%; transform: translate(-50%, -50%); position: absolute; border-radius:50%; border: 10px solid rgb(40,40,40);}.guydhtVideoLoading:before, .guydhtVideoLoading:after{border: 10px solid transparent; border-top-color:rgb(100,100,100); animation: spin 1.2s cubic-bezier(0.6,0.2,0,0.8) infinite, fadeSpinner 1.2s cubic-bezier(0.6,0.2,0,0.8) infinite; border-radius:50%; position:absolute; left:50%; top:50%; content:""; width:100%; height:100%; transform: translate(-50%, -50%);}.guydhtVideoLoading:before{animation-delay: 0.35s;}@keyframes spin{0%{transform: translate(-50%, -50%) rotate(0deg);} 100%{transform : translate(-50%, -50%) rotate(360deg);}}@keyframes fadeSpinner{15%{border-top-color: rgb(100,100,100)} 35%{border-top-color: rgb(255,255,255)} 60%{border-top-color: rgb(100,100,100);}}}{}#guydhtVideoVolumeSlider{overflow: hidden; width: 0; float: left; height: 100%;}#guydhtVideoVolumeControl{cursor: pointer; height: 100%; width: 35px; float: left; margin-left: 5px;}#guydhtVideoVolumeHandle{cursor: pointer; margin-left: -6px; left: 100%; height: 12px; width: 12px; border-radius: 50%; background: white;top: calc(50% - 8px);}#guydhtVideoVolumeHandle:before, #guydhtVideoVolumeHandle:after{background: rgba(255, 255, 255, 0.2); height: 3px; width: 100px; content: ""; position: absolute; top: 6px; left: 6px;}#guydhtVideoVolumeHandle:before{background: white; left: -100px;}#guydhtVideoVolumeControl:hover ~ #guydhtVideoVolumeSlider, #guydhtVideoVolumeSlider:hover, #guydhtVideoVolumeSlider:active{width: 50px;}#guydhtVideoWrapper svg:hover{fill: rgb(255, 255, 255);}#guydhtVideoWrapper svg{fill: rgb(200, 200, 200); opacity: .9; transition: all .25s !important;}#guydhtVideoWrapper svg:hover{opacity: 1;}#guydhtVideoMiddleText svg{opacity:1 !important;}#guydhtVideoStretchVideo{float: right; border: rgba(255, 255, 255, 0.5) 2px solid; height: 20px; width: 20px ; margin: 0 10px -5px 0;}#guydhtVideoStretchText{margin: 0 5px; font-size: 11.5px;}.guydhtVideoSVGText{font-size: 10px; top: 53%; left: 50%; position: absolute; transform: translate(-50%, -50%);}#guydhtThumbnailContainer canvas{height: 100px; width: 177px; transform: translate(-50%, -50%);}#guydhtThumbnailContainer{height: 0; width: 0; background: rgba(0, 0, 0, 0.7); position: absolute !important; top: -110%; transition: all 0s; display: none; opacity: 0;}#guydhtVideoUpperSlider{pointer-events: none; background: linear-gradient(to top,rgba(0,0,0,0) 0%,rgba(0,0,0,0.45) 95%,rgb(0,0,0) 100%); position: absolute; overflow: hidden; transition: all 0.35s; height: 40px; top: 0; color: white; width: 100%;}#guydhtVideoName{margin: 10px; margin-top: 0; position: relative; font: normal normal normal normal 175% Roboto, Arial, Helvetica, sans-serif; cursor: pointer; border: 0; color: white; width: 100%;}#guydhtVideoWrapper.fullscreened #guydhtVideoName{font-size: 27px;}#guydhtVideoUpperSlider:hover{z-index: 99999999999999999999999999999999999999;}#guydhtVideoUpperSlider.opacityOn{opacity: 1 !important;}.guydhtVideoDontShow{opacity: 0 !important; visibility: hidden !important; pointer-events: none;}#guydhtVideoSettings svg{float: right; cursor: pointer;}#guydhtVideoSettings svg:hover{transform:rotate(60deg);}#guydhtVideoSettingsWindow > ul{margin: 10px 0 10px 0;}#guydhtVideoSettingsWindow:hover{background: black;}#guydhtVideoSettingsWindow{overflow: hidden; opacity: 0; position: absolute !important; right: 2%; bottom: 5px; background: rgba(0, 0, 0, 0.8); border-radius: 8%; pointer-events: none;}#guydhtVideoSettings{outline: none;}#guydhtVideoSettings li:hover{background: rgba(255, 255, 255, 0.3);}#guydhtVideoSettings li{display: table; cursor: pointer; width: calc(100% - 10px); padding: 10px 0 10px 10px;}#guydhtVideoSettings li div{display: table-cell; width:50%; padding: 5px 0;}#guydhtVideoSettings li div:nth-child(2){background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMTAwJSIgdmVyc2lvbj0iMS4xIiB2aWV3Qm94PSIwIDAgMzIgMzIiIHdpZHRoPSIxMDAlIj48cGF0aCBkPSJtIDEyLjU5LDIwLjM0IDQuNTgsLTQuNTkgLTQuNTgsLTQuNTkgMS40MSwtMS40MSA2LDYgLTYsNiB6IiBmaWxsPSIjZmZmIiAvPjwvc3ZnPg==); background-position-x: right; background-repeat: no-repeat;}#guydhtVideoSettingsList{padding: 0 10px 0 15px;}#guydhtVideoSettingWindowHead div{background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMTAwJSIgdmVyc2lvbj0iMS4xIiB2aWV3Qm94PSIwIDAgMzIgMzIiIHdpZHRoPSIxMDAlIj48cGF0aCBkPSJNIDE5LjQxLDIwLjA5IDE0LjgzLDE1LjUgMTkuNDEsMTAuOTEgMTgsOS41IGwgLTYsNiA2LDYgeiIgZmlsbD0iI2ZmZiIgLz48L3N2Zz4=); background-position: left center; background-repeat: no-repeat; padding-left: 27px !important;}#guydhtVideoSettingWindowHead{border-bottom: rgba(255, 255, 255, 0.6) solid 1px;}
+    .libassjs-canvas-parent{
         height: 100%;
         width: 100%;
+        top: 0px;
+        left: 0px;
     }
-    #guydhtVideoSubsText{
-        top: unset;
-        transition: font-size 0s;
-        user-select: none;
-        bottom: calc(1% + 30px);
-        position: absolute;
-        background: rgba(0, 0, 0, 0.8);
-        max-width: 75%;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        text-align: center;
-        padding: 0 0.75rem;
-        transform: translateX(-50%);
-        cursor: pointer;
-        left: 50%;
-    }
-    #guydhtVideoSubsText.top{
-        top: 8%;
-        bottom: unset;
-    }
-    #guydhtVideoSubsText.middle{
-        top: 50%;
-        bottom: unset;
-    }
-    #guydhtVideoSubsText.left{
-        left: 3%;
-        right: unset;
-        transform: translateY(-50%);
-    }
-    #guydhtVideoSubsText.right{
-        right: 3%;
-        left: unset;
-        transform: translateY(-50%);
-    }
-    #guydhtFontSizeMultiplier{
-        background: none;
-        border: none;
+    .libassjs-canvas{
+        height: 100% !important;
+        width: 100% !important;
+        top: 0 !important;
+        left: 0 !important;
     }
     `;
-    container.innerHTML = '<div id="guydhtVideoWrapper"><video tabIndex="1" id="guydhtVideoMyVideo"></video><div id="guydhtVideoSubsContainer"></div><div id="guydhtVideoInfo" style="display: none;"><div id="guydhtVideoTimer"></div><span class="guydhtVideoClear"></span><div id="guydhtVideoVolume"></div><span class="guydhtVideoClear"></span></div><div id="guydhtVideoUpperSlider"><div id="guydhtVideoName">' + AnimeName + '</div></div><div id="guydhtVideoSlider"><div id="guydhtVideoPlayPauseButton" class="guydhtVideoPlay"></div><div id="guydhtVideoVolumeControl"><svg height="100%" viewBox="0 0 100 100" width="100%"><path></path></svg></div><div id="guydhtVideoVolumeSlider"><div id="guydhtVideoVolumeHandle"></div></div><div id="guydhtVideoAnotherTimerContainer"><div id="guydhtVideoAnotherTimer"></div></div><div id="guydhtVideoFullscreen"><svg height="100%" width="100%"><path d="m 10,16 2,0 0,-4 4,0 0,-2 L 10,10 l 0,6 0,0 z"></path><path d="m 20,10 0,2 4,0 0,4 2,0 L 26,10 l -6,0 0,0 z"></path><path d="m 24,24 -4,0 0,2 L 26,26 l 0,-6 -2,0 0,4 0,0 z"></path><path d="M 12,20 10,20 10,26 l 6,0 0,-2 -4,0 0,-4 0,0 z"></path></svg></div><div id="guydhtVideoSettings"><svg viewbox="0 0 36 36" height="100%" width="35px"><path d="m 23.94,18.78 c .03,-0.25 .05,-0.51 .05,-0.78 0,-0.27 -0.02,-0.52 -0.05,-0.78 l 1.68,-1.32 c .15,-0.12 .19,-0.33 .09,-0.51 l -1.6,-2.76 c -0.09,-0.17 -0.31,-0.24 -0.48,-0.17 l -1.99,.8 c -0.41,-0.32 -0.86,-0.58 -1.35,-0.78 l -0.30,-2.12 c -0.02,-0.19 -0.19,-0.33 -0.39,-0.33 l -3.2,0 c -0.2,0 -0.36,.14 -0.39,.33 l -0.30,2.12 c -0.48,.2 -0.93,.47 -1.35,.78 l -1.99,-0.8 c -0.18,-0.07 -0.39,0 -0.48,.17 l -1.6,2.76 c -0.10,.17 -0.05,.39 .09,.51 l 1.68,1.32 c -0.03,.25 -0.05,.52 -0.05,.78 0,.26 .02,.52 .05,.78 l -1.68,1.32 c -0.15,.12 -0.19,.33 -0.09,.51 l 1.6,2.76 c .09,.17 .31,.24 .48,.17 l 1.99,-0.8 c .41,.32 .86,.58 1.35,.78 l .30,2.12 c .02,.19 .19,.33 .39,.33 l 3.2,0 c .2,0 .36,-0.14 .39,-0.33 l .30,-2.12 c .48,-0.2 .93,-0.47 1.35,-0.78 l 1.99,.8 c .18,.07 .39,0 .48,-0.17 l 1.6,-2.76 c .09,-0.17 .05,-0.39 -0.09,-0.51 l -1.68,-1.32 0,0 z m -5.94,2.01 c -1.54,0 -2.8,-1.25 -2.8,-2.8 0,-1.54 1.25,-2.8 2.8,-2.8 1.54,0 2.8,1.25 2.8,2.8 0,1.54 -1.25,2.8 -2.8,2.8 l 0,0 z" /></svg><div id="guydhtVideoSettingsWindow"><ul id="guydhtVideoSettingsList"><li><div id="guydhtVideoStretch">Stretch Video</div><span id="guydhtVideoStretchVideo"></span></li><li><div>Subs Font Size</div>x<input id="guydhtFontSizeMultiplier" class="guydhtNoSpinner" type="number" /></li><div></div></li></ul></div></div><div id="guydhtThumbnailContainer"><img></img></div><div id="guydhtVideoTimeTooltip"></div><div id="guydhtVideoWidthLimiter"><div id="guydhtVideoProgressContainer"><div id="guydhtVideoShadowLineForProgress"></div><div id="guydhtVideoProgress"></div><div id="guydhtVideoProgressCircle"></div></div></div></div><div id="guydhtVideoMiddleTooltiper"><div id="guydhtVideoMiddleText"></div></div></div>';
+    container.innerHTML = '<div id="guydhtVideoWrapper"><video tabIndex="1" id="guydhtVideoMyVideo"></video><div id="guydhtVideoInfo" style="display: none;"><div id="guydhtVideoTimer"></div><span class="guydhtVideoClear"></span><div id="guydhtVideoVolume"></div><span class="guydhtVideoClear"></span></div><div id="guydhtVideoUpperSlider"><div id="guydhtVideoName">' + AnimeName + '</div></div><div id="guydhtVideoSlider"><div id="guydhtVideoPlayPauseButton" class="guydhtVideoPlay"></div><div id="guydhtVideoVolumeControl"><svg height="100%" viewBox="0 0 100 100" width="100%"><path></path></svg></div><div id="guydhtVideoVolumeSlider"><div id="guydhtVideoVolumeHandle"></div></div><div id="guydhtVideoAnotherTimerContainer"><div id="guydhtVideoAnotherTimer"></div></div><div id="guydhtVideoFullscreen"><svg height="100%" width="100%"><path d="m 10,16 2,0 0,-4 4,0 0,-2 L 10,10 l 0,6 0,0 z"></path><path d="m 20,10 0,2 4,0 0,4 2,0 L 26,10 l -6,0 0,0 z"></path><path d="m 24,24 -4,0 0,2 L 26,26 l 0,-6 -2,0 0,4 0,0 z"></path><path d="M 12,20 10,20 10,26 l 6,0 0,-2 -4,0 0,-4 0,0 z"></path></svg></div><div id="guydhtVideoSettings"><svg viewbox="0 0 36 36" height="100%" width="35px"><path d="m 23.94,18.78 c .03,-0.25 .05,-0.51 .05,-0.78 0,-0.27 -0.02,-0.52 -0.05,-0.78 l 1.68,-1.32 c .15,-0.12 .19,-0.33 .09,-0.51 l -1.6,-2.76 c -0.09,-0.17 -0.31,-0.24 -0.48,-0.17 l -1.99,.8 c -0.41,-0.32 -0.86,-0.58 -1.35,-0.78 l -0.30,-2.12 c -0.02,-0.19 -0.19,-0.33 -0.39,-0.33 l -3.2,0 c -0.2,0 -0.36,.14 -0.39,.33 l -0.30,2.12 c -0.48,.2 -0.93,.47 -1.35,.78 l -1.99,-0.8 c -0.18,-0.07 -0.39,0 -0.48,.17 l -1.6,2.76 c -0.10,.17 -0.05,.39 .09,.51 l 1.68,1.32 c -0.03,.25 -0.05,.52 -0.05,.78 0,.26 .02,.52 .05,.78 l -1.68,1.32 c -0.15,.12 -0.19,.33 -0.09,.51 l 1.6,2.76 c .09,.17 .31,.24 .48,.17 l 1.99,-0.8 c .41,.32 .86,.58 1.35,.78 l .30,2.12 c .02,.19 .19,.33 .39,.33 l 3.2,0 c .2,0 .36,-0.14 .39,-0.33 l .30,-2.12 c .48,-0.2 .93,-0.47 1.35,-0.78 l 1.99,.8 c .18,.07 .39,0 .48,-0.17 l 1.6,-2.76 c .09,-0.17 .05,-0.39 -0.09,-0.51 l -1.68,-1.32 0,0 z m -5.94,2.01 c -1.54,0 -2.8,-1.25 -2.8,-2.8 0,-1.54 1.25,-2.8 2.8,-2.8 1.54,0 2.8,1.25 2.8,2.8 0,1.54 -1.25,2.8 -2.8,2.8 l 0,0 z" /></svg><div id="guydhtVideoSettingsWindow"><ul id="guydhtVideoSettingsList"><li><div id="guydhtVideoStretch">Stretch Video</div><span id="guydhtVideoStretchVideo"></span></li><div></div></li></ul></div></div><div id="guydhtThumbnailContainer"><img></img></div><div id="guydhtVideoTimeTooltip"></div><div id="guydhtVideoWidthLimiter"><div id="guydhtVideoProgressContainer"><div id="guydhtVideoShadowLineForProgress"></div><div id="guydhtVideoProgress"></div><div id="guydhtVideoProgressCircle"></div></div></div></div><div id="guydhtVideoMiddleTooltiper"><div id="guydhtVideoMiddleText"></div></div></div>';
     container.appendChild(style);
     container.style = "background: none;";
     // eslint-disable-next-line
@@ -69,9 +31,9 @@ function asd(AnimeName, elementContainer, videoURL) {
     elementContainer.style.background = "none";
     elementContainer.appendChild(container);
     asdf(AnimeName);
-    return true;
+    return container;
 
-    function asdf(AnimeName) {
+    async function asdf(AnimeName) {
         var video = container.querySelector("#guydhtVideoMyVideo"),
             wrapper = container.querySelector("#guydhtVideoWrapper"),
             Timer = container.querySelector("#guydhtVideoTimer"),
@@ -91,82 +53,11 @@ function asd(AnimeName, elementContainer, videoURL) {
             settingsButton = container.querySelector("#guydhtVideoSettings svg"),
             settingsWindow = container.querySelector("#guydhtVideoSettingsWindow"),
             thumbnailContainer = container.querySelector("#guydhtThumbnailContainer"),
-            upperName = container.querySelector("#guydhtVideoUpperSlider"),
-            subs = container.querySelector("#guydhtVideoSubsContainer"),
-            subtitles = [];
+            upperName = container.querySelector("#guydhtVideoUpperSlider");
         var upperNameDoubleClickFlag = false,
-            upperNameTimeout,
-            subsFontSizeMultiplier = 1;
-        video.currentTime = new CacheLocalStorage("videoLastTime").getItem(AnimeName) || 0;
-        subsFontSizeMultiplier = Number(localStorage.getItem("subs-font-size-multiplier")) || 1;
-        subs.currentlyLoaded = [];
-        subs.loadSubs = (subtitles) => {
-            let newSubs = subtitles.filter(subtitle => !subs.currentlyLoaded.includes(subtitle)),
-                toRemove = subs.currentlyLoaded.filter(currentlyLoaded => !subtitles.includes(currentlyLoaded));
-            newSubs.forEach(subtitle => {
-                let subElement = document.createElement("div");
-                subElement.id = "guydhtVideoSubsText";
-                subElement.dataset.originalText = subtitle.text;
-                let positionMapping = {
-                    7: "top-left",
-                    8: "top-center",
-                    9: "top-right",
-                    4: "middle-left",
-                    5: "middle-center",
-                    6: "middle-right",
-                    1: "bottom-left",
-                    2: "bottom-center",
-                    3: "bottom-right"
-                }, position = subtitle.text.match(/^\{\\an[1-9]\}/g),
-                    text = subtitle.text;
-                if (position) {
-                    position = position[0];
-                    let positionText = positionMapping[Number(position.slice(4, -1))];
-                    subElement.classList.add(...positionText.split("-"));
-                }
-                text = text.replace(/\\N/g, "<br>").replace(/(?<=\{\\i1\}).+(?=\{\\i0\})/g, t => `<i>${t}</i>`);
-                text = text.replace(/\{\\i0\}|\{\\i1\}|^\{\\an[1-9]\}/g, "");
-                let fsRegex = /^\{\\fs20\}/g;
-                if (fsRegex.test(text)) {
-                    subElement.classList.add("left", "bottom");
-                    subElement.classList.remove("right", "center", "top", "middle");
-                    subElement.style.fontSize = "70%";
-                    subElement.style.transform = "translateY(-100%)";
-                    text = text.replace(fsRegex, '');
-                }
-                subElement.innerHTML = text;
-                subs.append(subElement);
-            });
-            toRemove.forEach(subtitle => {
-                ([...subs.children].find(ele => ele.dataset.originalText === subtitle.text) || { remove: () => { } }).remove();
-            });
-            subs.currentlyLoaded = subtitles;
-        };
-        if (path.extname(videoURL) === ".mkv") {
-            let stream;
-            if (videoURL.startsWith("http://"))
-                stream = request.get(videoURL);
-            else
-                stream = fs.createReadStream(videoURL.substring(7));
-            stream.pipe(subtitleParser);
-            let trackNumber;
-            subtitleParser.once('tracks', tracks => {
-                trackNumber = tracks[0].number;
-            });
-            subtitleParser.on('subtitle', (subtitle, trackNum) => {
-                if (trackNumber === trackNum)
-                    subtitles.push(subtitle);
-            });
-            subtitleParser.on('finish', () => console.log(subtitles));
-        }
+            upperNameTimeout;
+        video.currentTime = (new CacheLocalStorage("videoLastTime").getItem(AnimeName) || {}).currentTime || 0;
         video.focus();
-        setInterval(loadSubtitles, 100);
-        function loadSubtitles() {
-            let currentTime = video.currentTime;
-            let matchingSubs = subtitles.filter(subtitle => subtitle.time / 1000 < currentTime && subtitle.time / 1000 + subtitle.duration / 1000 > currentTime);
-            subs.loadSubs(matchingSubs);
-            subs.style.fontSize = `${((wrapper.clientWidth + wrapper.clientHeight) / 70) * subsFontSizeMultiplier}px`;
-        }
         upperName.children[0].onkeydown = function (e) {
             video.dataset.guydhtVideoName = this.value;
             if (e.code === "Enter")
@@ -617,7 +508,7 @@ function asd(AnimeName, elementContainer, videoURL) {
                 anotherTimer = container.querySelector("#guydhtVideoAnotherTimer");
             if (anotherTimer.innerHTML !== text)
                 anotherTimer.innerHTML = text;
-            new CacheLocalStorage("videoLastTime").setItem(AnimeName, video.currentTime);
+            new CacheLocalStorage("videoLastTime").setItem(AnimeName, { currentTime: video.currentTime, progress: video.currentTime / video.duration });
         }
         progressContainer.onmousedown = function (e) {
             if (e.button !== 0) return;

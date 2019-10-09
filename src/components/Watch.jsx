@@ -1,18 +1,58 @@
 import React, { Component } from "react";
-import { waitFor } from "../classes/jifa";
+import MALUtils from "../classes/MALUtils";
 import MovableComponent from "../classes/MovableComponent";
-import Consts from "../consts";
+import { Confirm } from "../classes/utils";
+import Consts from "../classes/Consts";
 import styles from "./css/WatchPlayer.module.css";
 import VideoPlayer from "./VideoPlayer";
 
 export default class Watch extends Component {
 
+    static UPDATE_ANIME_PROGRESS_THRESHOLD = 0.9;
+
     state = {
         showingVideo: true,
         videoOpacity: 1
     };
+
     removingVideo = false;
     movingElement = React.createRef();
+
+    componentDidMount() {
+        if (!this.props.downloadedItem.animeEntry.malId ||
+            this.props.downloadedItem.animeEntry.myWatchedEpisodes >= this.props.downloadedItem.episodeData.episodeNumber) return;
+        const progressFromLocalStorage = () => {
+            let obj = JSON.parse(localStorage.getItem("videoLastTime")),
+                relevant = obj[this.props.downloadedItem.fileName];
+            if (relevant)
+                return relevant[1].progress;
+            return 0;
+        }
+        let lastLocalStorageValue = progressFromLocalStorage(),
+            finishEpisodeListener = setInterval(() => {
+                let current = progressFromLocalStorage();
+                if (current !== lastLocalStorageValue) {
+                    lastLocalStorageValue = current;
+                    if (current > Watch.UPDATE_ANIME_PROGRESS_THRESHOLD) {
+                        clearInterval(finishEpisodeListener);
+                        Confirm(`Do you want to update ${this.props.downloadedItem.fileName} in MAL?`, ok => {
+                            if (ok) {
+                                MALUtils.UpdateWatchedEpisode(this.props.downloadedItem).then(ok => {
+                                    ok ? window.displayToast({
+                                        title: "Anime Updated Successfully",
+                                        body: `Successfully updated ${this.props.downloadedItem.fileName} in MAL!`
+                                    }) : window.displayToast({
+                                        title: "Failed updaating Anime",
+                                        body: `Failed updating ${this.props.downloadedItem.fileName} in MAL!`
+                                    });
+                                })
+                            }
+                        })
+                    }
+                }
+            }, 500);
+    }
+
     componentDidUpdate() {
         if (this.removingVideo)
             return this.removingVideo = false;
@@ -42,7 +82,7 @@ export default class Watch extends Component {
         let styleObject = { transition: "opacity .5s", opacity: this.state.videoOpacity };
         for (let key in Consts.WATCH_PLAYER_SIZE)
             styleObject[key] = Consts.WATCH_PLAYER_SIZE[key];
-        if(!this.state.showingVideo)
+        if (!this.state.showingVideo)
             return null;
         return (
             <MovableComponent
@@ -53,7 +93,7 @@ export default class Watch extends Component {
                 ref={this.movingElement}
                 resizable={true}>
                 <span
-                    style={{ position: "relative", zIndex: 1, float: "right", cursor: "pointer" }}
+                    style={{ position: "absolute", zIndex: 1, right: 0, cursor: "pointer" }}
                     className="mr-2 mt-1 p-1" onClick={hide}>
                     <span aria-hidden="true">×</span>
                 </span>
@@ -76,11 +116,11 @@ export default class Watch extends Component {
     }
     onDragFinish(e, didMoveInGesture) {
         if (didMoveInGesture) {
-            let video = document.querySelector("video"),
-                pausedStatus = video.paused;
-            let waitInterval = waitFor(() => video.paused !== pausedStatus, () => pausedStatus ? video.pause() : video.play(), 10);
-            setTimeout(() => clearInterval(waitInterval), 500);
-            this.onResizeFinish(e, didMoveInGesture);
+            // let video = document.querySelector("video"),
+            //     pausedStatus = video.paused;
+            // let waitInterval = waitFor(() => video.paused !== pausedStatus, () => pausedStatus ? video.pause() : video.play(), 10);
+            // setTimeout(() => clearInterval(waitInterval), 500);
+            // this.onResizeFinish(e, didMoveInGesture);
         }
     }
 }

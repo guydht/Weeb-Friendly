@@ -4,13 +4,14 @@ import { Reviews } from "jikants/dist/src/interfaces/anime/Reviews";
 import { Forum } from "jikants/dist/src/interfaces/manga/Forum";
 import { Seasons } from "jikants/dist/src/interfaces/season/Season";
 import { AnimeListTypes } from "jikants/dist/src/interfaces/user/AnimeList";
-import Consts from "../consts";
+import Consts from "../classes/Consts";
 import AnimeEntry from "./AnimeEntry";
 import AnimeList from "./AnimeList";
 import * as AnimeStorage from "./AnimeStorage";
+import DownloadedItem from "./DownloadedItem";
+import { MALStatuses } from "./MALStatuses";
 import User from "./User";
 import { getCurrentSeason, stringCompare } from "./utils";
-import { MALStatuses } from "./MALStatuses";
 
 type HasMalId = {
     malId: Number
@@ -119,7 +120,7 @@ export default class MALUtils {
     }
     static UPDATE_ANIME_URL = "https://myanimelist.net/ownlist/anime/edit.json";
     static ADD_ANIME_URL = "https://myanimelist.net/ownlist/anime/add.json";
-    static async updateAnime(anime: AnimeEntry & HasMalId, { episodes, status, score }: { episodes: number, status: MALStatuses, score: number }): Promise<boolean> {
+    static async updateAnime(anime: AnimeEntry & HasMalId, { episodes, status, score }: { episodes?: number, status?: MALStatuses, score?: number }): Promise<boolean> {
         let startDate = new Date(),
             body: any = {
                 anime_id: anime.malId,
@@ -143,6 +144,7 @@ export default class MALUtils {
             (anime.myMalStatus as any) = status;
             (anime.myMalRating as any) = score;
             if (episodes === 1) anime.startDate = startDate;
+            anime.sync();
         }
         return request.ok;
     }
@@ -157,11 +159,26 @@ export default class MALUtils {
                 csrf_token: Consts.CSRF_TOKEN
             })
         });
-        if (request.ok) {
+        let ok = request.ok || (await request.json()).errors[0].message === "The anime is already in your list.";
+        if (ok) {
             anime.myMalStatus = MALStatuses.Watching;
             anime.myWatchedEpisodes = 0;
+            anime.sync();
+            Consts.MAL_USER.animeList.watching[anime.malId!] = anime;
+            Consts.setMALUser(Consts.MAL_USER);
         }
-        return request.ok || (await request.json()).errors[0].message === "The anime is already in your list.";
+        return ok;
+    }
+    static async UpdateWatchedEpisode(downloadedItem: DownloadedItem): Promise<boolean> {
+        let anime = downloadedItem.animeEntry,
+            episode = downloadedItem.episodeData.episodeNumber,
+            status = anime.totalEpisodes === episode ? MALStatuses.Completed : MALStatuses.Watching,
+            ok: boolean = true;
+        // if (!anime.myMalStatus)
+            ok = await MALUtils.addAnime(anime as any)
+        if (!ok) return ok;
+        ok = await MALUtils.updateAnime(anime as any, { episodes: episode, status });
+        return ok;
     }
     static async animeForum(anime: AnimeEntry & HasMalId): Promise<Forum | undefined> {
         let data = await mal.Anime.forum(anime.malId);

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Jumbotron } from "react-bootstrap";
 import { hasInternet } from "../classes/utils";
-import Consts from "../consts";
+import Consts from "../classes/Consts";
 import CurrentlyWatching from "./CurrentlyWatching";
 import DownloadedAnime from "./DownloadedAnime";
 import LatestTorrents from "./LatestTorrents";

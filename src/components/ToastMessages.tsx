@@ -64,11 +64,13 @@ export default class ToastMessage extends Component {
     }
     fadeToastOut(toast: toast) {
         let toasts = this.state.toasts;
-        toasts[this.getToastIndex(toast)].opacity = 0;
-        this.setState({});
-        setTimeout(() => {
-            this.state.toasts.splice(this.getToastIndex(toast), 1);
+        if (this.getToastIndex(toast) in toasts) {
+            toasts[this.getToastIndex(toast)].opacity = 0;
             this.setState({});
-        }, ToastMessage.TOAST_FADE_DURATION);
+            setTimeout(() => {
+                this.state.toasts.splice(this.getToastIndex(toast), 1);
+                this.setState({});
+            }, ToastMessage.TOAST_FADE_DURATION);
+        }
     }
 };

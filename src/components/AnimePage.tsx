@@ -1,7 +1,8 @@
 import { AnimeById } from "jikants/dist/src/interfaces/anime/ById";
 import React, { Component } from "react";
-import { Col, Image, Row, Tab, Tabs } from "react-bootstrap";
+import { Col, Container, Row, Tab, Tabs } from "react-bootstrap";
 import { LazyLoadComponent } from "react-lazy-load-image-component";
+import ImageZoom from "react-medium-image-zoom";
 import AnimeEntry from "../classes/AnimeEntry";
 import MALUtils from "../classes/MALUtils";
 import Recommendations from "./AnimeHome/ Recommendations";
@@ -27,7 +28,12 @@ export default class AnimePage extends Component {
         info: undefined,
         anime: ((this.props as any).location.state || {}).animeEntry as AnimeEntry
     }
-    componentDidMount() {
+    componentDidUpdate() {
+        if (this.state.anime.malId !== Number((this.props as any).match.params.id))
+            this.setState({
+                anime: (this.props as any).location.state.animeEntry,
+                info: undefined
+            });
     }
 
     render() {
@@ -47,7 +53,7 @@ export default class AnimePage extends Component {
             return null;
         }
         return (
-            <div className="mx-auto px-4" style={{ width: "fit-content" }}>
+            <div className="mx-5 px-5">
                 <Row>
                     <h2>
                         {
@@ -57,7 +63,20 @@ export default class AnimePage extends Component {
                 </Row>
                 <Row>
                     <Col md="auto">
-                        <Image src={this.state.info && (this.state.info as any).image_url} />
+                        <ImageZoom image={{
+                            src: this.state.info ? (this.state.info as any).image_url : "",
+                            alt: this.state.anime.name
+                        }} defaultStyles={{
+                            overlay: {
+                                background: "rgba(0, 0, 0, 0.8)"
+                            },
+                            image: {
+                                cursor: "pointer"
+                            },
+                            zoomImage: {
+                                cursor: "pointer"
+                            }
+                        }} />
                     </Col>
                     <Col md="auto" style={{ flex: 1 }}>
                         <Tabs id="mal-links" defaultActiveKey={"Details"}>
@@ -66,7 +85,9 @@ export default class AnimePage extends Component {
                                     return (
                                         <Tab eventKey={name} title={name} mountOnEnter={true} key={i}>
                                             <LazyLoadComponent>
-                                                <MyComponent anime={this.state.anime} info={this.state.info! as AnimeById} />
+                                                <Container>
+                                                    <MyComponent anime={this.state.anime} info={this.state.info! as AnimeById} />
+                                                </Container>
                                             </LazyLoadComponent>
                                         </Tab>
                                     )

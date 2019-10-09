@@ -1,18 +1,46 @@
 import React, { Component } from "react";
 import { asd } from "../classes/jifa";
+import mkvExtract from "../classes/SubtitleParsers/mkvExtract";
+import { SubtitlesOctopus } from "../classes/SubtitleParsers/Octopus";
 import { CacheLocalStorage } from "../classes/utils";
 
 
 export default class VideoPlayer extends Component {
 
     videoWrapper = React.createRef();
+    subtitlesOctopus;
 
     componentDidMount() {
-        asd(this.props.name, this.videoWrapper.current, this.props.src);
+        let container = asd(this.props.name, this.videoWrapper.current, this.props.src);
+        this.setState({
+            loading: true
+        });
+        mkvExtract(this.props.src.substring(7), async (_, files) => {
+            let subtitle;
+            const fonts = [];
+            for (let f of files) {
+                if ((f.name.endsWith(".ass") || f.name.endsWith(".ssa")) && !subtitle)
+                    subtitle = URL.createObjectURL(new Blob([f.data]));
+                else if (f.name.endsWith(".ttf"))
+                    fonts.push(URL.createObjectURL(new Blob([f.data])));
+            }
+            var options = {
+                video: container.querySelector("video"),
+                subUrl: subtitle,
+                fonts: fonts,
+                workerUrl: "/OctopusWorker.js"
+            };
+            this.setState({
+                loading: true
+            });
+            this.subtitlesOctopus = new SubtitlesOctopus(options);
+        });
     }
 
     componentWillUnmount() {
         new CacheLocalStorage("videoLastTime").setItem(this.props.name, this.videoWrapper.current.querySelector("video").currentTime);
+        if (this.subtitlesOctopus)
+            this.subtitlesOctopus.dispose();
     }
 
     render() {

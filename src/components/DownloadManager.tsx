@@ -3,6 +3,7 @@ import { Button, ButtonGroup, Col, Container, ListGroup, ProgressBar, Row } from
 import { Torrent } from "webtorrent";
 import MovableComponent from "../classes/MovableComponent";
 import TorrentManager from "../classes/TorrentManager";
+import styles from "./css/DownloadManager.module.css";
 
 export default class DownloadManager extends Component {
 
@@ -14,7 +15,11 @@ export default class DownloadManager extends Component {
     container = React.createRef<any>();
 
     componentDidMount() {
-        const updateState = () => this.setState({ torrents: TorrentManager.getAll() });
+        let updateTimeout: any;
+        const updateState = () => {
+            clearTimeout(updateTimeout);
+            updateTimeout = setTimeout(() => this.setState({ torrents: TorrentManager.getAll() }), 200);
+        };
         TorrentManager.addEventListener(TorrentManager.Listener.addedTorrent, updateState);
         TorrentManager.addEventListener(TorrentManager.Listener.removedTorrent, updateState);
         TorrentManager.addEventListener(TorrentManager.Listener.updatedTorrent, updateState);
@@ -47,13 +52,14 @@ export default class DownloadManager extends Component {
                     className="p-0"
                     style={{ zIndex: this.state.hideFlag ? -1 : 999, transition: "transform 0.5s", overflow: "hidden", transform: "scaleY(1)", transformOrigin: '0 0' }}>
                     <span
-                        style={{ position: "relative", zIndex: 1, float: "right", cursor: "pointer" }}
+                        style={{ position: "absolute", zIndex: 1, right: 0, cursor: "pointer" }}
                         className="mr-2 mt-1 p-1" onClick={hide}>
                         <span aria-hidden="true">×</span>
                     </span>
-                    <ListGroup>
+                    <ListGroup className={styles.grid + " " + styles[`grid-template-${(Math.floor(this.state.torrents.length / 4) + 1)}`]}>
                         {
                             this.state.torrents.map(torrent => {
+                                if (!torrent.name) return;
                                 return (
                                     <ListGroup.Item key={torrent.name}>
                                         <h5>

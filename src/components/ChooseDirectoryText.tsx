@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Button, Dropdown, Form, FormControl } from "react-bootstrap";
-import Consts from "../consts";
+import Consts from "../classes/Consts";
 
 const fs = window.require("fs"),
     path = window.require("path");

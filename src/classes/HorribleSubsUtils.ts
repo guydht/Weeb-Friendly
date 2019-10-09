@@ -3,12 +3,15 @@ import AnimeEntry from "./AnimeEntry";
 
 export default class HorribleSubsUtils {
     static HORRIBLE_SUBS_USER = "HorribleSubs";
-    static NUMBER_OF_LATEST_ANIMES = 75;
-    static async search(anime: AnimeEntry): Promise<SearchResult[]> {
+    static async search(anime: AnimeEntry, fetchAll: boolean = false): Promise<SearchResult[]> {
         for (let name of anime.synonyms) {
             try {
-                let results = await si.searchAllByUser(this.HORRIBLE_SUBS_USER, name);
-                if (results)
+                let results;
+                if (fetchAll)
+                    results = await si.searchAllByUser(this.HORRIBLE_SUBS_USER, name);
+                else
+                    results = await si.searchByUserAndByPage(this.HORRIBLE_SUBS_USER, name, 1);
+                if (results && results.length)
                     return results.map(siResultToSearchResult);
             }
             catch (e) {
@@ -16,8 +19,8 @@ export default class HorribleSubsUtils {
         }
         return [];
     }
-    static async latest(): Promise<SearchResult[]> {
-        let results = await si.searchByUser(this.HORRIBLE_SUBS_USER, '', this.NUMBER_OF_LATEST_ANIMES);
+    static async latest(page = 1): Promise<SearchResult[]> {
+        let results = await si.searchByUserAndByPage(this.HORRIBLE_SUBS_USER, '', page);
         return results.map(siResultToSearchResult);
     }
 }
@@ -63,7 +66,7 @@ export class SearchResult {
     animeEntry!: AnimeEntry
 }
 
-class EpisodeData {
+export class EpisodeData {
     episodeNumber!: number;
     seriesName!: string;
     quality!: number;

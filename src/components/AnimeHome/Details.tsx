@@ -1,10 +1,11 @@
 import React, { Component, RefObject } from "react";
-import { Badge, Button, Col, Container, FormControl, Modal, Row } from "react-bootstrap";
+import { Badge, Button, Col, FormControl, Modal, Row } from "react-bootstrap";
+import { Link } from "react-router-dom";
 import AnimeEntry from "../../classes/AnimeEntry";
+import Consts from "../../classes/Consts";
 import { MALStatuses } from "../../classes/MALStatuses";
 import MALUtils from "../../classes/MALUtils";
 import { hasInternet } from "../../classes/utils";
-import Consts from "../../consts";
 import { AnimeProps } from "../AnimePage";
 import styles from "./css/details.module.css";
 
@@ -21,7 +22,7 @@ export default class Details extends Component<AnimeProps> {
 
     render() {
         return (
-            <Container>
+            <div>
                 {
                     this.state.info && (
                         <Row className="mt-4" style={{ fontSize: "130%" }}>
@@ -141,7 +142,24 @@ export default class Details extends Component<AnimeProps> {
                                         return (
                                             <p key={type}>
                                                 {type}: {
-                                                    data.map((ele: { name: any; }) => ele.name).join(", ")
+                                                    data.map((ele: any) => {
+                                                        if (ele.type === "anime")
+                                                            return (
+                                                                <Link key={ele.mal_id} to={{
+                                                                    pathname: "/anime/" + ele.mal_id,
+                                                                    state: {
+                                                                        animeEntry: new AnimeEntry({
+                                                                            name: ele.name,
+                                                                            malId: ele.mal_id,
+                                                                            malUrl: ele.url
+                                                                        })
+                                                                    }
+                                                                }}>
+                                                                    {ele.name}
+                                                                </Link>
+                                                            )
+                                                        return `${ele.name} (${ele.type})`;
+                                                    })
                                                 }
                                             </p>
                                         )
@@ -151,21 +169,13 @@ export default class Details extends Component<AnimeProps> {
                         </Modal.Dialog>
                     </Row>
                 }
-            </Container >
+            </div >
         )
     }
     updateTimeout?: number;
     static UPDATE_TIMEOUT_MS = 2000;
     addAnime(anime: AnimeEntry) {
-        MALUtils.addAnime(anime as any).then(ok => {
-            if (ok) {
-                let watching = Consts.MAL_USER.animeList.watching;
-                watching[anime.malId!] = anime;
-                Consts.MAL_USER.animeList.watching = Consts.MAL_USER.animeList.watching;
-                Consts.setMALUser(Consts.MAL_USER);
-                this.setState({});
-            }
-        })
+        MALUtils.addAnime(anime as any).then(ok => ok && this.setState({}));
     }
     updateAnime() {
         if (!this.statusElement.current || !this.episodElement.current || !this.scoreElement.current) return;

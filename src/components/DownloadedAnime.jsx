@@ -3,11 +3,11 @@ import { Button, ButtonGroup, Container, FormControl, InputGroup, Row } from "re
 import Form from "react-bootstrap/FormGroup";
 import { withRouter } from "react-router";
 import AnimeEntry from "../classes/AnimeEntry";
+import Consts from "../classes/Consts";
 import DownloadedFileThumbnail from "../classes/DownloadedFileThumbnail";
 import DownloadedItem from "../classes/DownloadedItem";
 import { waitFor } from "../classes/jifa";
 import MALUtils from "../classes/MALUtils";
-import Consts from "../consts";
 import styles from "./css/DownloadedAnime.module.css";
 
 const fs = window.require("fs"),
@@ -66,7 +66,7 @@ export default withRouter(class DownloadedAnime extends Component {
                 this.setState({});
             });
     }
-    componentDidUpdate() {
+    componentWillUpdate() {
         this.downloadedItems = walkDir(Consts.DOWNLOADS_FOLDER);
     }
 

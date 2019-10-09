@@ -1,0 +1,47 @@
+.grid {
+    display: grid !important;
+    max-width: 510px;
+    margin: 0;
+    min-width: auto;
+    overflow: auto;
+}
+
+.grid-template-1 {
+    grid-template-areas: "a";
+}
+
+.grid-template-2 {
+    grid-template-areas: "a a";
+}
+
+.grid-template-3 {
+    grid-template-areas: "a a a";
+}
+
+.grid-template-4 {
+    grid-template-areas: "a a a a";
+}
+
+.grid-template-5 {
+    grid-template-areas: "a a a a a";
+}
+
+.grid-template-6 {
+    grid-template-areas: "a a a a a a";
+}
+
+.grid-template-7 {
+    grid-template-areas: "a a a a a a a";
+}
+
+.grid-template-8 {
+    grid-template-areas: "a a a a a a a a";
+}
+
+.grid-template-9 {
+    grid-template-areas: "a a a a a a a a a";
+}
+
+.grid-template-10 {
+    grid-template-areas: "a a a a a a a a a a a";
+}

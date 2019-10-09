@@ -3,7 +3,7 @@ import { Carousel, Table } from "react-bootstrap";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { Link } from "react-router-dom";
 import MALUtils from "../classes/MALUtils";
-import Consts from "../consts";
+import Consts from "../classes/Consts";
 import styles from "./css/SeasonalCarousel.module.css";
 
 function chunkArray(myArray, chunk_size) {
@@ -20,6 +20,10 @@ export default class CurrentlyWatching extends Component {
     static GRID_SIZE_X = 5;
     static GRID_SIZE_Y = 2;
 
+    state = {
+        animeList: {}
+    }
+
     componentDidMount() {
         if (!Object.keys(Consts.MAL_USER.animeList.all).length)
             MALUtils.getUserAnimeList(Consts.MAL_USER, 'all').then(() => {
@@ -29,8 +33,13 @@ export default class CurrentlyWatching extends Component {
         else if (!Object.keys(Consts.MAL_USER.animeList.watching).length)
             MALUtils.getUserAnimeList(Consts.MAL_USER, 'watching').then(() => {
                 Consts.setMALUser(Consts.MAL_USER);
-                this.setState({});
+                this.setState({ animeList: Consts.MAL_USER.animeList });
             });
+    }
+
+    componentWillUpdate(){
+        // eslint-disable-next-line
+        this.state.animeList = Consts.MAL_USER.animeList;
     }
 
     render() {
@@ -41,11 +50,11 @@ export default class CurrentlyWatching extends Component {
                     </h1>
                 <Carousel interval={null} className="px-5 mx-5 mt-5">
                     {
-                        chunkArray(Object.values(Consts.MAL_USER.animeList.watching).sort(
+                        chunkArray(Object.values(this.state.animeList.watching || []).sort(
                             (a, b) => a.userStartDate - b.userStartDate || a.myWatchedEpisodes - b.myWatchedEpisodes), CurrentlyWatching.GRID_SIZE_X * CurrentlyWatching.GRID_SIZE_Y)
                             .map((arrayChunk, i) => {
                                 return (
-                                    <Carousel.Item key={i} className={styles.carousel}>
+                                    <Carousel.Item key={arrayChunk[0].name} className={styles.carousel}>
                                         <Table responsive={false} className={styles.table}>
                                             <tbody>
                                                 {

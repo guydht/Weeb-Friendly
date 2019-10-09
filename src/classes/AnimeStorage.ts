@@ -71,11 +71,9 @@ setInterval(() => {
         needsUpdating = false;
     }
 }, 1000);
-setImmediate(() => {
-    ((Object.entries(storageObject.get(_storageKey) || {})) as any[]).forEach(([animeId, [date, anime]]) => {
-        (anime as any).sync = false;
-        _ANIMES.set(Number(animeId), [new Date(date), new AnimeEntry(anime as any)]);
-    });
+((Object.entries(storageObject.get(_storageKey) || {})) as any[]).forEach(([animeId, [date, anime]]) => {
+    (anime as any).sync = false;
+    _ANIMES.set(Number(animeId), [new Date(date), new AnimeEntry(anime as any)]);
 });
 
 export { storageObject, sync, get, size };

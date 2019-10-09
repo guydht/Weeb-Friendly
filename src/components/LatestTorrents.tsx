@@ -12,14 +12,20 @@ import SeasonalCarousel from "./SeasonalCarousel";
 
 export default class LatestTorrents extends Component {
 
-    state: { torrents: SearchResult[] } = {
-        torrents: []
+    state: { torrents: SearchResult[], nextPageToLoad: number } = {
+        torrents: [],
+        nextPageToLoad: 1
     }
 
     componentDidMount() {
-        HorribleSubsUtils.latest().then(latest => {
-            this.setState({ torrents: Episodes.groupByQuality(latest) })
-        });
+        this.loadMoreUpdated();
+    }
+
+    loadMoreUpdated() {
+        HorribleSubsUtils.latest(this.state.nextPageToLoad).then(latest => {
+            this.state.torrents.push(...Episodes.groupByQuality(latest));
+            this.setState({ torrents: this.state.torrents, nextPageToLoad: this.state.nextPageToLoad + 1 });
+        })
     }
 
     render() {
@@ -30,12 +36,17 @@ export default class LatestTorrents extends Component {
                     <Spinner animation="grow" />
                 </div>
             )
+        const handleSelect = (index: number, direction: string) => {
+            if (direction === "next" && index + 1 >= this.state.torrents.length / (SeasonalCarousel.GRID_SIZE_X * SeasonalCarousel.GRID_SIZE_Y)) {
+                this.loadMoreUpdated();
+            }
+        };
         return (
             <div>
                 <h1>
                     Latest HorribleSubs Updates:
             </h1>
-                <Carousel interval={null} className="px-5 mx-5 mt-5">
+                <Carousel interval={null} className="px-5 mx-5 mt-5" onSelect={handleSelect}>
                     {
                         chunkArray(this.state.torrents, SeasonalCarousel.GRID_SIZE_X * SeasonalCarousel.GRID_SIZE_Y)
                             .map((arrayChunk, i) => {
@@ -51,6 +62,9 @@ export default class LatestTorrents extends Component {
                                                                     chunk.map((searchResult, i) => {
                                                                         if (searchResult.animeEntry.malId)
                                                                             return <td key={i} className={styles.td}>
+                                                                                <span className={styles.upperTitle}>
+                                                                                    Episode {searchResult.episodeData.episodeNumber}
+                                                                                </span>
                                                                                 <Link to={{
                                                                                     pathname: "/anime/" + searchResult.animeEntry.malId,
                                                                                     state: {
@@ -66,17 +80,20 @@ export default class LatestTorrents extends Component {
                                                                                 </Link>
                                                                             </td>
                                                                         return (
-                                                                            <td key={i} className={styles.td}>
+                                                                            <td key={i} className={styles.td + " pb-4"}>
                                                                                 <LazyLoadComponent key={i}>
-                                                                                    <small>
+                                                                                    <div style={{ height: "-webkit-fill-available", overflowY: "hidden" }}>
                                                                                         <SearchBar
                                                                                             showImage={true}
                                                                                             placeholder="Search in MAL"
                                                                                             gotoAnimePageOnChoose={false}
                                                                                             onInputClick={e =>
                                                                                                 (e.target as any).value = searchResult.episodeData.seriesName}
-                                                                                            onItemClick={entry => this.setMALLink(searchResult, entry)} /></small>
-                                                                                    <span className={styles.title}>{searchResult.episodeData.seriesName}</span>
+                                                                                            onItemClick={entry => this.setMALLink(searchResult, entry)} />
+                                                                                    </div>
+                                                                                    <span
+                                                                                        style={{ flex: "0 1" }}
+                                                                                        className={styles.title}>{searchResult.episodeData.seriesName}</span>
                                                                                 </LazyLoadComponent>
                                                                             </td>
                                                                         )

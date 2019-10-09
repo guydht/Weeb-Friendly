@@ -97,11 +97,6 @@ export default class AnimeEntry {
         return this;
     }
     readyForJSON() {
-        function JSONReplacer(key: any, value: any) {
-            if (value && typeof value === "object" && value[Symbol.iterator])
-                return [...value];
-            return value;
-        }
         let copy: any = { ...this };
         copy.synonyms = [...this.synonyms];
         copy.genres = [...(this.genres || [])];

@@ -1,5 +1,5 @@
 import { Torrent } from "webtorrent";
-import Consts from "../consts";
+import Consts from "./Consts";
 
 const webtorrent = window.require("webtorrent"),
     path = window.require("path"),
@@ -34,11 +34,11 @@ export default class TorrentManager {
                         fs.rename(absolutePath, newAbsolutePath);
                         Consts.SAVED_TORRENTS.delete(returnedTorrent);
                         Consts.setSavedTorrents(Consts.SAVED_TORRENTS);
-                        (window as any).setAppState({});
+                        (window as any).reloadPage();
                     });
                 });
             });
-            (window as any).setAppState({});
+            (window as any).reloadPage();
         });
         (returnedTorrent as any).torrentName = name;
         if (Consts.SAVED_TORRENTS) {
