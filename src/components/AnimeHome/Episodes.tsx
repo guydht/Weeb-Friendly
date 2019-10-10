@@ -57,6 +57,14 @@ export default class Episodes extends Component<AnimeProps & { episodes: SearchR
     }
 
     render() {
+        const userChoseAnime = (anime: AnimeEntry) => {
+            this.state.anime.synonyms.add(anime.name!);
+            this.state.anime.sync();
+            this.componentDidMount();
+            this.setState({
+                loading: true
+            });
+        };
         if (this.state.loading)
             return (
                 <Container>
@@ -73,7 +81,7 @@ export default class Episodes extends Component<AnimeProps & { episodes: SearchR
 
                     <Modal.Body>
                         Try and search it:
-                        <SearchBar gotoAnimePageOnChoose={false} showImage={false} onItemClick={console.log}
+                        <SearchBar gotoAnimePageOnChoose={false} showImage={false} onItemClick={userChoseAnime}
                             onInputChange={e => this.searchAnime(new AnimeEntry({ name: (e.target as any).value }), false)
                                 .then(results => e.setResults(results.map(ele => ele.animeEntry).filter((ele, i, arr) => arr.map(ele => ele.malId).indexOf(ele.malId) === i)))}
                             onInputClick={e => (e.target as any).value === "" && ((e.target as any).value = this.state.anime.name)} />
