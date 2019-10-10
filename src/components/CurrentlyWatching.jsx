@@ -2,8 +2,8 @@ import React, { Component } from "react";
 import { Carousel, Table } from "react-bootstrap";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { Link } from "react-router-dom";
-import MALUtils from "../classes/MALUtils";
 import Consts from "../classes/Consts";
+import MALUtils from "../classes/MALUtils";
 import styles from "./css/SeasonalCarousel.module.css";
 
 function chunkArray(myArray, chunk_size) {
@@ -21,7 +21,7 @@ export default class CurrentlyWatching extends Component {
     static GRID_SIZE_Y = 2;
 
     state = {
-        animeList: {}
+        animeList: Consts.MAL_USER.animeList
     }
 
     componentDidMount() {
@@ -37,11 +37,6 @@ export default class CurrentlyWatching extends Component {
             });
     }
 
-    componentWillUpdate(){
-        // eslint-disable-next-line
-        this.state.animeList = Consts.MAL_USER.animeList;
-    }
-
     render() {
         return (
             <div>
@@ -50,8 +45,8 @@ export default class CurrentlyWatching extends Component {
                     </h1>
                 <Carousel interval={null} className="px-5 mx-5 mt-5">
                     {
-                        chunkArray(Object.values(this.state.animeList.watching || []).sort(
-                            (a, b) => a.userStartDate - b.userStartDate || a.myWatchedEpisodes - b.myWatchedEpisodes), CurrentlyWatching.GRID_SIZE_X * CurrentlyWatching.GRID_SIZE_Y)
+                        chunkArray(Object.values(this.state.animeList.watching).sort(
+                            (a, b) => a.startDate - b.startDate), CurrentlyWatching.GRID_SIZE_X * CurrentlyWatching.GRID_SIZE_Y)
                             .map((arrayChunk, i) => {
                                 return (
                                     <Carousel.Item key={arrayChunk[0].name} className={styles.carousel}>

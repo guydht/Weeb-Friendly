@@ -45,8 +45,8 @@ function stringRelativeSimilarity(str1: string, str2: string) {
 }
 
 function stringCompare(givenString: string, toCompare: string) {
-    let givenSplit = givenString.split(" "),
-        compareSplit = toCompare.split(" ");
+    let givenSplit = (givenString || "").split(" "),
+        compareSplit = (toCompare || "").split(" ");
     let minDistances = givenSplit.map(givenWord => {
         return Math.min(
             ...compareSplit.map(compareWord => {

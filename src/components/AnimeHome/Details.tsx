@@ -68,7 +68,7 @@ export default class Details extends Component<AnimeProps> {
                             <Row>
                                 <Col>
                                     <FormControl onChange={this.updateAnime.bind(this)} ref={this.statusElement}
-                                        as="select" className="w-auto" defaultValue={(MALStatuses as any)[this.state.anime.myMalStatus!]}>
+                                        as="select" className="w-auto" value={this.state.anime.myMalStatus as any}>
                                         {
                                             Object.keys(MALStatuses).filter(ele => isNaN(Number(ele))).map(status => (
                                                 <option key={status} value={(MALStatuses as any)[status]}>{status}</option>
@@ -180,6 +180,10 @@ export default class Details extends Component<AnimeProps> {
     updateAnime() {
         if (!this.statusElement.current || !this.episodElement.current || !this.scoreElement.current) return;
         clearTimeout(this.updateTimeout);
+        if (Number(this.episodElement.current.value) === this.state.anime.totalEpisodes)
+            this.statusElement.current.value = MALStatuses.Completed;
+        else if (Number(this.episodElement.current.value) === 1)
+            this.statusElement.current.value = MALStatuses.Watching;
         this.updateTimeout = window.setTimeout(() => {
             MALUtils.updateAnime(this.state.anime as any, {
                 episodes: Number(this.episodElement.current.value),

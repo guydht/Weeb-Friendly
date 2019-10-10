@@ -1,5 +1,6 @@
 import { Torrent } from 'webtorrent';
 import AnimeList from "./AnimeList";
+import { waitFor } from './jifa';
 import TorrentManager from './TorrentManager';
 import User from './User';
 import { hasInternet } from './utils';
@@ -67,18 +68,23 @@ export default class Consts {
     }
 
     static SAVED_TORRENTS_STORAGE_KEY = "saved_torrents";
-    static SAVED_TORRENTS = new Set<Torrent>((storage.get(Consts.SAVED_TORRENTS_STORAGE_KEY) || []).map(
-        (ele: Torrent) => TorrentManager.add(ele.magnetURI, (ele as any).torrentName)
-    ));
-    static setSavedTorrents(torrents: Set<Torrent>) {
-        Consts.SAVED_TORRENTS = torrents;
-        setImmediate(() => {
-            storage.set(Consts.SAVED_TORRENTS_STORAGE_KEY, Array.from(torrents).map(torrent => {
+    static SAVED_TORRENTS = new Set<Torrent>((storage.get(Consts.SAVED_TORRENTS_STORAGE_KEY) || []).filter((ele: any) => ele.magnetURI && ele.torrentName)
+        .map((ele: Torrent) => TorrentManager.add({ magnetURL: ele.magnetURI, name: (ele as any).torrentName })));
+    static addToSavedTorrents(torrent: Torrent) {
+        
+        Consts.SAVED_TORRENTS.add(torrent);
+        waitFor(() => torrent.magnetURI, () => {
+            storage.set(Consts.SAVED_TORRENTS_STORAGE_KEY, Array.from(Consts.SAVED_TORRENTS).map(torrent => {
                 return { torrentName: (torrent as any).torrentName, magnetURI: torrent.magnetURI }
             }));
         });
     }
-
+    static removeFromSavedTorrents(torrent: Torrent) {
+        Consts.SAVED_TORRENTS.delete(torrent);
+        storage.set(Consts.SAVED_TORRENTS_STORAGE_KEY, Array.from(Consts.SAVED_TORRENTS).map(torrent => {
+            return { torrentName: (torrent as any).torrentName, magnetURI: torrent.magnetURI }
+        }));
+    }
     static FILE_URL_PROTOCOL = "file://";
 }
 function getUserFromStorage(): User {
@@ -95,3 +101,4 @@ function getUserFromStorage(): User {
     }
     return user;
 }
+(window as any).Consts = Consts;

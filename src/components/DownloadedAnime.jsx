@@ -22,11 +22,7 @@ export var walkDir = function (dir) {
             results = results.concat(walkDir(file));
         else {
             let withoutExtension = filename.replace(path.posix.extname(filename), ""),
-                animeEntry = new AnimeEntry({});
-            animeEntry.name = withoutExtension.substring(0, withoutExtension.lastIndexOf(" Episode "));
-            setImmediate(() => {
-                animeEntry.sync();
-            });
+                animeEntry = new AnimeEntry({ name: withoutExtension.substring(0, withoutExtension.lastIndexOf(" Episode ")) || withoutExtension });
             results.push(new DownloadedItem(
                 file,
                 withoutExtension,

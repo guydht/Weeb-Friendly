@@ -202,7 +202,6 @@ export var SubtitlesOctopus = function (options) {
         }
         if (self.debug) {
             var drawTime = Math.round(performance.now() - beforeDrawTime);
-            console.log(Math.round(data.spentTime) + ' ms (+ ' + drawTime + ' ms draw)');
             self.renderStart = performance.now();
         }
     }
@@ -220,7 +219,6 @@ export var SubtitlesOctopus = function (options) {
         var data = event.data;
         switch (data.target) {
             case 'stdout': {
-                console.log(data.content);
                 break;
             }
             case 'stderr': {
@@ -347,8 +345,6 @@ export var SubtitlesOctopus = function (options) {
             }
             return;
         }
-
-
         if (
             self.canvas.width !== width ||
             self.canvas.height !== height ||

@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { asd } from "../classes/jifa";
-import mkvExtract from "../classes/SubtitleParsers/mkvExtract";
+import { handleFile, handleURL } from "../classes/SubtitleParsers/mkvExtract";
 import { SubtitlesOctopus } from "../classes/SubtitleParsers/Octopus";
 import { CacheLocalStorage } from "../classes/utils";
 
@@ -11,30 +11,42 @@ export default class VideoPlayer extends Component {
     subtitlesOctopus;
 
     componentDidMount() {
-        let container = asd(this.props.name, this.videoWrapper.current, this.props.src);
-        this.setState({
-            loading: true
-        });
-        mkvExtract(this.props.src.substring(7), async (_, files) => {
-            let subtitle;
-            const fonts = [];
-            for (let f of files) {
-                if ((f.name.endsWith(".ass") || f.name.endsWith(".ssa")) && !subtitle)
-                    subtitle = URL.createObjectURL(new Blob([f.data]));
-                else if (f.name.endsWith(".ttf"))
-                    fonts.push(URL.createObjectURL(new Blob([f.data])));
-            }
-            var options = {
-                video: container.querySelector("video"),
-                subUrl: subtitle,
-                fonts: fonts,
-                workerUrl: "/OctopusWorker.js"
+        let container = asd(this.props.name, this.videoWrapper.current, this.props.src),
+            handleSubs = async subFiles => {
+                let subtitle;
+                const fonts = [];
+                for (let f of subFiles) {
+                    if ((f.name.endsWith(".ass") || f.name.endsWith(".ssa")) && !subtitle)
+                        subtitle = URL.createObjectURL(new Blob([f.data]));
+                    else if (f.name.endsWith(".ttf"))
+                        fonts.push(URL.createObjectURL(new Blob([f.data])));
+                }
+                var options = {
+                    video: container.querySelector("video"),
+                    subUrl: subtitle,
+                    fonts: fonts,
+                    workerUrl: "/OctopusWorker.js"
+                };
+                if (this.subtitlesOctopus) {
+                    clearInterval(this.subtitlesOctopus.resizeInterval);
+                    this.subtitlesOctopus.dispose();
+                }
+                this.subtitlesOctopus = new SubtitlesOctopus(options);
+                let previousVideoSize = container.getBoundingClientRect().toJSON();
+                this.subtitlesOctopus.resizeInterval = setInterval(() => {
+                    let currentVideoSize = container.getBoundingClientRect().toJSON();
+                    if (currentVideoSize.height !== previousVideoSize.height || currentVideoSize.width !== previousVideoSize.width) {
+                        previousVideoSize = currentVideoSize;
+                        this.subtitlesOctopus.resize();
+                    }
+                }, 500);
             };
-            this.setState({
-                loading: true
-            });
-            this.subtitlesOctopus = new SubtitlesOctopus(options);
-        });
+        if (this.props.src.endsWith(".mkv")) {
+            if (this.props.src.startsWith("file:"))
+                handleFile(this.props.src.substring(7), handleSubs);
+            else
+                handleURL(this.props.src, handleSubs);
+        }
     }
 
     componentWillUnmount() {

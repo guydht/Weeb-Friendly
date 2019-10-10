@@ -21,7 +21,8 @@ export default class MALUtils {
     static MAX_ANIMES_PER_PAGE = 300;
     static MINIMUM_ANIMENAME_SIMILARITY = 0.7;
 
-    static async searchAnime(searchString: string): Promise<AnimeEntry[]> {
+    static async searchAnime(anime: AnimeEntry, searchString: string = ""): Promise<AnimeEntry[]> {
+        searchString = searchString || anime.name!;
         let data = (await mal.Search.search(searchString, "anime"));
         if (!data) return [];
         let parsedData = data.results.sort((a, b) => {
@@ -164,7 +165,7 @@ export default class MALUtils {
             anime.myMalStatus = MALStatuses.Watching;
             anime.myWatchedEpisodes = 0;
             anime.sync();
-            Consts.MAL_USER.animeList.watching[anime.malId!] = anime;
+            Consts.MAL_USER.animeList.loadAnime(anime);
             Consts.setMALUser(Consts.MAL_USER);
         }
         return ok;
@@ -174,10 +175,12 @@ export default class MALUtils {
             episode = downloadedItem.episodeData.episodeNumber,
             status = anime.totalEpisodes === episode ? MALStatuses.Completed : MALStatuses.Watching,
             ok: boolean = true;
-        // if (!anime.myMalStatus)
+        if (!anime.myMalStatus)
             ok = await MALUtils.addAnime(anime as any)
         if (!ok) return ok;
         ok = await MALUtils.updateAnime(anime as any, { episodes: episode, status });
+        Consts.MAL_USER.animeList.loadAnime(anime);
+        Consts.setMALUser(Consts.MAL_USER);
         return ok;
     }
     static async animeForum(anime: AnimeEntry & HasMalId): Promise<Forum | undefined> {

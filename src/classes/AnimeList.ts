@@ -23,7 +23,7 @@ export default class AnimeList {
             let key = Number(strKey);
             value.sync();
             (this._all as any)[key] = value;
-            switch ((value as AnimeEntry).myMalStatus) {
+            switch ((MALStatuses as any)[(value as AnimeEntry).myMalStatus!]) {
                 case MALStatuses.Watching:
                     (this._watching as any)[key] = value;
                     break
@@ -101,5 +101,17 @@ export default class AnimeList {
     }
     readyForJson() {
         return { _all: Object.keys(this.all) };
+    }
+    loadAnime(anime: AnimeEntry) {
+        this.all[anime.malId!] = anime;
+        this.loadFromAll(this.all);
+    }
+    loadFromAll(all: Record<number, AnimeEntry>) {
+        this._watching = {};
+        this._completed = {};
+        this._dropped = {};
+        this._plantowatch = {};
+        this._onhold = {};
+        this.all = all;
     }
 }

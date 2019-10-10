@@ -10,7 +10,7 @@ let storageObject = window.require("electron-json-config"),
         cleanDate = _TTL_DATE(10);
         _ANIMES.forEach(([date, anime]) => {
             if (date < new Date())
-                _removeFromStorage(anime as any);
+                _clearUpdatableData(anime as any);
         });
     },
     sync = (anime: AnimeEntry): AnimeEntry => {
@@ -55,6 +55,11 @@ let storageObject = window.require("electron-json-config"),
     _addToStorage = (anime: AnimeEntry & { malId: number }) => {
         _ANIMES.set(anime.malId, [_TTL_DATE(STORAGE_TTL_IN_SECONDS), anime]);
         needsUpdating = true;
+    },
+    _clearUpdatableData = (anime: AnimeEntry & { malId: number }) => {
+        delete anime.score;
+        delete anime.totalEpisodes;
+        _ANIMES.set(anime.malId, [_TTL_DATE(STORAGE_TTL_IN_SECONDS), anime]);
     },
     _removeFromStorage = (anime: AnimeEntry & { malId: number }) => {
         _ANIMES.delete(anime.malId);

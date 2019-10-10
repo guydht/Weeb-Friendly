@@ -19,7 +19,7 @@ export default class Watch extends Component {
     movingElement = React.createRef();
 
     componentDidMount() {
-        if (!this.props.downloadedItem.animeEntry.malId ||
+        if (!this.props.downloadedItem.animeEntry || !this.props.downloadedItem.animeEntry.malId ||
             this.props.downloadedItem.animeEntry.myWatchedEpisodes >= this.props.downloadedItem.episodeData.episodeNumber) return;
         const progressFromLocalStorage = () => {
             let obj = JSON.parse(localStorage.getItem("videoLastTime")),
@@ -88,7 +88,6 @@ export default class Watch extends Component {
             <MovableComponent
                 style={styleObject}
                 className={styles.container}
-                onDragFinish={this.onDragFinish.bind(this)}
                 onResizeFinish={this.onResizeFinish.bind(this)}
                 ref={this.movingElement}
                 resizable={true}>
@@ -112,15 +111,6 @@ export default class Watch extends Component {
             delete rect.x;
             delete rect.y;
             Consts.setWatchPlayerSize(rect);
-        }
-    }
-    onDragFinish(e, didMoveInGesture) {
-        if (didMoveInGesture) {
-            // let video = document.querySelector("video"),
-            //     pausedStatus = video.paused;
-            // let waitInterval = waitFor(() => video.paused !== pausedStatus, () => pausedStatus ? video.pause() : video.play(), 10);
-            // setTimeout(() => clearInterval(waitInterval), 500);
-            // this.onResizeFinish(e, didMoveInGesture);
         }
     }
 }

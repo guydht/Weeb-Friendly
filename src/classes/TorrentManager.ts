@@ -1,8 +1,8 @@
 import { Torrent } from "webtorrent";
 import Consts from "./Consts";
 
-const webtorrent = window.require("webtorrent"),
-    path = window.require("path"),
+const path = window.require("path"),
+    webtorrent = window.require("webtorrent"),
     fs = window.require("fs").promises;
 
 enum ListenerTypes {
@@ -22,7 +22,7 @@ class Listener {
 
 export default class TorrentManager {
     private static client = new webtorrent();
-    static add(magnetURL: string, name: string) {
+    static add({ magnetURL, name }: { magnetURL: string; name: string; }) {
         let returnedTorrent = this.client.add(magnetURL, (torrent: Torrent) => {
             torrent.on('done', () => {
                 let files = [...torrent.files];
@@ -32,8 +32,7 @@ export default class TorrentManager {
                             extension = path.extname(file.path),
                             newAbsolutePath = path.join(Consts.DOWNLOADS_FOLDER, path.posix.parse(name).name + extension);
                         fs.rename(absolutePath, newAbsolutePath);
-                        Consts.SAVED_TORRENTS.delete(returnedTorrent);
-                        Consts.setSavedTorrents(Consts.SAVED_TORRENTS);
+                        Consts.removeFromSavedTorrents(returnedTorrent);
                         (window as any).reloadPage();
                     });
                 });
@@ -41,10 +40,8 @@ export default class TorrentManager {
             (window as any).reloadPage();
         });
         (returnedTorrent as any).torrentName = name;
-        if (Consts.SAVED_TORRENTS) {
-            Consts.SAVED_TORRENTS.add(returnedTorrent);
-            Consts.setSavedTorrents(Consts.SAVED_TORRENTS);
-        }
+        if (Consts.SAVED_TORRENTS)
+            Consts.addToSavedTorrents(returnedTorrent);
         return returnedTorrent;
     }
     static getAll() {
@@ -52,20 +49,17 @@ export default class TorrentManager {
     }
     static remove(torrent: Torrent) {
         let pathName = path.join(torrent.path, torrent.name);
-        console.log(torrent, pathName);
         torrent.destroy();
         fs.unlink(pathName);
-        Consts.SAVED_TORRENTS.delete(torrent);
-        Consts.setSavedTorrents(Consts.SAVED_TORRENTS);
+        Consts.removeFromSavedTorrents(torrent);
     }
     static pause(torrent: Torrent) {
         torrent.pause();
         torrent.destroy();
     }
     static resume(torrent: Torrent) {
-        Consts.SAVED_TORRENTS.delete(torrent);
-        Consts.setSavedTorrents(Consts.SAVED_TORRENTS);
-        this.add(torrent.magnetURI, (torrent as any).torrentName);
+        Consts.removeFromSavedTorrents(torrent);
+        this.add({ magnetURL: torrent.magnetURI, name: (torrent as any).torrentName });
     }
 
     private static listeners: Listener[] = [];
@@ -105,3 +99,4 @@ export default class TorrentManager {
     }
     static Listener = ListenerTypes;
 }
+(window as any).TorrentManager = TorrentManager;

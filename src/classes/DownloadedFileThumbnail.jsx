@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import { LazyLoadComponent } from "react-lazy-load-image-component";
 import { withRouter } from "react-router";
-import styles from "../components/css/DownloadedAnime.module.css";
 import Consts from "../classes/Consts";
+import styles from "../components/css/DownloadedAnime.module.css";
 import MALUtils from "./MALUtils";
 import { Confirm, stringRelativeSimilarity } from "./utils";
 import VideoThumbnail from "./VideoThumbnail";
@@ -37,6 +37,7 @@ export default withRouter(class DownloadedFileThumbnail extends Component {
         )
     }
     showAnime(downloadedItem) {
+        clearTimeout(this.doubleClickTimeout);
         downloadedItem.animeEntry.sync();
         if (downloadedItem.animeEntry.malId) {
             this.props.history.push({
@@ -48,9 +49,15 @@ export default withRouter(class DownloadedFileThumbnail extends Component {
             });
         }
         else {
-            MALUtils.searchAnime(downloadedItem.animeEntry.name).then(results => {
-                results = results.filter(ele => stringRelativeSimilarity(downloadedItem.animeEntry.name.toLowerCase(),
-                    ele.name.toLowerCase()) >= MALUtils.MINIMUM_ANIMENAME_SIMILARITY);
+            MALUtils.searchAnime(downloadedItem.animeEntry).then(results => {
+                let similarityScores = results.map(result => {
+                    return [result, Math.max(...[...result.synonyms].map(name => {
+                        return Math.max(...[...downloadedItem.animeEntry.synonyms].map(animeName => {
+                            return stringRelativeSimilarity(animeName.toLowerCase(), name.toLowerCase());
+                        }));
+                    }))];
+                });
+                results = similarityScores.filter(ele => ele[1] >= MALUtils.MINIMUM_ANIMENAME_SIMILARITY).sort((a, b) => a[1] - b[1]).map(ele => ele[0]);
                 if (!results.length)
                     window.displayToast({ title: "Can't find Anime!", body: `Sorry! Can't find ${downloadedItem.fileName} in MyAnimeList!` })
                 else {
@@ -62,12 +69,17 @@ export default withRouter(class DownloadedFileThumbnail extends Component {
         }
     }
     waitingForDeletionConfirmation = false;
+    doubleClickTimeout;
+    doubleClickTimeoutMiliseconds = 400;
     showVideo(videoItem) {
-        if (!this.waitingForDeletionConfirmation)
-            window.setAppState({
-                showVideo: true,
-                videoItem
-            });
+        clearTimeout(this.doubleClickTimeout);
+        this.doubleClickTimeout = setTimeout(() => {
+            if (!this.waitingForDeletionConfirmation)
+                window.setAppState({
+                    showVideo: true,
+                    videoItem
+                });
+        }, this.doubleClickTimeoutMiliseconds);
     }
     confirmDeletion() {
         this.waitingForDeletionConfirmation = true;

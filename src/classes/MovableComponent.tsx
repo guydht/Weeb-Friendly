@@ -209,14 +209,10 @@ export default class MovableComponent extends Component<MovableComponentProps> {
             window.removeEventListener("mouseup", onMouseUp);
             if (this.props.onDragFinish)
                 this.props.onDragFinish(e, didMoveInGesture);
-            else
-                e.stopPropagation();
         }
         window.addEventListener("mousemove", onMouseMove);
         window.addEventListener("mouseup", onMouseUp);
         if (this.props.onDragStart)
             this.props.onDragStart(e);
-        else
-            e.stopPropagation();
     }
 }

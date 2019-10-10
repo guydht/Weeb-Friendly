@@ -59,7 +59,7 @@ export default class DownloadManager extends Component {
                     <ListGroup className={styles.grid + " " + styles[`grid-template-${(Math.floor(this.state.torrents.length / 4) + 1)}`]}>
                         {
                             this.state.torrents.map(torrent => {
-                                if (!torrent.name) return;
+                                if (!torrent.name) return null;
                                 return (
                                     <ListGroup.Item key={torrent.name}>
                                         <h5>
@@ -91,7 +91,9 @@ export default class DownloadManager extends Component {
                                             </Col>
                                         </Row>
                                         <Row className="mt-2">
-                                            <ProgressBar style={{ width: "100%" }} now={torrent.progress * 100} label={`${Number((torrent.progress * 100).toPrecision(3))}%`} />
+                                            <ProgressBar style={{ width: "100%" }}
+                                                now={torrent.progress * 100}
+                                                label={`${Number((torrent.progress * 100).toPrecision(3))}% / ${downloadSizeText(torrent.length)}`} />
                                         </Row>
                                     </ListGroup.Item>
                                 )
@@ -121,8 +123,8 @@ export default class DownloadManager extends Component {
             let server = torrent.createServer();
             server.listen(0);
             let info = server.address(),
-                maybePort = (info as any).port;
-            url = `http://localhost:${maybePort}/0/${torrent.files[0].name}`;
+                port = (info as any).port;
+            url = `http://localhost:${port}/0/${torrent.files[0].name}`;
         }
         (window as any).setAppState({
             showVideo: true,
@@ -133,10 +135,15 @@ export default class DownloadManager extends Component {
         });
     }
 }
+function downloadSizeText(bytes: number): string {
+    if (bytes > 1000000000)
+        return `${bytes / 1000000000} GB`;
+    if (bytes > 1000000)
+        return `${bytes / 1000000} MB`;
+    if (bytes > 1000)
+        return `${bytes / 1000} KB`;
+    return `${bytes || 0} B`;
+}
 function downloadSpeedText(bytesPerSecond: number): string {
-    if (bytesPerSecond > 1000000)
-        return `${bytesPerSecond / 1000000} MB/s`;
-    if (bytesPerSecond > 1000)
-        return `${bytesPerSecond / 1000} KB/s`;
-    return `${bytesPerSecond} B/s`
+    return downloadSizeText(bytesPerSecond) + "/s";
 }

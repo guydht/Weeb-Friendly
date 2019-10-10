@@ -54,15 +54,15 @@ export default class SearchBar extends Component<SearchBarProps> {
                                 this.state.entries.map((entry: AnimeEntry) => {
                                     return (
                                         <ListGroupItem onClick={() => this.chooseEntry(entry)}
-                                            title={Array.from(entry.synonyms).join(", ")} key={entry.malId}>
+                                            title={Array.from(entry.synonyms).join(", ")} key={entry.name}>
                                             <Row>
-                                                <Col>
-                                                    {
-                                                        this.props.showImage && (
+                                                {
+                                                    this.props.showImage && (
+                                                        <Col>
                                                             <LazyLoadImage className={styles.image} src={entry.imageURL} />
-                                                        )
-                                                    }
-                                                </Col>
+                                                        </Col>
+                                                    )
+                                                }
                                                 <Col>
                                                     {
                                                         (this.props.gotoAnimePageOnChoose !== false) ?
@@ -113,7 +113,7 @@ export default class SearchBar extends Component<SearchBarProps> {
                         e.setResults = (results: AnimeEntry[]) => this.setState({ entries: results, loading: false, loadingText: "" });
                         return this.props.onInputChange(e);
                     }
-                    let results = await MALUtils.searchAnime(searchName),
+                    let results = await MALUtils.searchAnime(new AnimeEntry({ name: searchName })),
                         equal = results.filter(result => searchName.toLowerCase().match(/[a-z0-9]+/g).join("") ===
                             result.name!.toLowerCase().match(/[a-z0-9]+/g)!.join(""))
                     if (equal.length === 1)
