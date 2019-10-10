@@ -29,7 +29,9 @@ export default class VideoPlayer extends Component {
                 };
                 if (this.subtitlesOctopus) {
                     clearInterval(this.subtitlesOctopus.resizeInterval);
-                    this.subtitlesOctopus.dispose();
+                    try {
+                        this.subtitlesOctopus.dispose();
+                    } catch (e) { }
                 }
                 this.subtitlesOctopus = new SubtitlesOctopus(options);
                 let previousVideoSize = container.getBoundingClientRect().toJSON();
@@ -52,7 +54,9 @@ export default class VideoPlayer extends Component {
     componentWillUnmount() {
         new CacheLocalStorage("videoLastTime").setItem(this.props.name, this.videoWrapper.current.querySelector("video").currentTime);
         if (this.subtitlesOctopus)
-            this.subtitlesOctopus.dispose();
+            try {
+                this.subtitlesOctopus.dispose();
+            } catch (e) { }
     }
 
     render() {
