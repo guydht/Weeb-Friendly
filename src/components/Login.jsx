@@ -2,7 +2,7 @@ import React, { Component } from "react";
 
 import { Modal, InputGroup, FormControl, Button, Alert, Spinner } from "react-bootstrap";
 
-import Consts from "../consts";
+import Consts from "../classes/Consts";
 import User from "../classes/User";
 
 export default class Login extends Component {

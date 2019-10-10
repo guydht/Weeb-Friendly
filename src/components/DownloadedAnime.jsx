@@ -1,29 +1,40 @@
 import React, { Component } from "react";
 import { Button, ButtonGroup, Container, FormControl, InputGroup, Row } from "react-bootstrap";
 import Form from "react-bootstrap/FormGroup";
-import { LazyLoadComponent } from "react-lazy-load-image-component";
+import { withRouter } from "react-router";
+import AnimeEntry from "../classes/AnimeEntry";
+import Consts from "../classes/Consts";
+import DownloadedFileThumbnail from "../classes/DownloadedFileThumbnail";
 import DownloadedItem from "../classes/DownloadedItem";
-import VideoThumbnail from "../classes/VideoThumbnail";
-import Consts from "../consts";
+import { waitFor } from "../classes/jifa";
+import MALUtils from "../classes/MALUtils";
 import styles from "./css/DownloadedAnime.module.css";
 
 const fs = window.require("fs"),
     path = window.require("path");
-var walkDir = function (dir) {
+export var walkDir = function (dir) {
     var results = [];
     var list = fs.readdirSync(dir);
     list.forEach(function (filename) {
-        let file = path.join(dir, filename);
+        let file = path.posix.join(dir, filename);
         var stat = fs.statSync(file);
         if (stat.isDirectory())
             results = results.concat(walkDir(file));
-        else
-            results.push(new DownloadedItem(file, filename.replace(path.extname(filename), ""), stat.birthtime));
+        else {
+            let withoutExtension = filename.replace(path.posix.extname(filename), ""),
+                animeEntry = new AnimeEntry({ name: withoutExtension.substring(0, withoutExtension.lastIndexOf(" Episode ")) || withoutExtension });
+            results.push(new DownloadedItem(
+                file,
+                withoutExtension,
+                stat.birthtime,
+                animeEntry
+            ));
+        }
     });
     return results;
 }
 
-export default class DownloadedAnime extends Component {
+export default withRouter(class DownloadedAnime extends Component {
 
     filterElement = React.createRef();
 
@@ -45,6 +56,15 @@ export default class DownloadedAnime extends Component {
             }
         ]
     };
+    componentDidMount() {
+        if (this.downloadedItems.every(ele => !ele.malId) || MALUtils.storageSize === 0)
+            waitFor(() => MALUtils.storageSize > 0, () => {
+                this.setState({});
+            });
+    }
+    componentWillUpdate() {
+        this.downloadedItems = walkDir(Consts.DOWNLOADS_FOLDER);
+    }
 
     render() {
         return (
@@ -54,8 +74,8 @@ export default class DownloadedAnime extends Component {
                 </h1>
                 <Container>
                     <Row>
-                        <InputGroup className="mx-5 d-block">
-                            <ButtonGroup style={{float: "left"}}>
+                        <InputGroup className="mx-5 mb-2 d-block">
+                            <ButtonGroup style={{ float: "left" }}>
                                 {
                                     this.state.sortOptions.map((props, i) => {
                                         return (
@@ -78,21 +98,9 @@ export default class DownloadedAnime extends Component {
                     <Row>
                         <div className={styles.grid + " guydht-scrollbar mx-5"}>
                             {
-                                this.sortedItems.map((downloadedItem, i) => {
+                                this.sortedItems.map(downloadedItem => {
                                     return (
-                                        <div key={downloadedItem.absolutePath} className={styles.gridElement + " m-3"}
-                                            onClick={() => this.showVideo(downloadedItem)}>
-                                            <LazyLoadComponent>
-                                                <VideoThumbnail
-                                                    videoUrl={Consts.FILE_URL_PROTOCOL + downloadedItem.absolutePath}
-                                                    alt={downloadedItem.fileName}
-                                                    renderedHeight={220}
-                                                    className={styles.thumbnail}
-                                                />
-                                            </LazyLoadComponent>
-                                            <div className={styles.cover}></div>
-                                            <span className={styles.title}>{downloadedItem.fileName}</span>
-                                        </div>
+                                        <DownloadedFileThumbnail key={downloadedItem.absolutePath} downloadedItem={downloadedItem} className="m-1" />
                                     )
                                 })
                             }
@@ -101,12 +109,6 @@ export default class DownloadedAnime extends Component {
                 </Container>
             </div>
         )
-    }
-    showVideo(videoItem) {
-        window.setAppState({
-            showVideo: true,
-            videoItem
-        })
     }
     setSort(propIndex) {
         let options = this.state.sortOptions.map((prop, i) => {
@@ -127,8 +129,12 @@ export default class DownloadedAnime extends Component {
     get sortedItems() {
         let current = this.currentOption,
             items = [...this.downloadedItems];
-        if (this.filterElement.current)
-            items = items.filter(ele => ele.absolutePath.toLowerCase().includes(this.filterElement.current.value.toLowerCase()));
+        if (this.filterElement.current) {
+            let filterValue = this.filterElement.current.value.toLowerCase();
+            if (filterValue)
+                items = items.filter(ele => filterValue.startsWith("!") ?
+                    !ele.absolutePath.toLowerCase().includes(filterValue.slice(1)) : ele.absolutePath.toLowerCase().includes(filterValue));
+        }
         let sorted = items.sort(current.sortFunction);
         if (current.reverse)
             sorted.reverse()
@@ -137,4 +143,4 @@ export default class DownloadedAnime extends Component {
     get currentOption() {
         return this.state.sortOptions.find(ele => ele.active);
     }
-}
+});

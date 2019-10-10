@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Button, Dropdown, Form, FormControl } from "react-bootstrap";
-import Consts from "../consts";
+import Consts from "../classes/Consts";
 
 const fs = window.require("fs"),
     path = window.require("path");
@@ -26,7 +26,7 @@ export default class ChooseDirectoryText extends Component {
 
     setDownloadsFolder(folderPath: string) {
         Consts.setDownloadsFolder(folderPath);
-        this.setState({ changeFolder: false })
+        this.setState({ changeFolder: false });
     }
 
     render() {
@@ -44,7 +44,8 @@ export default class ChooseDirectoryText extends Component {
                             displayEntries: false
                         });
                         this.setDownloadsFolder(this.textInput.current.value);
-                        window.location.reload();
+                        if(this.textInput.current && this.textInput.current.value !== Consts.DOWNLOADS_FOLDER)
+                            window.location.reload();
                     }
                 });
             };
@@ -89,8 +90,8 @@ export default class ChooseDirectoryText extends Component {
         )
     }
     searchDirectory(val: string) {
-        let parentDir = path.dirname(val),
-            basename = path.basename(val);
+        let parentDir = path.posix.dirname(val),
+            basename = path.posix.basename(val);
 
         const handleReadDir = (_: any, files: string[]) => {
             if (files)
@@ -101,7 +102,7 @@ export default class ChooseDirectoryText extends Component {
                 entries: files || []
             });
         }
-        let maybeLegal = path.resolve(val);
+        let maybeLegal = path.posix.resolve(val);
         fs.stat(maybeLegal, (_: any, stats: any) => {
             if (stats && stats.isDirectory()) {
                 basename = "";
@@ -112,12 +113,12 @@ export default class ChooseDirectoryText extends Component {
         });
     }
     async selectDirectory(directory: string) {
-        let basename = path.dirname(this.textInput.current.value),
-            maybeLegal = path.resolve(this.textInput.current.value);
+        let basename = path.posix.dirname(this.textInput.current.value),
+            maybeLegal = path.posix.resolve(this.textInput.current.value);
         fs.stat(maybeLegal, (_: any, stats: any) => {
             if (stats && stats.isDirectory())
                 basename = maybeLegal;
-            this.textInput.current.value = path.resolve(basename, directory) + "/";
+            this.textInput.current.value = path.posix.resolve(basename, directory) + "/";
             this.searchDirectory(this.textInput.current.value);
         });
     }

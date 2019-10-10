@@ -1,7 +1,10 @@
+import { AnimeById } from "jikants/dist/src/interfaces/anime/ById";
 import React, { Component } from "react";
-import { Col, Image, Row, Tab, Tabs } from "react-bootstrap";
+import { Col, Container, Row, Tab, Tabs } from "react-bootstrap";
+import { LazyLoadComponent } from "react-lazy-load-image-component";
+import ImageZoom from "react-medium-image-zoom";
 import AnimeEntry from "../classes/AnimeEntry";
-import MALUtils, { AnimeInfo } from "../classes/MALUtils";
+import MALUtils from "../classes/MALUtils";
 import Recommendations from "./AnimeHome/ Recommendations";
 import Details from "./AnimeHome/Details";
 import Episodes from "./AnimeHome/Episodes";
@@ -10,10 +13,9 @@ import News from "./AnimeHome/News";
 import Pictures from "./AnimeHome/Pictures";
 import Reviews from "./AnimeHome/Reviews";
 import Stats from "./AnimeHome/Stats";
-import styles from "./css/AnimeDetails.module.css";
 
 export interface AnimeProps {
-    info: AnimeInfo;
+    info: AnimeById;
     anime: AnimeEntry;
 }
 
@@ -23,28 +25,38 @@ export default class AnimePage extends Component {
     private PAGE_LINKS = { Details, Episodes: Episodes, Reviews, Recommendations, Stats, News, Forum, Pictures }
 
     state = {
-        info: {} as AnimeInfo,
-        anime: ((this.props as any).location.state || {}).animeEntry as AnimeEntry
+        info: undefined,
+        anime: ((this.props as any).location.state || {}).animeEntry as AnimeEntry,
+        highResPhoto: ""
     }
-
-    componentDidMount() {
-        if (this.state.anime)
-            MALUtils.getAnimeInfo(this.state.anime).then((info) => {
-                this.setState({
-                    info
-                });
+    componentDidUpdate() {
+        if (this.state.anime.malId !== Number((this.props as any).match.params.id))
+            this.setState({
+                anime: (this.props as any).location.state.animeEntry,
+                info: undefined
             });
     }
 
     render() {
-        if (!this.state.anime) {
+        if (!this.state.anime || !this.state.anime.malId || !this.state.info) {
+            let id = (this.props as any).match.params.id;
+            if (id) {
+                let anime = new AnimeEntry({ malId: Number(id) }).sync();
+                MALUtils.getAnimeInfo(anime as AnimeEntry & { malId: number }).then(info => {
+                    this.setState({
+                        info,
+                        anime: anime
+                    });
+                });
+                return null;
+            }
             (this.props as any).history.push('/');
             return null;
         }
         return (
-            <div className="mx-auto" style={{ width: "fit-content" }}>
+            <div className="mx-5 px-5">
                 <Row>
-                    <h2 className={styles.title}>
+                    <h2>
                         {
                             this.state.anime.name
                         }
@@ -52,20 +64,36 @@ export default class AnimePage extends Component {
                 </Row>
                 <Row>
                     <Col md="auto">
-                        <Image src={this.state.info.image_url} />
+                        <ImageZoom image={{
+                            src: this.state.info ? (this.state.info as any).image_url : "",
+                            alt: this.state.anime.name
+                        }} zoomImage={{
+                            src: this.state.highResPhoto || this.state.info ? (this.state.info as any).image_url : "",
+                            alt: this.state.anime.name
+                        }} defaultStyles={{
+                            overlay: {
+                                background: "rgba(0, 0, 0, 0.8)"
+                            },
+                            image: {
+                                cursor: "pointer"
+                            },
+                            zoomImage: {
+                                cursor: "pointer"
+                            }
+                        }} onZoom={() => this.searchHighResPhoto((this.state.info as any).image_url)} />
                     </Col>
-                    <Col md="auto">
+                    <Col md="auto" style={{ flex: 1 }}>
                         <Tabs id="mal-links" defaultActiveKey={"Details"}>
                             {
                                 Object.entries(this.PAGE_LINKS).map(([name, MyComponent], i) => {
-                                    if (this.state.info.score)
-                                        return (
-                                            <Tab eventKey={name} title={name} mountOnEnter={true} key={i}>
-                                                <MyComponent anime={this.state.anime} info={this.state.info} />
-                                            </Tab>
-                                        )
                                     return (
-                                        <Tab eventKey={name} title={name} key={i} />
+                                        <Tab eventKey={name} title={name} mountOnEnter={true} key={i}>
+                                            <LazyLoadComponent>
+                                                <Container>
+                                                    <MyComponent anime={this.state.anime} info={this.state.info! as AnimeById} />
+                                                </Container>
+                                            </LazyLoadComponent>
+                                        </Tab>
                                     )
                                 })
                             }
@@ -74,5 +102,17 @@ export default class AnimePage extends Component {
                 </Row>
             </div>
         );
+    }
+    async searchHighResPhoto(image: string) {
+        let data = await fetch("https://www.google.com/searchbyimage?site=search&image_url=" + image).then(r => r.text()),
+            html = document.createElement("html");
+        html.innerHTML = data;
+        let link = html.querySelector("a[title=\"All sizes\"") as HTMLAnchorElement;
+        if (!link) return;
+        data = await fetch(link.href.replace(window.location.origin, "https://www.google.com")).then(r => r.text());
+        html.innerHTML = data;
+        let highResPhoto = (html.querySelector("#search img") as HTMLImageElement).src.replace(window.location.origin, "https://www.google.com");
+        if (highResPhoto)
+            this.setState({ highResPhoto });
     }
 }
