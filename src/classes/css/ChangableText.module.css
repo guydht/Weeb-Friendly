@@ -1,0 +1,21 @@
+.textWrapper {
+    background: rgba(0, 0, 0, 0.4);
+    color: white;
+    cursor: pointer;
+    border-radius: 20vw;
+    padding: 2px 20px;
+    font-size: 16px;
+    display: inline-block;
+}
+
+.inputElement {
+    background: rgba(0, 0, 0, 0.4) !important;
+    color: white !important;
+    height: auto !important;
+    display: inline-block !important;
+    border-radius: 20vw !important;
+    padding: 2px 20px !important;
+    border: 0 !important;
+    font-size: 16px !important;
+    box-sizing: content-box;
+}

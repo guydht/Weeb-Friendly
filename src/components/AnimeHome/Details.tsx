@@ -2,6 +2,7 @@ import React, { Component, RefObject } from "react";
 import { Badge, Button, Col, FormControl, Modal, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import AnimeEntry from "../../classes/AnimeEntry";
+import ChangableText from "../../classes/ChangableText";
 import Consts from "../../classes/Consts";
 import { MALStatuses } from "../../classes/MALStatuses";
 import MALUtils from "../../classes/MALUtils";
@@ -21,8 +22,9 @@ export default class Details extends Component<AnimeProps> {
     };
 
     render() {
+        this.state.anime.sync();
         return (
-            <div>
+            <div className={styles.container}>
                 {
                     this.state.info && (
                         <Row className="mt-4" style={{ fontSize: "130%" }}>
@@ -40,7 +42,7 @@ export default class Details extends Component<AnimeProps> {
                             }}>
                                 <Row>
                                     <Col>Ranked: <strong>{this.state.info.rank || "Unknown"}</strong></Col>
-                                    <Col>Popularity: <strong>{this.state.info.popularity || "Unknown"}</strong></Col>
+                                    <Col>Aired: <strong>{this.state.info.aired.string}</strong></Col>
                                     <Col>Members: <strong>{this.state.info.members || "Unknown"}</strong></Col>
                                 </Row>
                                 <Row>
@@ -51,12 +53,25 @@ export default class Details extends Component<AnimeProps> {
                                 <Row>
                                     <Col>Status: <strong>{this.state.info.status}</strong></Col>
                                     <Col>Genres: <strong>{this.state.info.genres.map(ele => ele.name).join(", ")}</strong></Col>
-                                    <Col>Aired: <strong>{this.state.info.aired.string}</strong></Col>
+                                    <Col>Popularity: <strong>{this.state.info.popularity || "Unknown"}</strong></Col>
                                 </Row>
                             </Col>
                         </Row>
                     )
                 }
+                <Row>
+                    <Col style={{ flex: 0 }}>
+                        Synonyms:
+                    </Col>
+                    <Col>
+                        {
+                            [...this.state.anime.synonyms].map((name) => {
+                                if (name === this.state.anime.name) return null;
+                                return <ChangableText key={name} text={name} onChange={(value: any) => this.changeAnimeSynonyms(name, value)} />;
+                            })
+                        }
+                    </Col>
+                </Row>
                 {
                     Consts.MAL_USER.isLoggedIn && Consts.MAL_USER.animeList.all[this.state.anime.malId!] ? (
                         <div>
@@ -196,5 +211,12 @@ export default class Details extends Component<AnimeProps> {
                     (window as any).displayToast({ title: 'Something Went Wrong!', body: `MyanimeList sent error code :(` })
             });
         }, Details.UPDATE_TIMEOUT_MS);
+    }
+    changeAnimeSynonyms(synonymToChange: string, newSynonym: string) {
+        this.state.anime.synonyms.delete(synonymToChange);
+        if (newSynonym)
+            this.state.anime.synonyms.add(newSynonym);
+        this.state.anime.sync(true);
+        this.setState({ anime: this.state.anime });
     }
 }

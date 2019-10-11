@@ -16,12 +16,12 @@ export var walkDir = function (dir) {
     var results = [];
     var list = fs.readdirSync(dir);
     list.forEach(function (filename) {
-        let file = path.posix.join(dir, filename);
+        let file = path.join(dir, filename);
         var stat = fs.statSync(file);
         if (stat.isDirectory())
             results = results.concat(walkDir(file));
         else {
-            let withoutExtension = filename.replace(path.posix.extname(filename), ""),
+            let withoutExtension = filename.replace(path.extname(filename), ""),
                 animeEntry = new AnimeEntry({ name: withoutExtension.substring(0, withoutExtension.lastIndexOf(" Episode ")) || withoutExtension });
             results.push(new DownloadedItem(
                 file,

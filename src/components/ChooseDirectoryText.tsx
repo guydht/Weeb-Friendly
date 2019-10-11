@@ -90,8 +90,8 @@ export default class ChooseDirectoryText extends Component {
         )
     }
     searchDirectory(val: string) {
-        let parentDir = path.posix.dirname(val),
-            basename = path.posix.basename(val);
+        let parentDir = path.dirname(val),
+            basename = path.basename(val);
 
         const handleReadDir = (_: any, files: string[]) => {
             if (files)
@@ -102,7 +102,7 @@ export default class ChooseDirectoryText extends Component {
                 entries: files || []
             });
         }
-        let maybeLegal = path.posix.resolve(val);
+        let maybeLegal = path.resolve(val);
         fs.stat(maybeLegal, (_: any, stats: any) => {
             if (stats && stats.isDirectory()) {
                 basename = "";
@@ -113,12 +113,12 @@ export default class ChooseDirectoryText extends Component {
         });
     }
     async selectDirectory(directory: string) {
-        let basename = path.posix.dirname(this.textInput.current.value),
-            maybeLegal = path.posix.resolve(this.textInput.current.value);
+        let basename = path.dirname(this.textInput.current.value),
+            maybeLegal = path.resolve(this.textInput.current.value);
         fs.stat(maybeLegal, (_: any, stats: any) => {
             if (stats && stats.isDirectory())
                 basename = maybeLegal;
-            this.textInput.current.value = path.posix.resolve(basename, directory) + "/";
+            this.textInput.current.value = path.resolve(basename, directory) + "/";
             this.searchDirectory(this.textInput.current.value);
         });
     }

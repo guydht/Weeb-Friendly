@@ -1,6 +1,7 @@
 import { AnimeById } from "jikants/dist/src/interfaces/anime/ById";
 import React, { Component } from "react";
 import { Col, Container, Row, Tab, Tabs } from "react-bootstrap";
+// @ts-ignore
 import { LazyLoadComponent } from "react-lazy-load-image-component";
 import ImageZoom from "react-medium-image-zoom";
 import AnimeEntry from "../classes/AnimeEntry";
@@ -35,9 +36,12 @@ export default class AnimePage extends Component {
                 anime: (this.props as any).location.state.animeEntry,
                 info: undefined
             });
+        this.state.anime.sync();
     }
 
     render() {
+        if (this.state.anime)
+            this.state.anime.sync();
         if (!this.state.anime || !this.state.anime.malId || !this.state.info) {
             let id = (this.props as any).match.params.id;
             if (id) {

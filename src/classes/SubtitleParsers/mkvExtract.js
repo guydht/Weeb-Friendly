@@ -1,13 +1,15 @@
 // Adapted from https://github.com/qgustavor/mkv-extract/ licensed under MIT
 const fs = window.require("fs"),
   matroska = window.require("matroska-subtitles"),
-  request = window.require("request");
+  request = window.require("request"),
+  pipeline =  window.require("stream").pipeline;
 function handleFile(file, atData) {
   createDecoderFromStream(fs.createReadStream(file), atData);
 }
 
 function handleURL(url, atData) {
-  createDecoderFromStream(request(url), atData);
+  let stream = request(url);
+  return createDecoderFromStream(stream, atData);
 }
 
 function createDecoderFromStream(stream, atData) {

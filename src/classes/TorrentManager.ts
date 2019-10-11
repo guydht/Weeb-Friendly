@@ -30,7 +30,7 @@ export default class TorrentManager {
                     files.forEach((file: any) => {
                         let absolutePath = path.join(torrent.path, file.path),
                             extension = path.extname(file.path),
-                            newAbsolutePath = path.join(Consts.DOWNLOADS_FOLDER, path.posix.parse(name).name + extension);
+                            newAbsolutePath = path.join(Consts.DOWNLOADS_FOLDER, name + extension);
                         fs.rename(absolutePath, newAbsolutePath);
                         Consts.removeFromSavedTorrents(returnedTorrent);
                         (window as any).reloadPage();

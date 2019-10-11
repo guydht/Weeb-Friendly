@@ -13,7 +13,7 @@ let storageObject = window.require("electron-json-config"),
                 _clearUpdatableData(anime as any);
         });
     },
-    sync = (anime: AnimeEntry): AnimeEntry => {
+    sync = (anime: AnimeEntry, forceSynonyms: boolean = false): AnimeEntry => {
         cleanOld();
         if (!anime) return new AnimeEntry({ sync: false });
         let current = get(anime);
@@ -22,7 +22,8 @@ let storageObject = window.require("electron-json-config"),
                 _addToStorage(anime as any);
             return anime;
         }
-        current.synonyms.forEach(ele => anime.synonyms.add(ele));
+        if (!forceSynonyms)
+            current.synonyms.forEach(ele => anime.synonyms.add(ele));
         Object.entries(anime).forEach(([key, value]) => {
             if (value)
                 (current as any)[key] = value;

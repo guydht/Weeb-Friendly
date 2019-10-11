@@ -10,7 +10,15 @@ export default class VideoPlayer extends Component {
     videoWrapper = React.createRef();
     subtitlesOctopus;
 
+    state = {
+        src: this.props.src
+    }
+
     componentDidMount() {
+        this.setupVideo();
+    }
+
+    setupVideo() {
         let container = asd(this.props.name, this.videoWrapper.current, this.props.src),
             handleSubs = async subFiles => {
                 let subtitle;
@@ -34,9 +42,10 @@ export default class VideoPlayer extends Component {
                     } catch (e) { }
                 }
                 this.subtitlesOctopus = new SubtitlesOctopus(options);
-                let previousVideoSize = container.getBoundingClientRect().toJSON();
+                let video = container.querySelector("video"),
+                    previousVideoSize = video.getBoundingClientRect().toJSON();
                 this.subtitlesOctopus.resizeInterval = setInterval(() => {
-                    let currentVideoSize = container.getBoundingClientRect().toJSON();
+                    let currentVideoSize = video.getBoundingClientRect().toJSON();
                     if (currentVideoSize.height !== previousVideoSize.height || currentVideoSize.width !== previousVideoSize.width) {
                         previousVideoSize = currentVideoSize;
                         this.subtitlesOctopus.resize();
@@ -47,7 +56,14 @@ export default class VideoPlayer extends Component {
             if (this.props.src.startsWith("file:"))
                 handleFile(this.props.src.substring(7), handleSubs);
             else
-                handleURL(this.props.src, handleSubs);
+                handleURL(this.props.src, handleSubs).then(console.log);
+        }
+    }
+
+    componentDidUpdate() {
+        if (this.props.src !== this.state.src) {
+            this.setState({ src: this.props.src });
+            this.setupVideo();
         }
     }
 

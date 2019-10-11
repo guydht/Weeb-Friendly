@@ -1,10 +1,12 @@
 import React, { Component } from "react";
 import { Carousel, Spinner, Table } from "react-bootstrap";
+// @ts-ignore
 import { LazyLoadComponent, LazyLoadImage } from "react-lazy-load-image-component";
 import { Link } from "react-router-dom";
 import AnimeEntry from "../classes/AnimeEntry";
 import HorribleSubsUtils, { SearchResult } from "../classes/HorribleSubsUtils";
-import { chunkArray } from "../classes/utils";
+import TorrentManager from "../classes/TorrentManager";
+import { chunkArray, Confirm } from "../classes/utils";
 import Episodes from "../components/AnimeHome/Episodes";
 import styles from "./css/SeasonalCarousel.module.css";
 import SearchBar from "./SearchBar";
@@ -62,7 +64,7 @@ export default class LatestTorrents extends Component {
                                                                     chunk.map((searchResult, i) => {
                                                                         if (searchResult.animeEntry.malId)
                                                                             return <td key={i} className={styles.td}>
-                                                                                <span className={styles.upperTitle}>
+                                                                                <span onClick={() => this.downloadNow(searchResult)} className={styles.upperTitle}>
                                                                                     Episode {searchResult.episodeData.episodeNumber}
                                                                                 </span>
                                                                                 <Link to={{
@@ -117,5 +119,13 @@ export default class LatestTorrents extends Component {
         animeEntry.synonyms.add(searchResult.episodeData.seriesName);
         searchResult.animeEntry = animeEntry.sync();
         this.setState({});
+    }
+    downloadNow(searchResult: any) {
+        if (!searchResult || !searchResult.episodeData || !searchResult.episodeData.seriesName || !searchResult.episodeData.episodeNumber) return;
+        let downloadName = `${searchResult.episodeData.seriesName} Episode ${searchResult.episodeData.episodeNumber}`
+        Confirm(`Download ${downloadName}?`, (ok: boolean) => {
+            if (ok && searchResult.links && searchResult.links[0] && searchResult.links[0].magnet)
+                TorrentManager.add({ magnetURL: (searchResult as any).links[0].magnet, name: downloadName })
+        })
     }
 }

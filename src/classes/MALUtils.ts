@@ -1,4 +1,3 @@
-import mal from "jikants";
 import { AnimeById } from "jikants/dist/src/interfaces/anime/ById";
 import { Reviews } from "jikants/dist/src/interfaces/anime/Reviews";
 import { Forum } from "jikants/dist/src/interfaces/manga/Forum";
@@ -12,7 +11,7 @@ import DownloadedItem from "./DownloadedItem";
 import { MALStatuses } from "./MALStatuses";
 import User from "./User";
 import { getCurrentSeason, stringCompare } from "./utils";
-
+const mal = window.require("jikants").default;
 type HasMalId = {
     malId: Number
 }
@@ -25,10 +24,10 @@ export default class MALUtils {
         searchString = searchString || anime.name!;
         let data = (await mal.Search.search(searchString, "anime"));
         if (!data) return [];
-        let parsedData = data.results.sort((a, b) => {
+        let parsedData = data.results.sort((a: any, b: any) => {
             return stringCompare(searchString.toLowerCase(), a.title.toLowerCase()) -
                 stringCompare(searchString.toLowerCase(), b.title.toLowerCase());
-        }).map(result => {
+        }).map((result: any) => {
             let fromData = new AnimeEntry({});
             fromData.malId = result.mal_id;
             fromData.totalEpisodes = result.episodes;
@@ -47,7 +46,7 @@ export default class MALUtils {
     static async topAnime(page = 1): Promise<AnimeEntry[]> {
         let data = (await mal.Top.items("anime", page));
         if (!data) return [];
-        return data.top.map(ele => {
+        return data.top.map((ele: any) => {
             let fromData = new AnimeEntry({});
             fromData.malUrl = ele.url;
             fromData.endDate = new Date(ele.end_date as any);
@@ -65,7 +64,7 @@ export default class MALUtils {
     static async seasonalAnime(year: number, season: Seasons): Promise<AnimeEntry[]> {
         let data = (await mal.Season.anime(year, season));
         if (!data) return [];
-        return data.anime.map(result => {
+        return data.anime.map((result: any) => {
             let fromData = new AnimeEntry({});
             fromData.malId = result.mal_id;
             fromData.totalEpisodes = result.episodes as any;
@@ -82,7 +81,7 @@ export default class MALUtils {
     static async getUserAnimeList(user: User, listType: AnimeListTypes = "all", page = 1): Promise<AnimeList> {
         let data = (await mal.User.animeList(user.username, listType, page));
         if (!data) return user.animeList;
-        user.animeList[listType] = data.anime.reduce((map: any, result) => {
+        user.animeList[listType] = data.anime.reduce((map: any, result: any) => {
             map[result.mal_id] = new AnimeEntry({
                 malId: result.mal_id,
                 totalEpisodes: result.total_episodes,

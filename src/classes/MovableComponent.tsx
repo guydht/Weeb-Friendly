@@ -80,9 +80,11 @@ export default class MovableComponent extends Component<MovableComponentProps> {
             overElement.removeEventListener("mousedown", cancelMouse);
             overElement.removeEventListener("mouseup", cancelMouse);
             overElement.removeEventListener("click", cancelMouse);
-            e.stopImmediatePropagation();
-            e.stopPropagation();
-            e.preventDefault();
+            if (didMoveInGesture) {
+                e.stopImmediatePropagation();
+                e.stopPropagation();
+                e.preventDefault();
+            }
             onMouseUp(e as MouseEvent);
         }
         function cancelMouseOfElement(element: EventTarget) {
@@ -98,7 +100,7 @@ export default class MovableComponent extends Component<MovableComponentProps> {
         const onMouseMove = (e: MouseEvent) => {
             cancelMouseOfElement(e.target!);
             if (this.element.current) {
-                didMoveInGesture = true;
+                didMoveInGesture = e.screenX !== startX || e.screenY !== startY;
                 switch (direction) {
                     case Directions.nw:
                         this.element.current.style.width = startPosWidth + startX - (e.screenX || 0) + "px";
@@ -191,7 +193,7 @@ export default class MovableComponent extends Component<MovableComponentProps> {
         const onMouseMove = (e: MouseEvent) => {
             cancelMouseOfElement(e.target!);
             if (this.element.current) {
-                didMoveInGesture = true;
+                didMoveInGesture = e.screenX !== startX || e.screenY !== startY;
                 this.element.current.style.left = Math.max(0, startPosX - startX + (e.screenX || 0)) + "px";
                 this.element.current.style.top = Math.max(0, startPosY - startY + (e.screenY || 0)) + "px";
                 let currentHeight = this.element.current.clientHeight,

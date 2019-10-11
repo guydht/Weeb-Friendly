@@ -146,7 +146,7 @@ function groupBy<T>(arr: T[], propertyPath: string[]): T[][] {
     return [...obj.values()];
 }
 
-function Confirm(String: any, sendResponse: any, timer: any, yesText: any, noText: any) {
+function Confirm(String: any, sendResponse: any, timer?: any, yesText?: any, noText?: any) {
     String = String.charAt(0).toUpperCase() + String.replace(/\s\w|^./g, (letter: any) => letter.toUpperCase()).slice(1);
     var div = document.createElement("div"),
         stringDotsFlag = false,

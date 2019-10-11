@@ -48,7 +48,7 @@ export default class AnimeEntry {
         this.malId = malId;
         this.malUrl = malUrl;
         this.genres = new Set(genres);
-        this.synonyms = new Set(synonyms);
+        this.synonyms = new Set(Array.from(synonyms || []).sort());
         this.synopsis = synopsis;
         this.totalEpisodes = totalEpisodes;
         this.startDate = new Date(startDate!);
@@ -89,8 +89,8 @@ export default class AnimeEntry {
     get name(): string | undefined {
         return this._name;
     }
-    sync() {
-        Object.entries(sync(this)).forEach(([key, value]) => {
+    sync(forceSynonyms: boolean = false) {
+        Object.entries(sync(this, forceSynonyms)).forEach(([key, value]) => {
             if (value)
                 (this as any)[key] = value;
         });

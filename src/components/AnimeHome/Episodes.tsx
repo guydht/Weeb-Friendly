@@ -44,10 +44,10 @@ export default class Episodes extends Component<AnimeProps & { episodes: SearchR
             (item.animeEntry.name.match(/[a-zA-Z0-9\s]*/g) || []).join("") === (this.state.anime.name!.match(/[a-zA-Z0-9\s]*/g) || []).join(""));
     }
 
-    async searchAnime(anime: AnimeEntry, fetchAll = true): Promise<SearchResult[]> {
+    async searchAnime(anime: AnimeEntry, fetchAll = false): Promise<SearchResult[]> {
         let episodes = await HorribleSubsUtils.search(anime, fetchAll);
         let groupedBySeries = groupBy(episodes, ['episodeData', 'seriesName']);
-        if (groupedBySeries.length > 1)
+        if (groupedBySeries.length > 0)
             episodes = groupedBySeries.sort((a, b) => {
                 let aVal = Math.max(...a.map(ele => stringCompare(ele.episodeData.seriesName, this.state.anime.name!))),
                     bVal = Math.max(...b.map(ele => stringCompare(ele.episodeData.seriesName, this.state.anime.name!)));
@@ -83,7 +83,7 @@ export default class Episodes extends Component<AnimeProps & { episodes: SearchR
                         Try and search it:
                         <SearchBar gotoAnimePageOnChoose={false} showImage={false} onItemClick={userChoseAnime}
                             onInputChange={e => this.searchAnime(new AnimeEntry({ name: (e.target as any).value }), false)
-                                .then(results => e.setResults(results.map(ele => ele.animeEntry).filter((ele, i, arr) => arr.map(ele => ele.malId).indexOf(ele.malId) === i)))}
+                                .then(results => e.setResults(results.map(ele => ele.animeEntry).filter((ele, i, arr) => arr.map(ele => ele.name).indexOf(ele.name) === i)))}
                             onInputClick={e => (e.target as any).value === "" && ((e.target as any).value = this.state.anime.name)} />
                     </Modal.Body>
                 </Modal.Dialog>
@@ -121,7 +121,7 @@ export default class Episodes extends Component<AnimeProps & { episodes: SearchR
                                             }
                                         </Card.Subtitle>
                                         {
-                                            !!this.downloadedItemOfEpisode(episode) ||
+                                            !this.downloadedItemOfEpisode(episode) &&
                                             <ButtonGroup size="sm" className="mt-1">
                                                 {
                                                     episode.episodeData.qualities.map((quality, i) => {
@@ -134,7 +134,7 @@ export default class Episodes extends Component<AnimeProps & { episodes: SearchR
                                                                     <Popover id="popover-position-top">
                                                                         <Popover.Title as="h3">
                                                                             Download {episode.episodeData.seriesName} Episode {episode.episodeData.episodeNumber} in {quality}p:
-                                                            </Popover.Title>
+                                                                        </Popover.Title>
                                                                         <Popover.Content>
                                                                             <Row>
                                                                                 <Col style={{ minHeight: 0 }}>
@@ -191,7 +191,8 @@ export default class Episodes extends Component<AnimeProps & { episodes: SearchR
     }> {
         return groupBy(episodes.map(ele => { return { ...ele, asd: ele.episodeData.seriesName + ele.episodeData.episodeNumber } }), ['asd']).map(episodes => {
             let result: any = episodes[0];
-            result.episodeData.qualities = episodes.map(episode => episode.episodeData.quality).sort((a, b) => a - b);
+            episodes = episodes.sort((a, b) => b.episodeData.quality - a.episodeData.quality);
+            result.episodeData.qualities = episodes.map(episode => episode.episodeData.quality);
             result.seedersArr = episodes.map(episode => episode.seeders);
             result.leechersArr = episodes.map(episode => episode.leechers);
             result.links = episodes.map(episode => episode.link);

@@ -1,3 +1,4 @@
+// @ts-ignore
 import { si } from "nyaapi";
 import AnimeEntry from "./AnimeEntry";
 

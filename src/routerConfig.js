@@ -4,6 +4,5 @@ import Watch from "./components/Watch"
 
 export default {
     '/': Browser,
-    '/anime/:id': AnimePage,
-    "/watch/:filename": Watch
+    '/anime/:id': AnimePage
 }
