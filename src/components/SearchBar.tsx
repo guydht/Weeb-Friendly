@@ -1,11 +1,11 @@
 import React, { Component } from "react";
 import { Col, Form, FormControl, ListGroup, ListGroupItem, Row, Spinner } from "react-bootstrap";
+//@ts-ignore
+import { LazyLoadImage } from "react-lazy-load-image-component";
 import { Link } from "react-router-dom";
 import AnimeEntry from "../classes/AnimeEntry";
 import MALUtils from "../classes/MALUtils";
 import styles from "./css/SearchBar.module.css";
-
-const { LazyLoadImage } = require("react-lazy-load-image-component");
 
 interface SearchBarProps {
     placeholder?: string;

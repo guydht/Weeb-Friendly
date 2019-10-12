@@ -1,6 +1,8 @@
 import { Forum as ForumType } from "jikants/dist/src/interfaces/anime/Forum";
 import React, { Component } from "react";
 import { Accordion, Col, Container, Jumbotron, Modal, OverlayTrigger, Row, Spinner, Tooltip } from "react-bootstrap";
+//@ts-ignore
+import { LazyLoadImage } from "react-lazy-load-image-component";
 import AnimeEntry from "../../classes/AnimeEntry";
 import MALUtils, { ForumEntry } from "../../classes/MALUtils";
 import PageTransition from "../../classes/PageTransition";
@@ -8,7 +10,6 @@ import { AnimeProps } from "../AnimePage";
 import "./css/Forum.css";
 import styles from "./css/Forum.module.css";
 
-const { LazyLoadImage } = require("react-lazy-load-image-component");
 
 export default class Forum extends Component<AnimeProps> {
 

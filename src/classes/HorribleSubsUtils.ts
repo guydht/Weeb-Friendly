@@ -1,6 +1,6 @@
 import AnimeEntry from "./AnimeEntry";
-
-const { si } = require("nyaapi");
+//@ts-ignore
+import {si} from "nyaapi";
 
 export default class HorribleSubsUtils {
     static HORRIBLE_SUBS_USER = "HorribleSubs";
