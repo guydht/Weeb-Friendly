@@ -22,7 +22,7 @@ export default class App extends Component {
   render() {
     // eslint-disable-next-line
     if (!this.state.showVideo) this.state.videoItem = null;
-    return [(
+    return (
       <div className="guydht-scrollbar">
         <BrowserRouter>
           <NavBar />
@@ -46,6 +46,6 @@ export default class App extends Component {
         <DownloadManager />
         <ToastMessage />
       </div>
-    )]
+    )
   }
 }

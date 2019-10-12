@@ -1,6 +1,7 @@
 import React, { Component } from "react";
-import { Button, ButtonGroup, Col, Container, ListGroup, ProgressBar, Row } from "react-bootstrap";
+import { Button, ButtonGroup, Col, Container, ListGroup, OverlayTrigger, ProgressBar, Row, Tooltip } from "react-bootstrap";
 import { Torrent } from "webtorrent";
+import CloseButton from "../classes/CloseButton";
 import MovableComponent from "../classes/MovableComponent";
 import TorrentManager from "../classes/TorrentManager";
 import styles from "./css/DownloadManager.module.css";
@@ -41,7 +42,7 @@ export default class DownloadManager extends Component {
             return null;
         return (
             <MovableComponent
-                style={{ position: "fixed", top: 0, left: 10, height: this.state.hideFlag ? 0 : "auto", zIndex: 9 }}>
+                style={{ position: "fixed", top: 0, left: 10, height: this.state.hideFlag ? 0 : "auto", zIndex: 2029 }}>
                 <span
                     onPointerEnter={show}
                     style={{ position: "absolute" }}>
@@ -51,20 +52,22 @@ export default class DownloadManager extends Component {
                     ref={this.container}
                     className="p-0"
                     style={{ zIndex: this.state.hideFlag ? -1 : 999, transition: "transform 0.5s", overflow: "hidden", transform: "scaleY(1)", transformOrigin: '0 0' }}>
-                    <span
-                        style={{ position: "absolute", zIndex: 1, right: 0, cursor: "pointer" }}
-                        className="mr-2 mt-1 p-1" onClick={hide}>
-                        <span aria-hidden="true">×</span>
-                    </span>
+                    <CloseButton onClick={hide} className="mr-2 mt-1 p-1" />
                     <ListGroup className={styles.grid + " " + styles[`grid-template-${(Math.floor(this.state.torrents.length / 4) + 1)}`]}>
                         {
                             this.state.torrents.map(torrent => {
                                 if (!torrent.name) return null;
                                 return (
                                     <ListGroup.Item key={torrent.name}>
-                                        <h5>
-                                            {torrent.name}
-                                        </h5>
+                                        <OverlayTrigger trigger="hover" overlay={
+                                        <Tooltip id="tooltip-auto" style={{zIndex: 9999}}>
+                                            Renamed to: "{(torrent as any).torrentName}"
+                                            </Tooltip>
+                                        } placement="auto">
+                                            <h5>
+                                                {torrent.name}
+                                            </h5>
+                                        </OverlayTrigger>
                                         <Row>
                                             <Col>
                                                 <small>

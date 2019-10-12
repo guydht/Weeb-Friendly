@@ -16,13 +16,13 @@ export default class ChangableText extends Component<{ text: string, onChange?: 
         delete props.onChange;
         if (this.state.isChanging)
             return (
-                <span style={{ position: "relative" }}>
+                <span style={{ position: "relative" }}
+                    onBlur={() => this.onBlur()}>
                     <FormControl type="text" value={this.state.text}
                         className={styles.inputElement}
                         style={{ width: ChangableText.widhtOfText(this.state.text, "16px") + "px" }}
                         onChange={(e: ChangeEvent<HTMLInputElement>) => this.onTextChange(e)}
                         autoFocus={true}
-                        onBlur={() => this.submitText()}
                         onKeyDown={(e: KeyboardEvent) => this.onKeyPress(e)} />
                     <CloseButton style={{ right: "7px", top: "-2px" }} tooltipText="Remove Synonym" toolTipPlacement="top" onClick={() => this.deleteText()} />
                 </span>
@@ -43,6 +43,13 @@ export default class ChangableText extends Component<{ text: string, onChange?: 
     onKeyPress(e: KeyboardEvent) {
         if (e.key === "Enter")
             this.submitText();
+    }
+
+    onBlur() {
+        setTimeout(() => {
+            if (!this.deleted)
+                this.submitText();
+        });
     }
 
     submitText() {
@@ -66,9 +73,11 @@ export default class ChangableText extends Component<{ text: string, onChange?: 
         tmp.remove();
         return width;
     }
+    deleted = false;
     deleteText() {
         // eslint-disable-next-line
         this.state.text = "";
+        this.deleted = true;
         this.submitText();
     }
 

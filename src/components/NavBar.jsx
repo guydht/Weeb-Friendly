@@ -1,11 +1,12 @@
 import React, { Component } from "react";
-import { Button, Navbar as BootstrapNavbar, NavDropdown, Row } from "react-bootstrap";
+import { Button, FormCheck, Navbar as BootstrapNavbar, NavDropdown, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import Consts from "../classes/Consts";
 import User from "../classes/User";
 import { checkScrollSpeed } from "../classes/utils";
 import ChooseDirectoryText from "./ChooseDirectoryText";
 import SearchBar from "./SearchBar.tsx";
+import CustomMiddleClick from "../classes/CustomMiddleClick";
 
 
 
@@ -64,6 +65,15 @@ export default class NavBar extends Component {
                                 )
                             })}
                         </NavDropdown>
+                        <OverlayTrigger trigger="hover" placement="bottom" overlay={<Tooltip>Toggle Middle Click</Tooltip>}>
+                            <div className="my-auto">
+                                <FormCheck
+                                    type="switch"
+                                    id="middleClickTogge"
+                                    onChange={e => CustomMiddleClick[e.target.checked ? "enable" : "disable"]()}
+                                    label="" custom />
+                            </div>
+                        </OverlayTrigger>
                         <SearchBar />
                         {Consts.MAL_USER.isLoggedIn ?
                             <Button className="ml-2" onClick={() => this.logout()}>

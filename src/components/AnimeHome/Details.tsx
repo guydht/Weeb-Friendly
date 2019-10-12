@@ -216,6 +216,7 @@ export default class Details extends Component<AnimeProps> {
         this.state.anime.synonyms.delete(synonymToChange);
         if (newSynonym)
             this.state.anime.synonyms.add(newSynonym);
+        console.log(this.state.anime, arguments);
         this.state.anime.sync(true);
         this.setState({ anime: this.state.anime });
     }

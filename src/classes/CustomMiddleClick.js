@@ -45,7 +45,7 @@ function middleClick() {
             clearInterval(moveInterval);
             clearInterval(changeElementInterval);
             this.style.display = "none";
-            if (circle.style.left.replace("px", "") != e.clientX - 15 && circle.style.top.replace("px", "") != e.clientY - 15) e.preventDefault();
+            if (circle.style.left.replace("px", "") !== e.clientX - 15 && circle.style.top.replace("px", "") !== e.clientY - 15) e.preventDefault();
             this.onmouseup = function () { };
             window.removeEventListener("mousedown", tempFunction);
             window.removeEventListener("blur", remove);
@@ -55,38 +55,35 @@ function middleClick() {
     cover.style.display = "none";
 
     function onmousedown(e) {
-        if (cover.parentNode == null) document.body.appendChild(cover);
+        if (e.button !== 1) return;
+        e.preventDefault();
+        if (!cover.parentNode) document.body.appendChild(cover);
         if (middleClickFlag === false) return;
-        if (e.path.some(function (ele) {
-            return ele.tagName == "A"
-        }) || e.button != 1) return;
-        if (document.webkitFullscreenElement != null || document.pointerLockElement != null) {
+        if (document.webkitFullscreenElement || document.pointerLockElement) {
             e.preventDefault();
             return;
         }
-        if (e.button == 1) e.preventDefault();
         elementToScroll = {
             y: e.path.find(function (ele) {
                 var height = ele.clientHeight,
-                    style = ele.tagName != null ? getComputedStyle(ele) : {};
-                return height + 30 < ele.scrollHeight && height > 0 && (style.overflowY != "visible" && style.overflowY != "hidden");
-            }),
+                    style = ele.tagName ? getComputedStyle(ele) : {};
+                return height + 30 < ele.scrollHeight && height > 0 && (style.overflowY !== "visible" && style.overflowY !== "hidden");
+            }) || (window.innerHeight < document.body.scrollHeight ? window : null),
             x: e.path.find(function (ele) {
                 var width = ele.clientWidth,
-                    style = ele.tagName != null ? getComputedStyle(ele) : {};
-                return width + 30 < ele.scrollWidth && width > 0 && (style.overflowX != "visible" && style.overflowX != "hidden");
-            }),
+                    style = ele.tagName ? getComputedStyle(ele) : {};
+                return width + 30 < ele.scrollWidth && width > 0 && (style.overflowX !== "visible" && style.overflowX !== "hidden");
+            }) || (window.innerWidth < document.body.scrollWidth ? window : null),
         };
-        if (elementToScroll.y == null && elementToScroll.x == null && window != top) {
+        if (!elementToScroll.y && !elementToScroll.x) {
             return;
         }
         e.stopImmediatePropagation();
-        if (elementToScroll.x == null || elementToScroll.x == document.getElementsByTagName("html")[0] || elementToScroll.x == document.body) elementToScroll.x = null;
-        if (elementToScroll.y == null || elementToScroll.y == document.getElementsByTagName("html")[0] || elementToScroll.y == document.body) elementToScroll.y = null;
+        if (!elementToScroll.x || elementToScroll.x === document.getElementsByTagName("html")[0] || elementToScroll.x === document.body) elementToScroll.x = null;
+        if (!elementToScroll.y || elementToScroll.y === document.getElementsByTagName("html")[0] || elementToScroll.y === document.body) elementToScroll.y = null;
         setTimeout(function () {
             window.addEventListener("mousedown", tempFunction);
         });
-        if (!e.path.includes(window)) focus = e.target;
         let position = circle.getBoundingClientRect();
         startX = e.clientX;
         startY = e.clientY;
@@ -94,19 +91,17 @@ function middleClick() {
         window.addEventListener("mousemove", onMouseMove);
         onMouseMove(e);
         moveInterval = setInterval(function () {
-            if (elementToScroll.y) elementToScroll.y.scrollTop += parseInt(distanceY);
-            else window.scrollBy(0, parseInt(distanceY));
-            if (elementToScroll.x) elementToScroll.x.scrollLeft += parseInt(distanceX);
-            else window.scrollBy(parseInt(distanceX), 0);
+            if (elementToScroll.y) elementToScroll.y.scrollBy(0, parseInt(distanceY));
+            if (elementToScroll.x) elementToScroll.x.scrollBy(parseInt(distanceX), 0);
         }, 25);
-        cover.removeAttribute("style");
+        cover.style.display = "";
     }
 
     function onMouseMove(e) {
         let yMulti = e.clientY < startY ? -1 : 1,
             xMulti = e.clientX < startX ? -1 : 1;
-        distanceX = xMulti * Math.pow((e.clientX - startX) * xMulti, 2) / 500, distanceY = yMulti * Math.pow((e.clientY - startY) * yMulti, 2) / 500;
-        let angle = yMulti == -1 ? Math.PI - Math.atan(distanceX / distanceY) : Math.atan(distanceX / distanceY * -1);
+        distanceX = xMulti * Math.pow((e.clientX - startX) * xMulti, 2) / 500; distanceY = yMulti * Math.pow((e.clientY - startY) * yMulti, 2) / 500;
+        let angle = yMulti === -1 ? Math.PI - Math.atan(distanceX / distanceY) : Math.atan(distanceX / distanceY * -1);
         cursor.style = "transform: rotate(" + angle + "rad); top: " + e.clientY + "px; left: " + e.clientX + "px;";
     }
 }

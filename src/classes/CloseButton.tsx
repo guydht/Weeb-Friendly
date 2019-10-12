@@ -3,7 +3,7 @@ import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Placement } from "react-bootstrap/Overlay";
 import styles from "./css/CloseButton.module.css";
 
-export default class CloseButton extends Component<{ style?: CSSProperties, onClick: (e?: MouseEvent) => any | void, tooltipText?: string, toolTipElement?: Component, toolTipPlacement?: Placement }> {
+export default class CloseButton extends Component<React.DetailedHTMLProps<React.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement> & { onClick: (e?: MouseEvent) => any | void, tooltipText?: string, toolTipElement?: Component, toolTipPlacement?: Placement }> {
     render() {
         let placement = this.props.toolTipPlacement || "auto",
             overlay = this.props.toolTipElement || <Tooltip id={`tooltip-${placement}`}>
@@ -15,7 +15,6 @@ export default class CloseButton extends Component<{ style?: CSSProperties, onCl
                     placement={placement}
                     overlay={overlay}>
                     <span
-                        style={this.props.style || {}}
                         className={styles.span}
                         onClick={e => this.props.onClick(e)}>
                         <span aria-hidden="true">×</span>
