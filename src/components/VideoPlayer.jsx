@@ -56,7 +56,7 @@ export default class VideoPlayer extends Component {
             if (this.props.src.startsWith("file:"))
                 handleFile(this.props.src.substring(7), handleSubs);
             else
-                handleURL(this.props.src, handleSubs).then(console.log);
+                handleURL(this.props.src, handleSubs).then((...arr) => console.log('finished', ...arr));
         }
     }
 

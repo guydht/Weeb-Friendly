@@ -1,15 +1,38 @@
+
 // Adapted from https://github.com/qgustavor/mkv-extract/ licensed under MIT
 const fs = window.require("fs"),
   matroska = window.require("matroska-subtitles"),
   request = window.require("request"),
-  pipeline =  window.require("stream").pipeline;
+  pipeline = window.require("stream").pipeline;
 function handleFile(file, atData) {
   createDecoderFromStream(fs.createReadStream(file), atData);
 }
 
 function handleURL(url, atData) {
-  let stream = request(url);
-  return createDecoderFromStream(stream, atData);
+  createDecoderFromStream(request(url), atData);
+  return new Promise(async resolve => {
+    let stream = request({
+      url,
+      forever: true
+    }),
+      dataTimeout,
+      onComplete = () => {
+        clearTimeout(dataTimeout);
+      },
+      onData = () => {
+        clearTimeout(dataTimeout);
+        dataTimeout = setTimeout(async () => {
+          stream.destroy();
+          stream = request({ url, forever: true });
+          stream.on("data", onData);
+          stream.on("complete", onComplete);
+          resolve(await createDecoderFromStream(stream, atData));
+        }, 10000);
+      };
+    stream.on("complete", onComplete);
+    stream.on("data", onData);
+    resolve(await createDecoderFromStream(stream, atData));
+  })
 }
 
 function createDecoderFromStream(stream, atData) {
@@ -18,19 +41,30 @@ function createDecoderFromStream(stream, atData) {
   matroskaDecoder.once("tracks", subTracks => subTracks.forEach(track => tracks[track.number] = track));
   let emitTimeout,
     emitTimeoutStop = false,
-    emitTimeoutMiliseconds = 5000;
+    emitTimeoutMiliseconds = 5000,
+    thereIsAnEmitWaiting = false;
   matroskaDecoder.on("subtitle", (subtitle, trackNumber) => {
     let track = tracks[trackNumber];
     if (!track.subtitles)
       track.subtitles = [];
     track.subtitles.push(subtitle);
+    thereIsAnEmitWaiting = true;
     if (emitTimeoutStop) return;
+    thereIsAnEmitWaiting = false;
     emitTimeoutStop = true;
     clearTimeout(emitTimeout);
-    emitTimeout = setTimeout(() => emitTimeoutStop = false, emitTimeoutMiliseconds);
+    emitTimeout = setTimeout(() => {
+      emitTimeoutStop = false;
+      if (thereIsAnEmitWaiting)
+        emitData();
+    }, emitTimeoutMiliseconds);
     emitData();
   });
-  stream.pipe(matroskaDecoder);
+  pipeline(
+    stream,
+    matroskaDecoder,
+    console.log
+  );
   return new Promise(resolve => {
     matroskaDecoder.on("finish", () => { emitData(); resolve(tracks); });
   });
@@ -46,21 +80,20 @@ function createDecoderFromStream(stream, atData) {
         : [""];
       const headingParts = isASS ? heading.split(eventMatches[0]) : ["", ""];
       const fixedLines = [];
-      if (track.subtitles)
-        track.subtitles.forEach((subtitle, i) => {
-          let startTimeStamp = formatFn(subtitle.time),
-            endTimeStamp = formatFn(subtitle.time + subtitle.duration),
-            lineParts = [subtitle.layer, startTimeStamp, endTimeStamp, subtitle.style,
-            subtitle.name, subtitle.marginL, subtitle.marginR, subtitle.marginV, subtitle.effect, subtitle.text],
-            fixedLine = isASS ? "Dialogue: " + lineParts.join(",")
-              : i + 1 + "\r\n" + startTimeStamp.replace(".", ",") +
-              " --> " + endTimeStamp.replace(".", ",") + "\r\n" + subtitle.text + "\r\n";
-          if (fixedLines[i]) {
-            fixedLines[i] += "\r\n" + fixedLine;
-          } else {
-            fixedLines[i] = fixedLine;
-          }
-        });
+      track.subtitles.forEach((subtitle, i) => {
+        let startTimeStamp = formatFn(subtitle.time),
+          endTimeStamp = formatFn(subtitle.time + subtitle.duration),
+          lineParts = [subtitle.layer, startTimeStamp, endTimeStamp, subtitle.style,
+          subtitle.name, subtitle.marginL, subtitle.marginR, subtitle.marginV, subtitle.effect, subtitle.text],
+          fixedLine = isASS ? "Dialogue: " + lineParts.join(",")
+            : i + 1 + "\r\n" + startTimeStamp.replace(".", ",") +
+            " --> " + endTimeStamp.replace(".", ",") + "\r\n" + subtitle.text + "\r\n";
+        if (fixedLines[i]) {
+          fixedLines[i] += "\r\n" + fixedLine;
+        } else {
+          fixedLines[i] = fixedLine;
+        }
+      });
       let data = (isASS ? headingParts[0] + eventMatches[0] + "\r\n" : "") + fixedLines.join("\r\n") + headingParts[1] + "\r\n";
       files.push({
         name: "Subtitle_" + track.number + (isASS ? ".ass" : ".srt"),

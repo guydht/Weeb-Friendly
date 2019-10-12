@@ -46,7 +46,7 @@ export default class CurrentlyWatching extends Component {
                 <Carousel interval={null} className="px-5 mx-5 mt-5">
                     {
                         chunkArray(Object.values(this.state.animeList.watching).sort(
-                            (a, b) => a.startDate - b.startDate), CurrentlyWatching.GRID_SIZE_X * CurrentlyWatching.GRID_SIZE_Y)
+                            (a, b) => b.startDate - a.startDate), CurrentlyWatching.GRID_SIZE_X * CurrentlyWatching.GRID_SIZE_Y)
                             .map((arrayChunk, i) => {
                                 return (
                                     <Carousel.Item key={arrayChunk[0].name} className={styles.carousel}>

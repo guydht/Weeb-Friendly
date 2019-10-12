@@ -1,11 +1,11 @@
 import React, { Component } from "react";
 import { Col, Form, FormControl, ListGroup, ListGroupItem, Row, Spinner } from "react-bootstrap";
-// @ts-ignore
-import { LazyLoadImage } from "react-lazy-load-image-component";
 import { Link } from "react-router-dom";
 import AnimeEntry from "../classes/AnimeEntry";
 import MALUtils from "../classes/MALUtils";
 import styles from "./css/SearchBar.module.css";
+
+const { LazyLoadImage } = require("react-lazy-load-image-component");
 
 interface SearchBarProps {
     placeholder?: string;
@@ -26,6 +26,10 @@ export default class SearchBar extends Component<SearchBarProps> {
         loading: false,
         loadingText: ""
     };
+
+    componentWillUnmount() {
+        this.setState = () => { };
+    }
 
     render() {
         const onFocus = () => {
@@ -116,7 +120,7 @@ export default class SearchBar extends Component<SearchBarProps> {
                     }
                     let results = await MALUtils.searchAnime(new AnimeEntry({ name: searchName })),
                         equal = results.filter(result => searchName.toLowerCase().match(/[a-z0-9]+/g).join("") ===
-                            result.name!.toLowerCase().match(/[a-z0-9]+/g)!.join(""))
+                            result.name!.toLowerCase().match(/[a-z0-9]+/g)!.join(""));
                     if (equal.length === 1)
                         this.chooseEntry(equal[0]);
                     else

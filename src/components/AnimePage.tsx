@@ -1,8 +1,6 @@
 import { AnimeById } from "jikants/dist/src/interfaces/anime/ById";
 import React, { Component } from "react";
 import { Col, Container, Row, Tab, Tabs } from "react-bootstrap";
-// @ts-ignore
-import { LazyLoadComponent } from "react-lazy-load-image-component";
 import ImageZoom from "react-medium-image-zoom";
 import AnimeEntry from "../classes/AnimeEntry";
 import MALUtils from "../classes/MALUtils";
@@ -14,6 +12,8 @@ import News from "./AnimeHome/News";
 import Pictures from "./AnimeHome/Pictures";
 import Reviews from "./AnimeHome/Reviews";
 import Stats from "./AnimeHome/Stats";
+
+const { LazyLoadComponent } = require("react-lazy-load-image-component");
 
 export interface AnimeProps {
     info: AnimeById;
@@ -66,7 +66,7 @@ export default class AnimePage extends Component {
                         }
                     </h2>
                 </Row>
-                <Row>
+                <Row style={{ flexWrap: "nowrap" }}>
                     <Col md="auto">
                         <ImageZoom image={{
                             src: this.state.info ? (this.state.info as any).image_url : "",
@@ -87,7 +87,7 @@ export default class AnimePage extends Component {
                         }} onZoom={() => this.searchHighResPhoto((this.state.info as any).image_url)} />
                     </Col>
                     <Col md="auto" style={{ flex: 1 }}>
-                        <Tabs id="mal-links" defaultActiveKey={"Details"}>
+                        <Tabs id="mal-links" defaultActiveKey={"Details"} className="justify-content-center">
                             {
                                 Object.entries(this.PAGE_LINKS).map(([name, MyComponent], i) => {
                                     return (

@@ -1,4 +1,5 @@
 import { Seasons } from "jikants/dist/src/interfaces/season/Season";
+import moment from "moment";
 
 function objectToFormData(object: object): FormData {
     let formData = new FormData();
@@ -265,5 +266,36 @@ function Confirm(String: any, sendResponse: any, timer?: any, yesText?: any, noT
         } else (div.querySelector("#progress") as any).style.transform = "translateX(" + width + "px)";
     }
 }
-export { objectToFormData, stringCompare, stringRelativeSimilarity, levenshteinDistance, getCurrentSeason, hasInternet, CacheLocalStorage, chunkArray, groupBy, Confirm };
+
+let checkScrollSpeed = (function () {
+    let lastPos: number | null,
+        newPos: number,
+        timer: number,
+        delta: number,
+        delay = 50; // in "ms" (higher means lower fidelity )
+
+    function clear() {
+        lastPos = null;
+        delta = 0;
+    }
+
+    clear();
+
+    return function () {
+        newPos = window.scrollY;
+        if (lastPos != null) { // && newPos < maxScroll 
+            delta = newPos - lastPos;
+        }
+        lastPos = newPos;
+        clearTimeout(timer);
+        timer = window.setTimeout(clear, delay);
+        return delta;
+    };
+})();
+
+function parseStupidAmericanDateString(dateString: string) {
+    return moment(dateString).toDate();
+}
+
+export { objectToFormData, stringCompare, stringRelativeSimilarity, levenshteinDistance, getCurrentSeason, hasInternet, CacheLocalStorage, chunkArray, groupBy, Confirm, checkScrollSpeed, parseStupidAmericanDateString };
 

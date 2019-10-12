@@ -1,6 +1,6 @@
 import { AnimeById } from "jikants/dist/src/interfaces/anime/ById";
+import { Forum } from "jikants/dist/src/interfaces/anime/Forum";
 import { Reviews } from "jikants/dist/src/interfaces/anime/Reviews";
-import { Forum } from "jikants/dist/src/interfaces/manga/Forum";
 import { Seasons } from "jikants/dist/src/interfaces/season/Season";
 import { AnimeListTypes } from "jikants/dist/src/interfaces/user/AnimeList";
 import Consts from "../classes/Consts";
@@ -10,8 +10,11 @@ import * as AnimeStorage from "./AnimeStorage";
 import DownloadedItem from "./DownloadedItem";
 import { MALStatuses } from "./MALStatuses";
 import User from "./User";
-import { getCurrentSeason, stringCompare } from "./utils";
-const mal = window.require("jikants").default;
+import { getCurrentSeason, parseStupidAmericanDateString, stringCompare } from "./utils";
+
+let mal = window.require("jikan-node");
+mal = new mal();
+
 type HasMalId = {
     malId: Number
 }
@@ -22,9 +25,9 @@ export default class MALUtils {
 
     static async searchAnime(anime: AnimeEntry, searchString: string = ""): Promise<AnimeEntry[]> {
         searchString = searchString || anime.name!;
-        let data = (await mal.Search.search(searchString, "anime"));
+        let data = (await mal.search("anime", searchString));
         if (!data) return [];
-        let parsedData = data.results.sort((a: any, b: any) => {
+        let parsedData = data.results.sort((a: { title: string; }, b: { title: string; }) => {
             return stringCompare(searchString.toLowerCase(), a.title.toLowerCase()) -
                 stringCompare(searchString.toLowerCase(), b.title.toLowerCase());
         }).map((result: any) => {
@@ -34,8 +37,8 @@ export default class MALUtils {
             fromData.imageURL = result.image_url;
             fromData.myMalRating = result.rated as any;
             fromData.score = result.score;
-            fromData.startDate = new Date(result.start_date);
-            fromData.endDate = new Date(result.end_date as any);
+            fromData.startDate = parseStupidAmericanDateString(result.start_date);
+            fromData.endDate = parseStupidAmericanDateString(result.end_date);
             fromData.synopsis = result.synopsis;
             fromData.name = result.title;
             fromData.malUrl = result.url;
@@ -44,13 +47,13 @@ export default class MALUtils {
         return parsedData;
     }
     static async topAnime(page = 1): Promise<AnimeEntry[]> {
-        let data = (await mal.Top.items("anime", page));
+        let data = (await mal.findTop("anime", page));
         if (!data) return [];
         return data.top.map((ele: any) => {
             let fromData = new AnimeEntry({});
             fromData.malUrl = ele.url;
-            fromData.endDate = new Date(ele.end_date as any);
-            fromData.startDate = new Date(ele.start_date as any);
+            fromData.endDate = parseStupidAmericanDateString(ele.end_date);
+            fromData.startDate = parseStupidAmericanDateString(ele.start_date);
             fromData.score = ele.score;
             fromData.imageURL = ele.image_url;
             fromData.malId = ele.mal_id;
@@ -62,13 +65,13 @@ export default class MALUtils {
         return this.seasonalAnime(new Date().getFullYear(), getCurrentSeason() as Seasons);
     }
     static async seasonalAnime(year: number, season: Seasons): Promise<AnimeEntry[]> {
-        let data = (await mal.Season.anime(year, season));
+        let data = (await mal.findSeason(season, year));
         if (!data) return [];
         return data.anime.map((result: any) => {
             let fromData = new AnimeEntry({});
             fromData.malId = result.mal_id;
             fromData.totalEpisodes = result.episodes as any;
-            fromData.startDate = new Date(result.airing_start as any);
+            fromData.startDate = parseStupidAmericanDateString(result.airing_start);
             fromData.genres = result.genres as any;
             fromData.imageURL = result.image_url;
             fromData.score = result.score as any;
@@ -79,16 +82,16 @@ export default class MALUtils {
         });
     }
     static async getUserAnimeList(user: User, listType: AnimeListTypes = "all", page = 1): Promise<AnimeList> {
-        let data = (await mal.User.animeList(user.username, listType, page));
+        let data = (await mal.findUser(user.username, "animelist", listType, { page }));
         if (!data) return user.animeList;
         user.animeList[listType] = data.anime.reduce((map: any, result: any) => {
             map[result.mal_id] = new AnimeEntry({
                 malId: result.mal_id,
                 totalEpisodes: result.total_episodes,
-                startDate: new Date(result.start_date),
-                endDate: new Date(result.end_date!),
-                userStartDate: new Date(result.watch_start_date!),
-                userEndDate: new Date(result.watch_end_date!),
+                startDate: parseStupidAmericanDateString(result.start_date),
+                endDate: parseStupidAmericanDateString(result.end_date),
+                userStartDate: parseStupidAmericanDateString(result.watch_start_date),
+                userEndDate: parseStupidAmericanDateString(result.watch_end_date),
                 myMalRating: result.score as any,
                 myMalStatus: MALStatuses[result.watching_status] as any,
                 myWatchedEpisodes: result.watched_episodes,
@@ -104,13 +107,15 @@ export default class MALUtils {
         return user.animeList;
     }
     static async getAnimeInfo(anime: AnimeEntry & HasMalId): Promise<AnimeById | undefined> {
-        let data = (await mal.Anime.byId(anime.malId));
+        let data = (await mal.findAnime(anime.malId));
         if (!data)
             return data;
         anime.score = data.score;
         anime.name = data.title;
-        anime.startDate = data.aired.from;
-        anime.endDate = data.aired.to;
+        anime.genres = new Set(data.genres.map((ele: { Name: string; }) => ele.Name));
+        anime.imageURL = data.image_url;
+        anime.startDate = parseStupidAmericanDateString(data.aired.from);
+        anime.endDate = parseStupidAmericanDateString(data.aired.to);
         anime.synonyms = new Set([...anime.synonyms, data.title, data.title_english, data.title_japanese, ...data.title_synonyms]);
         anime.synonyms.delete(null as any);
         anime.synopsis = data.synopsis;
@@ -182,15 +187,86 @@ export default class MALUtils {
         Consts.setMALUser(Consts.MAL_USER);
         return ok;
     }
-    static async animeForum(anime: AnimeEntry & HasMalId): Promise<Forum | undefined> {
-        let data = await mal.Anime.forum(anime.malId);
-        return data;
+    static async animeForum(anime: AnimeEntry & HasMalId): Promise<Forum["topics"] | undefined> {
+        let data = await mal.findAnime(anime.malId, "forum");
+        return data ? data.topics : [];
+    }
+    static async forumEntry(topic: Forum["topics"][0]): Promise<ForumEntry> {
+        let response = await fetch(topic.url).then(r => r.text());
+        let html = document.createElement("html");
+        html.innerHTML = response;
+        let messages = [...html.querySelectorAll(".forum_border_around ")].map(msg => {
+            let userData = msg.querySelector("td:first-child")!.textContent!.split("\n").map(ele => ele.trim()).filter(ele => ele.length),
+                msgHTML = msg.querySelector("[id^=\"message\"]:not([id^=\"messageuser\"]).clearfix")!.innerHTML,
+                msgId = Number(msg.querySelector("[id^=\"message\"]:not([id^=\"messageuser\"]).clearfix")!.id.replace("message", ""));
+            msgHTML = msgHTML.replace(/<iframe/g, "<iframe allowfullscreen").replace(/href="\/forum\/message\/[0-9]+\?goto=topic/g, m => "href=\"#" + m.replace("href=\"/forum/message/", "").replace("?goto=topic", ""));
+            return new ForumMessage({
+                messageHTML: msgHTML,
+                time: parseStupidAmericanDateString(msg.querySelector(".date")!.textContent as string),
+                user: {
+                    imageURL: (msg.querySelector(".forum-icon img") || {} as any).src,
+                    posts: Number(userData[3].replace("Posts: ", "")),
+                    joined: userData[2].replace("Joined: ", ""),
+                    status: userData[1] as any,
+                    name: userData[0]
+                },
+                id: msgId
+            });
+        });
+        return new ForumEntry({
+            messages: messages, title: topic.title
+        });
     }
     static async animeReviews(anime: AnimeEntry & HasMalId): Promise<Reviews | undefined> {
-        let data = await mal.Anime.reviews(anime.malId);
+        let data = await mal.findAnime(anime.malId, "reviews");
         return data;
     }
     static syncAnime = AnimeStorage.sync;
     static getAnime = AnimeStorage.get;
     static get storageSize() { return AnimeStorage.size(); };
+}
+
+export class ForumEntry {
+    title: string;
+    messages: ForumMessage[];
+    constructor({
+        title,
+        messages
+    }: {
+        title: string,
+        messages: ForumMessage[]
+    }) {
+        this.title = title;
+        this.messages = messages;
+    }
+}
+
+class ForumMessage {
+    messageHTML: string;
+    user: { name: string; imageURL?: string; status: "offline" | "online"; joined: string; posts: number; };
+    time: Date;
+    id: number;
+    constructor({
+        messageHTML,
+        user,
+        time,
+        id
+    }:
+        {
+            messageHTML: string,
+            user: {
+                name: string,
+                imageURL?: string,
+                status: "offline" | "online",
+                joined: string,
+                posts: number
+            },
+            time: Date,
+            id: number
+        }) {
+        this.messageHTML = messageHTML;
+        this.user = user;
+        this.time = time;
+        this.id = id;
+    }
 }

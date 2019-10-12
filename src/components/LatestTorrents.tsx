@@ -1,7 +1,5 @@
 import React, { Component } from "react";
 import { Carousel, Spinner, Table } from "react-bootstrap";
-// @ts-ignore
-import { LazyLoadComponent, LazyLoadImage } from "react-lazy-load-image-component";
 import { Link } from "react-router-dom";
 import AnimeEntry from "../classes/AnimeEntry";
 import HorribleSubsUtils, { SearchResult } from "../classes/HorribleSubsUtils";
@@ -11,6 +9,8 @@ import Episodes from "../components/AnimeHome/Episodes";
 import styles from "./css/SeasonalCarousel.module.css";
 import SearchBar from "./SearchBar";
 import SeasonalCarousel from "./SeasonalCarousel";
+
+const { LazyLoadComponent, LazyLoadImage } = require("react-lazy-load-image-component");
 
 export default class LatestTorrents extends Component {
 

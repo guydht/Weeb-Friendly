@@ -189,7 +189,6 @@ export var SubtitlesOctopus = function (options) {
 
     function renderFrames() {
         var data = self.renderFramesData;
-        var beforeDrawTime = performance.now();
         self.ctx.clearRect(0, 0, self.canvas.width, self.canvas.height);
         for (var i = 0; i < data.canvases.length; i++) {
             var image = data.canvases[i];
@@ -201,7 +200,6 @@ export var SubtitlesOctopus = function (options) {
             self.ctx.drawImage(self.bufferCanvas, image.x, image.y);
         }
         if (self.debug) {
-            var drawTime = Math.round(performance.now() - beforeDrawTime);
             self.renderStart = performance.now();
         }
     }

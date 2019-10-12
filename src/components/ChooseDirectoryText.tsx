@@ -45,7 +45,7 @@ export default class ChooseDirectoryText extends Component {
                         });
                         this.setDownloadsFolder(this.textInput.current.value);
                         if(this.textInput.current && this.textInput.current.value !== Consts.DOWNLOADS_FOLDER)
-                            window.location.reload();
+                            (window as any).reloadPage();
                     }
                 });
             };

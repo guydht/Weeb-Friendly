@@ -11,6 +11,7 @@ import SeasonalCarousel from "./SeasonalCarousel";
 export default class Browser extends Component {
 
     render() {
+        console.log(Consts.MAL_USER);
         return (
             <Jumbotron style={{ textAlign: "center" }}>
                 {

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import { HashRouter, Route } from "react-router-dom";
+import { BrowserRouter, Route, Switch } from "react-router-dom";
 import "./classes/AnimeStorage";
-import "./classes/Consts"
+import "./classes/Consts";
 import DownloadManager from './components/DownloadManager';
 import Login from './components/Login';
 import NavBar from './components/NavBar';
@@ -22,19 +22,23 @@ export default class App extends Component {
   render() {
     // eslint-disable-next-line
     if (!this.state.showVideo) this.state.videoItem = null;
-    return (
+    return [(
       <div className="guydht-scrollbar">
-        <HashRouter>
-          <NavBar reloadParent={() => this.forceUpdate()} />
-          {
-            Object.entries(routerConfig).map(([thePath, theComponent]) => {
-              return (
-                <Route exact path={thePath} component={theComponent} key={thePath} />
-              )
-            })
-          }
-        </HashRouter>
-        <Login reloadParent={() => this.forceUpdate()} />
+        <BrowserRouter>
+          <NavBar />
+          <div style={{ marginTop: 70 }}>
+            <Switch>
+              {
+                Object.entries(routerConfig).map(([thePath, theComponent]) => {
+                  return (
+                    <Route exact path={thePath} component={theComponent} key={thePath} />
+                  )
+                })
+              }
+            </Switch>
+          </div>
+        </BrowserRouter>
+        <Login />
         {
           this.state.showVideo &&
           <Watch downloadedItem={this.state.videoItem} />
@@ -42,6 +46,6 @@ export default class App extends Component {
         <DownloadManager />
         <ToastMessage />
       </div>
-    )
+    )]
   }
 }

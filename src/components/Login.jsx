@@ -1,9 +1,10 @@
 import React, { Component } from "react";
-
-import { Modal, InputGroup, FormControl, Button, Alert, Spinner } from "react-bootstrap";
-
+import { Alert, Button, FormControl, InputGroup, Modal, Spinner } from "react-bootstrap";
 import Consts from "../classes/Consts";
+import MALUtils from "../classes/MALUtils";
 import User from "../classes/User";
+
+
 
 export default class Login extends Component {
     static Alert_SHOW_TIMEOUT = 4000;
@@ -177,8 +178,11 @@ export default class Login extends Component {
                     loading: false
                 });
                 Consts.setMALUser(new User(this.username, this.password, undefined, true));
+                MALUtils.getUserAnimeList(Consts.MAL_USER).then(() => {
+                    Consts.setMALUser(Consts.MAL_USER);
+                    window.reloadPage();
+                });
                 setTimeout(() => {
-                    this.props.reloadParent();
                     this.setState({
                         errorMessage: null,
                         successMessage: null

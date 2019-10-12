@@ -30,7 +30,7 @@ export default class Details extends Component<AnimeProps> {
                         <Row className="mt-4" style={{ fontSize: "130%" }}>
                             <Col md="auto" className="text-center">
                                 <Badge>Score</Badge>
-                                <h5>{this.state.info.score || "Unknown"}</h5>
+                                <h5>{this.state.anime.score || "Unknown"}</h5>
                                 {
                                     this.state.info.scored_by &&
                                     <small>{this.state.info.scored_by} Users</small>
@@ -118,13 +118,13 @@ export default class Details extends Component<AnimeProps> {
                         </div>
                     ) : <Row>
                             {
-                                hasInternet() ? (
+                                Consts.MAL_USER.isLoggedIn && hasInternet() ? (
                                     <Button onClick={() => this.addAnime(this.state.anime)}>Add to MyAnimeList</Button>
-                                ) : (
-                                        <span>
-                                            Can't add to MyAnimeList since you dont have internet connectivity!
+                                ) : Consts.MAL_USER.isLoggedIn && (
+                                    <span>
+                                        Can't add to MyAnimeList since you dont have internet connectivity!
                                     </span>
-                                    )
+                                )
                             }
                         </Row>
                 }
@@ -137,7 +137,7 @@ export default class Details extends Component<AnimeProps> {
                         <Modal.Body>
                             <p>
                                 {
-                                    this.state.info.synopsis
+                                    this.state.anime.synopsis
                                 }
                             </p>
                         </Modal.Body>
