@@ -1,5 +1,5 @@
 import AnimeEntry from "./AnimeEntry";
-import { MALStatuses } from "./MALStatuses";
+import { MALStatuses } from "../utils/MAL";
 export default class AnimeList {
     constructor({ _watching = {}, _completed = {}, _dropped = {}, _all = {}, _plantowatch = {}, _onhold = {} }) {
         this._all = _all;

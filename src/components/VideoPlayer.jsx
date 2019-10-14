@@ -1,8 +1,8 @@
 import React, { Component } from "react";
-import { asd } from "../classes/jifa";
-import { handleFile, handleURL } from "../classes/SubtitleParsers/mkvExtract";
-import { SubtitlesOctopus } from "../classes/SubtitleParsers/Octopus";
-import { CacheLocalStorage } from "../classes/utils";
+import { asd } from "../jsHelpers/jifa";
+import { handleFile, handleURL } from "../jsHelpers/subtitleParsers/mkvExtract";
+import { SubtitlesOctopus } from "../jsHelpers/subtitleParsers/Octopus";
+import { CacheLocalStorage } from "../utils/general";
 
 
 export default class VideoPlayer extends Component {
@@ -23,8 +23,8 @@ export default class VideoPlayer extends Component {
             handleSubs = async subFiles => {
                 const subtitles = [],
                     subtitleNames = [],
-                    fonts = [],
-                    chosenSubtitleIndex = 0;
+                    fonts = [];
+                let chosenSubtitleIndex = 0;
                 for (let f of subFiles) {
                     if ((f.name.endsWith(".ass") || f.name.endsWith(".ssa"))) {
                         subtitles.push(f.data);

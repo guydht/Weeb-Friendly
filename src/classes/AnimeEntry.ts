@@ -1,5 +1,5 @@
 import { sync } from "./AnimeStorage";
-import { MALStatuses } from "./MALStatuses";
+import { MALStatuses } from "../utils/MAL";
 
 export default class AnimeEntry {
     static SCORES = ["Appaling", "Horrible", "Very Bad", "Bad", "Average", "Fine", "Good", "Very Good", "Great", "Masterpiece"];

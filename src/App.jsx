@@ -2,13 +2,19 @@ import React, { Component } from 'react';
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 import "./classes/AnimeStorage";
 import "./classes/Consts";
-import DownloadManager from './components/DownloadManager';
-import Login from './components/Login';
-import NavBar from './components/NavBar';
-import ToastMessage from './components/ToastMessages';
-import Watch from './components/Watch';
-import "./css/GuydhtScrollbar.css";
+import DownloadManager from './pages/global/DownloadManager';
+import Login from './pages/global/Login';
+import NavBar from './pages/global/NavBar';
+import ToastMessage from './pages/global/ToastMessages';
+import Watch from './pages/global/Watch';
 import routerConfig from "./routerConfig";
+
+const fs = window.require("fs").promises;
+fs.readdir("./css/global/").then(globals => {
+  globals.forEach(global => {
+    import("./css/global/" + global)
+  });
+});
 
 export default class App extends Component {
   state = {

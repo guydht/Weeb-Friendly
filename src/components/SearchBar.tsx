@@ -4,8 +4,8 @@ import { Col, Form, FormControl, ListGroup, ListGroupItem, Row, Spinner } from "
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { Link } from "react-router-dom";
 import AnimeEntry from "../classes/AnimeEntry";
-import MALUtils from "../classes/MALUtils";
-import styles from "./css/SearchBar.module.css";
+import MALUtils from "../utils/MAL";
+import styles from "../css/components/SearchBar.module.css";
 
 interface SearchBarProps {
     placeholder?: string;

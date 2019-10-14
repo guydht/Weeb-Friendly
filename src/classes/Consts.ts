@@ -1,9 +1,9 @@
 import { Torrent } from 'webtorrent';
 import AnimeList from "./AnimeList";
-import { waitFor } from './jifa';
+import { waitFor } from '../jsHelpers/jifa';
 import TorrentManager from './TorrentManager';
 import User from './User';
-import { hasInternet } from './utils';
+import { hasInternet } from '../utils/general';
 let storage = window.require("electron-json-config");
 
 const ANIMELIST_VAlIDITY_TIMEOUT_IN_HOURS = 24;

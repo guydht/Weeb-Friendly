@@ -1,5 +1,5 @@
-import AnimePage from "./components/AnimePage.tsx";
-import Browser from "./components/Browser.tsx";
+import AnimePage from "./pages/AnimeInfo.tsx";
+import Browser from "./pages/Home.tsx";
 
 export default {
     '/': Browser,
