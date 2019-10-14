@@ -2,34 +2,24 @@ import React, { Component } from "react";
 import { Button, FormCheck, Navbar as BootstrapNavbar, NavDropdown, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import Consts from "../../classes/Consts";
-import CustomMiddleClick from "../../jsHelpers/CustomMiddleClick";
 import User from "../../classes/User";
-import { checkScrollSpeed } from "../../utils/general";
 import ChooseDirectoryText from "../../components/ChooseDirectoryText";
 import SearchBar from "../../components/SearchBar";
+import CustomMiddleClick from "../../jsHelpers/CustomMiddleClick";
+import { checkScrollSpeed } from "../../utils/general";
 
 
 
 export default class NavBar extends Component {
-    constructor() {
-        super();
-        for (let theme of Consts.THEMES) {
-            let beforeTheme = new Set(document.querySelectorAll("style"));
-            require("../../css/theme/bootstrap." + theme.toLowerCase().replace(" ", ".") + ".min.css");
-            let themeStyles = [...document.querySelectorAll("style")].filter(ele => !beforeTheme.has(ele));
-            beforeTheme = new Set(document.querySelectorAll("style"));
-            themeStyles.forEach(ele => ele.dataset.theme = theme);
-        }
-    }
 
     state = {
         theme: Consts.CURRENT_THEME,
         visible: true
     }
 
-    chooseFolder(val) {
+    chooseFolder(val: string) {
         Consts.setDownloadsFolder(val);
-        window.reloadPage();
+        (window as any).reloadPage();
     }
 
     componentDidMount() {
@@ -44,10 +34,18 @@ export default class NavBar extends Component {
                     visible: true
                 })
         });
+        for (let theme of Consts.THEMES) {
+            let beforeTheme = new Set(document.querySelectorAll("style"));
+            require("../../css/theme/bootstrap." + theme.toLowerCase().replace(" ", ".") + ".min.css");
+            let themeStyles = [...document.querySelectorAll("style")].filter(ele => !beforeTheme.has(ele));
+            beforeTheme = new Set(document.querySelectorAll("style"));
+            themeStyles.forEach(ele => ele.dataset.theme = theme);
+            themeStyles.forEach(ele => (ele as any).disabled = theme !== Consts.CURRENT_THEME);
+        }
     }
 
-    setMiddleClickToggle(value) {
-        localStorage.setItem("middleClickToggle", value);
+    setMiddleClickToggle(value: boolean) {
+        localStorage.setItem("middleClickToggle", value.toString());
         CustomMiddleClick[value ? "enable" : "disable"]();
     }
 
@@ -58,7 +56,7 @@ export default class NavBar extends Component {
     render() {
         this.setTheme(this.state.theme);
         return (
-            <BootstrapNavbar bg="dark" fixed="top" varient="dark" expand="lg" style={{
+            <BootstrapNavbar bg="dark" fixed="top" variant="dark" expand="lg" style={{
                 transition: "transform .3s",
                 transform: this.state.visible ? "translateY(0)" : "translateY(-100%)"
             }}>
@@ -74,12 +72,12 @@ export default class NavBar extends Component {
                                 )
                             })}
                         </NavDropdown>
-                        <OverlayTrigger trigger="hover" placement="bottom" overlay={<Tooltip>Toggle Middle Click</Tooltip>}>
+                        <OverlayTrigger trigger="hover" placement="bottom" overlay={<Tooltip id="middleClickToggle">Toggle Middle Click</Tooltip>}>
                             <div className="my-auto">
                                 <FormCheck
                                     type="switch"
                                     id="middleClickTogge"
-                                    onChange={e => this.setMiddleClickToggle(e.target.checked)}
+                                    onChange={(e: React.ChangeEvent) => this.setMiddleClickToggle((e.target as HTMLInputElement).checked)}
                                     label="" custom />
                             </div>
                         </OverlayTrigger>
@@ -100,16 +98,16 @@ export default class NavBar extends Component {
         Consts.setMALUser(new User());
         this.setState({
             user: Consts.MAL_USER
-        })
-        window.reloadPage();
+        });
+        (window as any).reloadPage();
     }
     showLogin() {
         Consts.setWantsToLogin(true);
-        window.reloadPage();
+        (window as any).reloadPage();
     }
     setTheme(theme = Consts.CURRENT_THEME) {
         [...document.querySelectorAll("style[data-theme]")].forEach(ele => {
-            ele.disabled = ele.dataset.theme !== theme;
+            (ele as any).disabled = (ele as any).dataset.theme !== theme;
         });
         Consts.setCurrentTheme(theme);
     }

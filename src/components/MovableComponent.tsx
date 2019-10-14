@@ -30,7 +30,7 @@ export default class MovableComponent extends Component<MovableComponentProps> {
         movable: false,
         resizable: false
     }
-    private element = React.createRef<HTMLDivElement>();
+    element = React.createRef<HTMLDivElement>();
     style: any;
 
     render() {

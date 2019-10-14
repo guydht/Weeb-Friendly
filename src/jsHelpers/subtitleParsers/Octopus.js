@@ -1,4 +1,4 @@
-export var SubtitlesOctopus = function (options) {
+var SubtitlesOctopus = function (options) {
     var self = this;
     self.canvas = options.canvas; // HTML canvas element (optional if video specified)
     self.isOurCanvas = false; // (internal) we created canvas and manage it
@@ -40,7 +40,7 @@ export var SubtitlesOctopus = function (options) {
     self.workerError = function (error) {
         console.error('Worker error: ', error);
         if (self.onErrorEvent) {
-            self.onErrorEvent();
+            self.onErrorEvent(error);
         }
         if (!self.debug) {
             self.dispose();
@@ -69,7 +69,7 @@ export var SubtitlesOctopus = function (options) {
             width: self.canvas.width,
             height: self.canvas.height,
             URL: document.URL,
-            currentScriptUrl: self.workerUrl,
+            currentScript: self.workerUrl,
             preMain: true,
             subUrl: self.subUrl,
             subContent: self.subContent,
@@ -111,6 +111,10 @@ export var SubtitlesOctopus = function (options) {
     self.setVideo = function (video) {
         self.video = video;
         if (self.video) {
+            var timeupdate = function () {
+                self.setCurrentTime(video.currentTime + self.timeOffset);
+            }
+            self.video.addEventListener("timeupdate", timeupdate, false);
             self.video.addEventListener("playing", function () {
                 self.setIsPaused(false, video.currentTime + self.timeOffset);
             }, false);
@@ -118,6 +122,10 @@ export var SubtitlesOctopus = function (options) {
                 self.setIsPaused(true, video.currentTime + self.timeOffset);
             }, false);
             self.video.addEventListener("seeking", function () {
+                self.video.removeEventListener("timeupdate", timeupdate);
+            }, false);
+            self.video.addEventListener("seeked", function () {
+                self.video.addEventListener("timeupdate", timeupdate, false);
                 self.setCurrentTime(video.currentTime + self.timeOffset);
             }, false);
             self.video.addEventListener("ratechange", function () {
@@ -136,12 +144,18 @@ export var SubtitlesOctopus = function (options) {
             document.addEventListener("msfullscreenchange", self.resizeWithTimeout, false);
             window.addEventListener("resize", self.resizeWithTimeout, false);
 
+            // Support Element Resize Observer
+            if (typeof ResizeObserver !== "undefined") {
+                self.ro = new ResizeObserver(self.resizeWithTimeout);
+                self.ro.observe(self.video);
+            }
+
             if (self.video.videoWidth > 0) {
                 self.resize();
             }
             else {
-                self.video.addEventListener("loadedmetadata", function eventHandler(e) {
-                    e.target.removeEventListener(e.type, eventHandler);
+                self.video.addEventListener("loadedmetadata", function somename(e) {
+                    e.target.removeEventListener(e.type, somename);
                     self.resize();
                 }, false);
             }
@@ -183,12 +197,22 @@ export var SubtitlesOctopus = function (options) {
 
     self.renderFrameData = null;
     function renderFrame() {
+        /*var dst = self.canvasData.data;
+         if (dst.set) {
+         dst.set(renderFrameData);
+         } else {
+         for (var i = 0; i < renderFrameData.length; i++) {
+         dst[i] = renderFrameData[i];
+         }
+         }
+         self.ctx.putImageData(self.canvasData, 0, 0);*/
         self.ctx.putImageData(new ImageData(self.renderFrameData, self.canvas.width, self.canvas.height), 0, 0);
         self.renderFrameData = null;
     }
 
     function renderFrames() {
         var data = self.renderFramesData;
+        var beforeDrawTime = performance.now();
         self.ctx.clearRect(0, 0, self.canvas.width, self.canvas.height);
         for (var i = 0; i < data.canvases.length; i++) {
             var image = data.canvases[i];
@@ -200,6 +224,8 @@ export var SubtitlesOctopus = function (options) {
             self.ctx.drawImage(self.bufferCanvas, image.x, image.y);
         }
         if (self.debug) {
+            var drawTime = Math.round(performance.now() - beforeDrawTime);
+            console.log(Math.round(data.spentTime) + ' ms (+ ' + drawTime + ' ms draw)');
             self.renderStart = performance.now();
         }
     }
@@ -217,6 +243,7 @@ export var SubtitlesOctopus = function (options) {
         var data = event.data;
         switch (data.target) {
             case 'stdout': {
+                console.log(data.content);
                 break;
             }
             case 'stderr': {
@@ -343,6 +370,8 @@ export var SubtitlesOctopus = function (options) {
             }
             return;
         }
+
+
         if (
             self.canvas.width !== width ||
             self.canvas.height !== height ||
@@ -398,6 +427,27 @@ export var SubtitlesOctopus = function (options) {
         });
     };
 
+    self.setTrackByUrl = function (url) {
+        self.worker.postMessage({
+            target: 'set-track-by-url',
+            url: url
+        });
+    };
+
+    self.setTrack = function (content) {
+        self.worker.postMessage({
+            target: 'set-track',
+            content: content
+        });
+    };
+
+    self.freeTrack = function (content) {
+        self.worker.postMessage({
+            target: 'free-track'
+        });
+    };
+
+
     self.render = self.setCurrentTime;
 
     self.setIsPaused = function (isPaused, currentTime) {
@@ -416,11 +466,19 @@ export var SubtitlesOctopus = function (options) {
     };
 
     self.dispose = function () {
+        self.worker.postMessage({
+            target: 'destroy'
+        });
+
         self.worker.terminate();
         self.workerActive = false;
         // Remove the canvas element to remove residual subtitles rendered on player
-        self.video.parentNode.removeChild(self.canvasParent);
+        if (self.video) {
+            self.video.parentNode.removeChild(self.canvasParent);
+        }
     };
 
     self.init();
 };
+
+export { SubtitlesOctopus };

@@ -81,20 +81,21 @@ function createDecoderFromStream(stream, atData) {
         : [""];
       const headingParts = isASS ? heading.split(eventMatches[0]) : ["", ""];
       const fixedLines = [];
-      track.subtitles.forEach((subtitle, i) => {
-        let startTimeStamp = formatFn(subtitle.time),
-          endTimeStamp = formatFn(subtitle.time + subtitle.duration),
-          lineParts = [subtitle.layer, startTimeStamp, endTimeStamp, subtitle.style,
-          subtitle.name, subtitle.marginL, subtitle.marginR, subtitle.marginV, subtitle.effect, subtitle.text],
-          fixedLine = isASS ? "Dialogue: " + lineParts.join(",")
-            : i + 1 + "\r\n" + startTimeStamp.replace(".", ",") +
-            " --> " + endTimeStamp.replace(".", ",") + "\r\n" + subtitle.text + "\r\n";
-        if (fixedLines[i]) {
-          fixedLines[i] += "\r\n" + fixedLine;
-        } else {
-          fixedLines[i] = fixedLine;
-        }
-      });
+      if(track.subtitles)
+        track.subtitles.forEach((subtitle, i) => {
+          let startTimeStamp = formatFn(subtitle.time),
+            endTimeStamp = formatFn(subtitle.time + subtitle.duration),
+            lineParts = [subtitle.layer, startTimeStamp, endTimeStamp, subtitle.style,
+            subtitle.name, subtitle.marginL, subtitle.marginR, subtitle.marginV, subtitle.effect, subtitle.text],
+            fixedLine = isASS ? "Dialogue: " + lineParts.join(",")
+              : i + 1 + "\r\n" + startTimeStamp.replace(".", ",") +
+              " --> " + endTimeStamp.replace(".", ",") + "\r\n" + subtitle.text + "\r\n";
+          if (fixedLines[i]) {
+            fixedLines[i] += "\r\n" + fixedLine;
+          } else {
+            fixedLines[i] = fixedLine;
+          }
+        });
       let data = (isASS ? headingParts[0] + eventMatches[0] + "\r\n" : "") + fixedLines.join("\r\n") + headingParts[1] + "\r\n",
         extName = isASS ? ".ass" : ".srt";
       files.push({

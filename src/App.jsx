@@ -8,12 +8,12 @@ import NavBar from './pages/global/NavBar';
 import ToastMessage from './pages/global/ToastMessages';
 import Watch from './pages/global/Watch';
 import routerConfig from "./routerConfig";
+import "./classes/Consts";
 
-const fs = window.require("fs").promises;
-fs.readdir("./css/global/").then(globals => {
-  globals.forEach(global => {
-    import("./css/global/" + global)
-  });
+const fs = window.require("fs");
+let globalStyles = fs.readdirSync("./src/css/global/");
+globalStyles.forEach(global => {
+  import("./css/global/" + global);
 });
 
 export default class App extends Component {

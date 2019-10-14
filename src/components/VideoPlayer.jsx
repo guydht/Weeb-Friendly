@@ -47,23 +47,22 @@ export default class VideoPlayer extends Component {
                         chosenSubtitleIndex = index;
                         this.subtitlesOctopus.setTrack(subtitles[index]);
                     }
-                })
-                if (this.subtitlesOctopus) {
-                    clearInterval(this.subtitlesOctopus.resizeInterval);
-                    try {
-                        this.subtitlesOctopus.dispose();
-                    } catch (e) { }
+                });
+                if (!this.subtitlesOctopus) {
+                    this.subtitlesOctopus = new SubtitlesOctopus(options);
+                    setInterval(() => {
+                        let currentVideoSize = video.getBoundingClientRect().toJSON();
+                        if (currentVideoSize.height !== previousVideoSize.height || currentVideoSize.width !== previousVideoSize.width) {
+                            previousVideoSize = currentVideoSize;
+                            this.subtitlesOctopus.resize();
+                        }
+                    }, 500);
                 }
-                this.subtitlesOctopus = new SubtitlesOctopus(options);
+                else {
+                    this.subtitlesOctopus.setTrack(subtitles[0]);
+                }
                 let video = container.querySelector("video"),
                     previousVideoSize = video.getBoundingClientRect().toJSON();
-                this.subtitlesOctopus.resizeInterval = setInterval(() => {
-                    let currentVideoSize = video.getBoundingClientRect().toJSON();
-                    if (currentVideoSize.height !== previousVideoSize.height || currentVideoSize.width !== previousVideoSize.width) {
-                        previousVideoSize = currentVideoSize;
-                        this.subtitlesOctopus.resize();
-                    }
-                }, 500);
             };
         if (this.props.src.endsWith(".mkv")) {
             if (this.props.src.startsWith("file:"))

@@ -1,12 +1,13 @@
 import React, { Component } from "react";
-import MALUtils from "../../utils/MAL";
-import MovableComponent from "../../components/MovableComponent";
-import { Confirm } from "../../utils/general";
 import Consts from "../../classes/Consts";
-import styles from "../../css/pages/WatchPlayer.module.css";
+import DownloadedItem from "../../classes/DownloadedItem";
+import MovableComponent from "../../components/MovableComponent";
 import VideoPlayer from "../../components/VideoPlayer";
+import styles from "../../css/pages/WatchPlayer.module.css";
+import { Confirm } from "../../utils/general";
+import MALUtils from "../../utils/MAL";
 
-export default class Watch extends Component {
+export default class Watch extends Component<{ downloadedItem: DownloadedItem }> {
 
     static UPDATE_ANIME_PROGRESS_THRESHOLD = 0.9;
 
@@ -16,13 +17,13 @@ export default class Watch extends Component {
     };
 
     removingVideo = false;
-    movingElement = React.createRef();
+    movingElement = React.createRef<MovableComponent>();
 
     componentDidMount() {
         if (!this.props.downloadedItem.animeEntry || !this.props.downloadedItem.animeEntry.malId ||
-            this.props.downloadedItem.animeEntry.myWatchedEpisodes >= this.props.downloadedItem.episodeData.episodeNumber) return;
+            this.props.downloadedItem.animeEntry.myWatchedEpisodes || 0 >= this.props.downloadedItem.episodeData.episodeNumber) return;
         const progressFromLocalStorage = () => {
-            let obj = JSON.parse(localStorage.getItem("videoLastTime")),
+            let obj = JSON.parse(localStorage.getItem("videoLastTime") || "{}"),
                 relevant = obj[this.props.downloadedItem.fileName];
             if (relevant)
                 return relevant[1].progress;
@@ -35,13 +36,13 @@ export default class Watch extends Component {
                     lastLocalStorageValue = current;
                     if (current > Watch.UPDATE_ANIME_PROGRESS_THRESHOLD) {
                         clearInterval(finishEpisodeListener);
-                        Confirm(`Do you want to update ${this.props.downloadedItem.fileName} in MAL?`, ok => {
+                        Confirm(`Do you want to update ${this.props.downloadedItem.fileName} in MAL?`, (ok: boolean) => {
                             if (ok) {
                                 MALUtils.UpdateWatchedEpisode(this.props.downloadedItem).then(ok => {
-                                    ok ? window.displayToast({
+                                    ok ? (window as any).displayToast({
                                         title: "Anime Updated Successfully",
                                         body: `Successfully updated ${this.props.downloadedItem.fileName} in MAL!`
-                                    }) : window.displayToast({
+                                    }) : (window as any).displayToast({
                                         title: "Failed updaating Anime",
                                         body: `Failed updating ${this.props.downloadedItem.fileName} in MAL!`
                                     });
@@ -63,7 +64,7 @@ export default class Watch extends Component {
         }
     };
     render() {
-        const hide = e => {
+        const hide = (e: React.MouseEvent) => {
             this.setState({
                 videoOpacity: 0
             });
@@ -74,14 +75,14 @@ export default class Watch extends Component {
                     showingVideo: false,
                     videoOpacity: 1
                 });
-                window.setAppState({
+                (window as any).setAppState({
                     showVideo: false
                 });
             }, 500);
         };
         let styleObject = { transition: "opacity .5s", opacity: this.state.videoOpacity };
         for (let key in Consts.WATCH_PLAYER_SIZE)
-            styleObject[key] = Consts.WATCH_PLAYER_SIZE[key];
+            (styleObject as any)[key] = Consts.WATCH_PLAYER_SIZE[key];
         if (!this.state.showingVideo)
             return null;
         return (
@@ -98,14 +99,14 @@ export default class Watch extends Component {
                 </span>
                 <VideoPlayer
                     style={{ zIndex: 0 }}
-                    src={this.props.downloadedItem.videoSrc || Consts.FILE_URL_PROTOCOL + this.props.downloadedItem.absolutePath}
+                    src={(this.props.downloadedItem as any).videoSrc || Consts.FILE_URL_PROTOCOL + this.props.downloadedItem.absolutePath}
                     name={this.props.downloadedItem.fileName} />
             </MovableComponent>
         )
     }
-    onResizeFinish(_, didMoveInGesture) {
+    onResizeFinish(_: any, didMoveInGesture: boolean) {
         if (didMoveInGesture && this.movingElement.current && this.movingElement.current.element.current) {
-            let rect = this.movingElement.current.element.current.getBoundingClientRect().toJSON();
+            let rect = (this.movingElement.current.element.current.getBoundingClientRect() as DOMRect).toJSON();
             delete rect.bottom;
             delete rect.right;
             delete rect.x;

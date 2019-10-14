@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import { Alert, Button, FormControl, InputGroup, Modal, Spinner } from "react-bootstrap";
 import Consts from "../../classes/Consts";
-import MALUtils from "../../utils/MAL";
 import User from "../../classes/User";
+import MALUtils from "../../utils/MAL";
 
 
 
@@ -15,7 +15,11 @@ export default class Login extends Component {
         errorMessage: null,
         successMessage: null
     };
-    userInput = React.createRef();
+
+    username = "";
+    password = "";
+
+    userInput = React.createRef<HTMLInputElement & FormControl>();
     componentDidMount() {
         if (this.userInput.current)
             this.userInput.current.focus()
@@ -27,7 +31,7 @@ export default class Login extends Component {
             fetch("https://myanimelist.net/asdasd").then(r => r.text()).then(responseText => {
                 let html = document.createElement("html");
                 html.innerHTML = responseText;
-                Consts.setCsrfToken(html.querySelector("meta[name='csrf_token']").getAttribute("content"));
+                Consts.setCsrfToken(html.querySelector("meta[name='csrf_token']")!.getAttribute("content")!);
             });
         if (this.userInput.current)
             this.userInput.current.focus()
@@ -59,7 +63,7 @@ export default class Login extends Component {
                         </InputGroup.Prepend>
                         <FormControl placeholder="User"
                             ref={this.userInput}
-                            onKeyDown={e => this.listenToEnter(e)}
+                            onKeyDown={(e: React.KeyboardEvent) => this.listenToEnter(e)}
                             onChange={this.setUsername.bind(this)} />
                     </InputGroup>
                     <InputGroup>
@@ -69,13 +73,12 @@ export default class Login extends Component {
                         </InputGroup.Text>
                         </InputGroup.Prepend>
                         <FormControl placeholder="Password" type="password"
-                            onKeyDown={e => this.listenToEnter(e)}
+                            onKeyDown={(e: React.KeyboardEvent) => this.listenToEnter(e)}
                             onChange={this.setPassword.bind(this)} />
                     </InputGroup>
                 </Modal.Body>
                 <Alert variant="danger"
                     className="mx-3"
-                    onHide={() => this.alertHide()}
                     show={!!this.state.errorMessage}>
                     {this.state.errorMessage}
                 </Alert>
@@ -99,33 +102,26 @@ export default class Login extends Component {
             </Modal>
         )
     }
-    listenToEnter(e) {
+    listenToEnter(e: React.KeyboardEvent) {
         if (e.keyCode === 13)
             this.tryLogin()
     }
-    setPassword(event) {
-        this.password = event.target.value;
+    setPassword(event: React.ChangeEvent) {
+        this.password = (event.target as HTMLInputElement).value;
     }
-    setUsername(event) {
-        this.username = event.target.value;
+    setUsername(event: React.ChangeEvent) {
+        this.username = (event.target as HTMLInputElement).value;
     }
     checkInput() {
         return !!this.password && !!this.username;
     }
-    unknownError(error) {
+    unknownError(error: string) {
         this.errorMessage(`Something went wrong while trying to reach MyAnimeList
         Here's what we know:
         ${error}`);
     }
-    errorMessage(errorMessage) {
+    errorMessage(errorMessage: string) {
         this.setState({ errorMessage, loading: false });
-    }
-    alertHide() {
-        if (this.state.errorMessage) {
-            setTimeout(() => {
-                this.setState({ errorMessage: null })
-            }, Login.Alert_SHOW_TIMEOUT)
-        }
     }
     async tryLogin() {
         if (this.state.successMessage)
@@ -139,9 +135,9 @@ export default class Login extends Component {
         formData.append('user_name', this.username);
         formData.append('password', this.password);
         formData.append('csrf_token', Consts.CSRF_TOKEN)
-        formData.append('cookie', 1);
+        formData.append('cookie', "1");
         formData.append('sublogin', 'Login');
-        formData.append('submit', 1);
+        formData.append('submit', "1");
         fetch(Consts.MAL_LOGIN_URL, {
             method: "POST",
             body: formData
@@ -180,7 +176,7 @@ export default class Login extends Component {
                 Consts.setMALUser(new User(this.username, this.password, undefined, true));
                 MALUtils.getUserAnimeList(Consts.MAL_USER).then(() => {
                     Consts.setMALUser(Consts.MAL_USER);
-                    window.reloadPage();
+                    (window as any).reloadPage();
                 });
                 setTimeout(() => {
                     this.setState({
