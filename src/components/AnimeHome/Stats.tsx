@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import { AnimeProps } from "../AnimePage";
+import { AnimePageProps } from "../AnimePage";
 
-export default class Stats extends Component<AnimeProps> {
+export default class Stats extends Component<AnimePageProps> {
     render() {
         return (
             <div></div>

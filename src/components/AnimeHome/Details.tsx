@@ -7,10 +7,10 @@ import Consts from "../../classes/Consts";
 import { MALStatuses } from "../../classes/MALStatuses";
 import MALUtils from "../../classes/MALUtils";
 import { hasInternet } from "../../classes/utils";
-import { AnimeProps } from "../AnimePage";
+import { AnimePageProps } from "../AnimePage";
 import styles from "./css/details.module.css";
 
-export default class Details extends Component<AnimeProps> {
+export default class Details extends Component<AnimePageProps> {
 
     scoreElement = React.createRef() as RefObject<any>;
     statusElement = React.createRef() as RefObject<any>;
@@ -200,6 +200,7 @@ export default class Details extends Component<AnimeProps> {
         else if (Number(this.episodElement.current.value) === 1)
             this.statusElement.current.value = MALStatuses.Watching;
         this.updateTimeout = window.setTimeout(() => {
+            if (!this.statusElement.current || !this.episodElement.current || !this.scoreElement.current) return;
             MALUtils.updateAnime(this.state.anime as any, {
                 episodes: Number(this.episodElement.current.value),
                 status: Number(this.statusElement.current.value),

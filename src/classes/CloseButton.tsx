@@ -1,4 +1,4 @@
-import React, { Component, CSSProperties, MouseEvent } from "react";
+import React, { Component, MouseEvent } from "react";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Placement } from "react-bootstrap/Overlay";
 import styles from "./css/CloseButton.module.css";

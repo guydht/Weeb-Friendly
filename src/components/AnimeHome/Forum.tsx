@@ -6,12 +6,12 @@ import { LazyLoadImage } from "react-lazy-load-image-component";
 import AnimeEntry from "../../classes/AnimeEntry";
 import MALUtils, { ForumEntry } from "../../classes/MALUtils";
 import PageTransition from "../../classes/PageTransition";
-import { AnimeProps } from "../AnimePage";
+import { AnimePageProps } from "../AnimePage";
 import "./css/Forum.css";
 import styles from "./css/Forum.module.css";
 
 
-export default class Forum extends Component<AnimeProps> {
+export default class Forum extends Component<AnimePageProps> {
 
     state: { anime: AnimeEntry, topics?: ForumType["topics"], forumEntry?: ForumEntry, loading: boolean } = {
         anime: this.props.anime,

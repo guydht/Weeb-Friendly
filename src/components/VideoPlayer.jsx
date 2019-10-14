@@ -21,20 +21,33 @@ export default class VideoPlayer extends Component {
     setupVideo() {
         let container = asd(this.props.name, this.videoWrapper.current, this.props.src),
             handleSubs = async subFiles => {
-                let subtitle;
-                const fonts = [];
+                const subtitles = [],
+                    subtitleNames = [],
+                    fonts = [],
+                    chosenSubtitleIndex = 0;
                 for (let f of subFiles) {
-                    if ((f.name.endsWith(".ass") || f.name.endsWith(".ssa")) && !subtitle)
-                        subtitle = URL.createObjectURL(new Blob([f.data]));
+                    if ((f.name.endsWith(".ass") || f.name.endsWith(".ssa"))) {
+                        subtitles.push(f.data);
+                        subtitleNames.push(f.name);
+                    }
                     else if (f.name.endsWith(".ttf"))
                         fonts.push(URL.createObjectURL(new Blob([f.data])));
                 }
                 var options = {
                     video: container.querySelector("video"),
-                    subUrl: subtitle,
+                    subContent: subtitles[0],
                     fonts: fonts,
                     workerUrl: "/OctopusWorker.js"
                 };
+                subtitleNames[0] += " - active";
+                container.setSubtitleTracksNames(subtitleNames);
+                container.addEventListener("guydhtChangeSubs", event => {
+                    let index = subtitleNames.indexOf(event.detail);
+                    if (index >= 0 && chosenSubtitleIndex !== index) {
+                        chosenSubtitleIndex = index;
+                        this.subtitlesOctopus.setTrack(subtitles[index]);
+                    }
+                })
                 if (this.subtitlesOctopus) {
                     clearInterval(this.subtitlesOctopus.resizeInterval);
                     try {

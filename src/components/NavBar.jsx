@@ -2,11 +2,11 @@ import React, { Component } from "react";
 import { Button, FormCheck, Navbar as BootstrapNavbar, NavDropdown, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import Consts from "../classes/Consts";
+import CustomMiddleClick from "../classes/CustomMiddleClick";
 import User from "../classes/User";
 import { checkScrollSpeed } from "../classes/utils";
 import ChooseDirectoryText from "./ChooseDirectoryText";
 import SearchBar from "./SearchBar.tsx";
-import CustomMiddleClick from "../classes/CustomMiddleClick";
 
 
 
@@ -46,6 +46,15 @@ export default class NavBar extends Component {
         });
     }
 
+    setMiddleClickToggle(value) {
+        localStorage.setItem("middleClickToggle", value);
+        CustomMiddleClick[value ? "enable" : "disable"]();
+    }
+
+    getMiddleClickToggle() {
+        return localStorage.getItem("middleClickToggle") === "true";
+    }
+
     render() {
         this.setTheme(this.state.theme);
         return (
@@ -70,7 +79,7 @@ export default class NavBar extends Component {
                                 <FormCheck
                                     type="switch"
                                     id="middleClickTogge"
-                                    onChange={e => CustomMiddleClick[e.target.checked ? "enable" : "disable"]()}
+                                    onChange={e => this.setMiddleClickToggle(e.target.checked)}
                                     label="" custom />
                             </div>
                         </OverlayTrigger>

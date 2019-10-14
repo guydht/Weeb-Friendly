@@ -1,5 +1,5 @@
 import AnimeEntry from "./AnimeEntry";
-import { EpisodeData } from "./HorribleSubsUtils";
+import { EpisodeData } from "./TorrentUtils";
 
 export default class DownloadedItem {
     constructor(absolutePath: string, fileName: string, lastUpdated: Date, animeEntry = new AnimeEntry({})) {

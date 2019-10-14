@@ -1,6 +1,8 @@
 import { AnimeById } from "jikants/dist/src/interfaces/anime/ById";
 import React, { Component } from "react";
 import { Col, Container, Row, Tab, Tabs } from "react-bootstrap";
+//@ts-ignore
+import { LazyLoadComponent } from "react-lazy-load-image-component";
 import ImageZoom from "react-medium-image-zoom";
 import AnimeEntry from "../classes/AnimeEntry";
 import MALUtils from "../classes/MALUtils";
@@ -13,9 +15,7 @@ import Pictures from "./AnimeHome/Pictures";
 import Reviews from "./AnimeHome/Reviews";
 import Stats from "./AnimeHome/Stats";
 
-const { LazyLoadComponent } = require("react-lazy-load-image-component");
-
-export interface AnimeProps {
+export interface AnimePageProps {
     info: AnimeById;
     anime: AnimeEntry;
 }

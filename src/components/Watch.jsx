@@ -63,7 +63,6 @@ export default class Watch extends Component {
         }
     };
     render() {
-        console.log(this.props, this.state);
         const hide = e => {
             this.setState({
                 videoOpacity: 0

@@ -4,10 +4,10 @@ import { Carousel, Spinner, Table } from "react-bootstrap";
 import { LazyLoadComponent, LazyLoadImage } from "react-lazy-load-image-component";
 import { Link } from "react-router-dom";
 import AnimeEntry from "../classes/AnimeEntry";
-import HorribleSubsUtils, { SearchResult } from "../classes/HorribleSubsUtils";
 import TorrentManager from "../classes/TorrentManager";
+import TorrentUtils, { SearchResult } from "../classes/TorrentUtils";
 import { chunkArray, Confirm } from "../classes/utils";
-import Episodes from "../components/AnimeHome/Episodes";
+import { DisplayEpisodes } from "../components/AnimeHome/Episodes";
 import styles from "./css/SeasonalCarousel.module.css";
 import SearchBar from "./SearchBar";
 import SeasonalCarousel from "./SeasonalCarousel";
@@ -24,8 +24,8 @@ export default class LatestTorrents extends Component {
     }
 
     loadMoreUpdated() {
-        HorribleSubsUtils.latest(this.state.nextPageToLoad).then(latest => {
-            this.state.torrents.push(...Episodes.groupByQuality(latest));
+        TorrentUtils.latest(this.state.nextPageToLoad).then(latest => {
+            this.state.torrents.push(...DisplayEpisodes.groupByQuality(latest));
             this.setState({ torrents: this.state.torrents, nextPageToLoad: this.state.nextPageToLoad + 1 });
         })
     }
