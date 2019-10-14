@@ -1,5 +1,9 @@
-import { sync } from "./AnimeStorage";
 import { MALStatuses } from "../utils/MAL";
+import { sync, ThumbnailManager } from "./AnimeStorage";
+
+const fs = window.require("fs"),
+    path = window.require("path"),
+    request = window.require("request");
 
 export default class AnimeEntry {
     static SCORES = ["Appaling", "Horrible", "Very Bad", "Bad", "Average", "Fine", "Good", "Very Good", "Great", "Masterpiece"];
@@ -79,7 +83,28 @@ export default class AnimeEntry {
     myMalStatus?: MALStatuses;
     myMalRating?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
     myRewatchAmount?: number;
-    imageURL?: string;
+    private _imageURL?: string;
+    get imageURL() {
+        if (ThumbnailManager.SAVED_THUMBNAILS_STATE && this.malId && !ThumbnailManager.SAVED_THUMBNAILS.has(this.malId) && this._imageURL) {
+            let imageRequest = request(this._imageURL),
+                writeStream = fs.createWriteStream(ThumbnailManager.SAVED_THUMBNAILS_PATH + this.malId);
+            imageRequest.pipe(writeStream);
+            ThumbnailManager.SAVED_THUMBNAILS.add(this.malId);
+            ThumbnailManager.setThumbnailStorage();
+        }
+        return ThumbnailManager.SAVED_THUMBNAILS_STATE && this.malId && ThumbnailManager.SAVED_THUMBNAILS.has(this.malId) ?
+            "file://" + ThumbnailManager.SAVED_THUMBNAILS_PATH + this.malId : this._imageURL;
+    }
+    set imageURL(value) {
+        this._imageURL = value;
+        if (ThumbnailManager.SAVED_THUMBNAILS_STATE && this.malId && !ThumbnailManager.SAVED_THUMBNAILS.has(this.malId) && this._imageURL) {
+            let imageRequest = request(this._imageURL),
+                writeStream = fs.createWriteStream(ThumbnailManager.SAVED_THUMBNAILS_PATH + this.malId);
+            imageRequest.pipe(writeStream);
+            ThumbnailManager.SAVED_THUMBNAILS.add(this.malId);
+            ThumbnailManager.setThumbnailStorage();
+        }
+    }
     private _name?: string;
     set name(val: string | undefined) {
         if (val)

@@ -7,7 +7,7 @@ import ChangableText from "../../components/ChangableText";
 import { hasInternet } from "../../utils/general";
 import MALUtils, { MALStatuses } from "../../utils/MAL";
 import { AnimeInfoProps } from "../AnimeInfo";
-import styles from "./css/details.module.css";
+import styles from "../../css/pages/Details.module.css";
 
 export default class Details extends Component<AnimeInfoProps> {
 

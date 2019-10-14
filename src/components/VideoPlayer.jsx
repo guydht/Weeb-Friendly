@@ -50,7 +50,7 @@ export default class VideoPlayer extends Component {
                 });
                 if (!this.subtitlesOctopus) {
                     this.subtitlesOctopus = new SubtitlesOctopus(options);
-                    setInterval(() => {
+                    this.subtitlesOctopus.resizeInterval = setInterval(() => {
                         let currentVideoSize = video.getBoundingClientRect().toJSON();
                         if (currentVideoSize.height !== previousVideoSize.height || currentVideoSize.width !== previousVideoSize.width) {
                             previousVideoSize = currentVideoSize;
@@ -83,6 +83,7 @@ export default class VideoPlayer extends Component {
         new CacheLocalStorage("videoLastTime").setItem(this.props.name, this.videoWrapper.current.querySelector("video").currentTime);
         if (this.subtitlesOctopus)
             try {
+                clearInterval(this.subtitlesOctopus.resizeInterval);
                 this.subtitlesOctopus.dispose();
             } catch (e) { }
     }

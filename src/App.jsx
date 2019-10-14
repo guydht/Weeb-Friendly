@@ -32,7 +32,7 @@ export default class App extends Component {
       <div className="guydht-scrollbar">
         <BrowserRouter>
           <NavBar />
-          <div style={{ marginTop: 70 }}>
+          <div style={{ marginTop: 77 }}>
             <Switch>
               {
                 Object.entries(routerConfig).map(([thePath, theComponent]) => {

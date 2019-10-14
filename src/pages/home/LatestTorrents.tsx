@@ -5,12 +5,13 @@ import { Carousel, Spinner, Table } from "react-bootstrap";
 import { LazyLoadComponent, LazyLoadImage } from "react-lazy-load-image-component";
 import { Link } from "react-router-dom";
 import AnimeEntry from "../../classes/AnimeEntry";
+import Consts from "../../classes/Consts";
 import TorrentManager from "../../classes/TorrentManager";
-import TorrentUtils, { SearchResult } from "../../utils/torrents";
-import { chunkArray, Confirm } from "../../utils/general";
-import { DisplayEpisodes } from "../animeInfo/Episodes";
-import styles from "../../css/pages/SeasonalCarousel.module.css";
 import SearchBar from "../../components/SearchBar";
+import styles from "../../css/pages/SeasonalCarousel.module.css";
+import { chunkArray, Confirm } from "../../utils/general";
+import TorrentUtils, { SearchResult } from "../../utils/torrents";
+import { DisplayEpisodes } from "../animeInfo/Episodes";
 import SeasonalCarousel from "./SeasonalCarousel";
 
 export default class LatestTorrents extends Component {
@@ -25,8 +26,8 @@ export default class LatestTorrents extends Component {
     }
 
     loadMoreUpdated() {
-        TorrentUtils.latest(this.state.nextPageToLoad).then(latest => {
-            this.state.torrents.push(...DisplayEpisodes.groupByQuality(latest));
+        TorrentUtils.latest(this.state.nextPageToLoad, Consts.SOURCE_PREFERENCE[0]).then(latest => {
+            this.state.torrents.push(...DisplayEpisodes.groupByQuality(latest.filter(ele => ele.animeEntry.name)));
             this.setState({ torrents: this.state.torrents, nextPageToLoad: this.state.nextPageToLoad + 1 });
         })
     }
@@ -35,7 +36,7 @@ export default class LatestTorrents extends Component {
         if (!this.state.torrents.length)
             return (
                 <div>
-                    <small className="d-block">Loading Torrents...</small>
+                    <small className="d-block">Loading Torrents From {Consts.SOURCE_REFERENCE_KEYS[0]}...</small>
                     <Spinner animation="grow" />
                 </div>
             )
@@ -47,7 +48,7 @@ export default class LatestTorrents extends Component {
         return (
             <div>
                 <h1>
-                    Latest HorribleSubs Updates:
+                    Latest {Consts.SOURCE_REFERENCE_KEYS[0]} Updates:
             </h1>
                 <Carousel interval={null} className="px-5 mx-5 mt-5" onSelect={handleSelect}>
                     {

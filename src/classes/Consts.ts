@@ -1,9 +1,12 @@
 import { Torrent } from 'webtorrent';
-import AnimeList from "./AnimeList";
+import CustomMiddleClick from '../jsHelpers/CustomMiddleClick';
 import { waitFor } from '../jsHelpers/jifa';
+import { hasInternet } from '../utils/general';
+import { Sources } from '../utils/torrents';
+import AnimeList from "./AnimeList";
 import TorrentManager from './TorrentManager';
 import User from './User';
-import { hasInternet } from '../utils/general';
+
 let storage = window.require("electron-json-config");
 
 const ANIMELIST_VAlIDITY_TIMEOUT_IN_HOURS = 24;
@@ -60,6 +63,28 @@ export default class Consts {
         storage.set(Consts.DOWNLOADS_FOLDER_STORAGE_KEY, val);
     }
 
+    static QUALITY_PREFERENCE_STORAGE_KEY = "quality-storage";
+    static DEFAULT_QUALITY_PREFERENCE = [1080, 720, 480, 360];
+    static QUALITY_PREFERENCE: number[] = storage.get(Consts.QUALITY_PREFERENCE_STORAGE_KEY) || Consts.DEFAULT_QUALITY_PREFERENCE;
+    static setQualityPreference(qualityArr: number[]) {
+        Consts.QUALITY_PREFERENCE = qualityArr;
+        storage.set(Consts.QUALITY_PREFERENCE_STORAGE_KEY, qualityArr);
+    }
+
+    static SOURCE_PREFERENCE_STORAGE_KEY = "default-source";
+    static DEFAULT_SOURCE_PREFERENCE: Sources[] = [Sources.HorribleSubs, Sources.EraiRaws, Sources.Ohys];
+    static SOURCE_PREFERENCE: Sources[] = storage.get(Consts.SOURCE_PREFERENCE_STORAGE_KEY) || Consts.DEFAULT_SOURCE_PREFERENCE;
+    static get SOURCE_REFERENCE_KEYS(): string[] {
+        return Consts.SOURCE_PREFERENCE.map(ele => Object.keys(Sources).find(source => (Sources as any)[source] === ele)!);
+    }
+    static get SOURCE_PREFERENCE_ENTRIES(): string[][] {
+        return Consts.SOURCE_PREFERENCE.map(ele => Object.entries(Sources).find(source => (Sources as any)[source[0]] === ele)!);
+    }
+    static setSourcesPreference(source: Sources[]) {
+        Consts.SOURCE_PREFERENCE = source;
+        storage.set(Consts.SOURCE_PREFERENCE_STORAGE_KEY, source);
+    }
+
     static WATCH_PLAYER_SIZE_STORAGE_KEY = "player_size";
     static WATCH_PLAYER_SIZE = storage.get(Consts.WATCH_PLAYER_SIZE_STORAGE_KEY) || {};
     static setWatchPlayerSize(size: object) {
@@ -71,7 +96,6 @@ export default class Consts {
     static SAVED_TORRENTS = new Set<Torrent>((storage.get(Consts.SAVED_TORRENTS_STORAGE_KEY) || []).filter((ele: any) => ele.magnetURI && ele.torrentName)
         .map((ele: Torrent) => TorrentManager.add({ magnetURL: ele.magnetURI, name: (ele as any).torrentName })));
     static addToSavedTorrents(torrent: Torrent) {
-        
         Consts.SAVED_TORRENTS.add(torrent);
         waitFor(() => torrent.magnetURI, () => {
             storage.set(Consts.SAVED_TORRENTS_STORAGE_KEY, Array.from(Consts.SAVED_TORRENTS).map(torrent => {
@@ -79,6 +103,15 @@ export default class Consts {
             }));
         });
     }
+
+    static MIDDLE_CLICK_STORAGE_KEY = "middle-click";
+    static MIDDLE_CLICK = storage.get(Consts.MIDDLE_CLICK_STORAGE_KEY) || false;
+    static setMiddleClick(activated: boolean) {
+        Consts.MIDDLE_CLICK = activated;
+        CustomMiddleClick[activated ? "enable" : "disable"]();
+        storage.set(Consts.MIDDLE_CLICK_STORAGE_KEY, activated);
+    }
+
     static removeFromSavedTorrents(torrent: Torrent) {
         Consts.SAVED_TORRENTS.delete(torrent);
         storage.set(Consts.SAVED_TORRENTS_STORAGE_KEY, Array.from(Consts.SAVED_TORRENTS).map(torrent => {
@@ -87,6 +120,7 @@ export default class Consts {
     }
     static FILE_URL_PROTOCOL = "file://";
 }
+Consts.setMiddleClick(Consts.MIDDLE_CLICK);
 function getUserFromStorage(): User {
     let storageData = storage.get(Consts.MAL_USER_STORAGE_KEY, {}),
         user = User.fromJson(storageData),

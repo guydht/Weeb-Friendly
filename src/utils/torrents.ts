@@ -1,11 +1,12 @@
 //@ts-ignore
 import { pantsu, si } from "nyaapi";
 import AnimeEntry from "../classes/AnimeEntry";
+import Consts from "../classes/Consts";
 
 export enum Sources {
     HorribleSubs = "HorribleSubs",
     Ohys = "ohys",
-    EraiRaws = 11974,
+    EraiRaws = "11974",
     All = "All",
     Any = "Any"
 }
@@ -14,16 +15,14 @@ const siPantsuMapping = {
     "ohys": si,
     "All": si,
     "Any": si,
-    "EraiRaws": pantsu
+    "11974": pantsu
 }
 
-let sourcesPriority: Sources[] = [Sources.HorribleSubs, Sources.EraiRaws, Sources.Ohys]; //index === importance (0 is better than infinity).
-export { sourcesPriority };
 export default class TorrentUtils {
     static async search(anime: AnimeEntry, fetchAll: boolean = false, source: Sources = Sources.Any): Promise<SearchResult[]> {
         switch (source) {
             case Sources.Any:
-                for (let source of sourcesPriority) {
+                for (let source of Consts.SOURCE_PREFERENCE) {
                     let results = await this.searchSource(anime, fetchAll, source);
                     if (results.length)
                         return results;
@@ -31,7 +30,7 @@ export default class TorrentUtils {
                 break;
             case Sources.All:
                 let results: SearchResult[] = [];
-                for (let source of sourcesPriority) {
+                for (let source of Consts.SOURCE_PREFERENCE) {
                     results.concat(await this.searchSource(anime, fetchAll, source));
                 }
                 return results;
@@ -77,7 +76,7 @@ export default class TorrentUtils {
     static async latest(page = 1, source: Sources = Sources.Any): Promise<SearchResult[]> {
         switch (source) {
             case Sources.Any:
-                for (let source of sourcesPriority) {
+                for (let source of Consts.SOURCE_PREFERENCE) {
                     let results = await this.getLatestOfSource(page, source);
                     if (results.length)
                         return results;
@@ -85,18 +84,26 @@ export default class TorrentUtils {
                 break;
             case Sources.All:
                 let results: SearchResult[] = [];
-                for (let source of sourcesPriority) {
+                for (let source of Consts.SOURCE_PREFERENCE) {
                     results.concat(await this.getLatestOfSource(page, source));
                 }
                 return results;
-            default:
-                return await this.getLatestOfSource(page, source);
+        }
+        return await this.getLatestOfSource(page, source);
+    }
+    private static async getLatestOfSource(page: number, source: Sources): Promise<SearchResult[]> {
+        let apiSource = (siPantsuMapping as any)[source];
+        switch (apiSource) {
+            case si:
+                return (await si.searchByUserAndByPage(source, '', page)).map(siResultToSearchResult.bind(this, source));
+            case pantsu:
+                return (await pantsu.search({
+                    term: '*',
+                    userId: source,
+                    page
+                })).map(pantsuResultToSearchResult.bind(this, source));
         }
         return [];
-    }
-    static async getLatestOfSource(page: number, source: Sources): Promise<SearchResult[]> {
-        let results = await si.searchByUserAndByPage(source, '', page);
-        return results.map(siResultToSearchResult.bind(this, source));
     }
 }
 function siResultToSearchResult(source: Sources, siResult: any): SearchResult {
@@ -157,7 +164,7 @@ function pantsuResultToSearchResult(source: Sources, pantsuResult: any) {
             };
     }
     result.animeEntry = new AnimeEntry({
-        name: result.name
+        name: result.episodeData.seriesName
     });
     return result;
 }

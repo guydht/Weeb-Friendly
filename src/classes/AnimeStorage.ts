@@ -1,7 +1,28 @@
 import AnimeEntry from "./AnimeEntry";
 
-let storageObject = window.require("electron-json-config"),
-    _storageKey = "anime-storage",
+const storageObject = window.require("electron-json-config"),
+    fs = window.require("fs"),
+    path = window.require("path");
+class ThumbnailManager {
+    static SAVED_THUMBNAILS_STATE_STORAGE_KEY = "saved-thumbnail-state";
+    static SAVED_THUMBNAILS_STATE = storageObject.get(ThumbnailManager.SAVED_THUMBNAILS_STATE_STORAGE_KEY) || false;
+    static setThumbnailStorageState(activated: boolean) {
+        ThumbnailManager.SAVED_THUMBNAILS_STATE = activated;
+        storageObject.set(ThumbnailManager.SAVED_THUMBNAILS_STATE_STORAGE_KEY, activated);
+    }
+
+    static SAVED_THUMBNAILS_STORAGE_KEY = "saved-thumbnail-storage";
+    static SAVED_THUMBNAILS_PATH = path.resolve("./.thumbnail-image-storage/") + "/";
+    static SAVED_THUMBNAILS = new Set<number>(storageObject.get(ThumbnailManager.SAVED_THUMBNAILS_STORAGE_KEY) || []);
+    static setThumbnailStorage(thumbnailStorage: Set<number> = ThumbnailManager.SAVED_THUMBNAILS) {
+        ThumbnailManager.SAVED_THUMBNAILS = thumbnailStorage;
+        storageObject.set(ThumbnailManager.SAVED_THUMBNAILS_STORAGE_KEY, [...thumbnailStorage]);
+    }
+}
+if (!fs.existsSync(ThumbnailManager.SAVED_THUMBNAILS_PATH))
+    fs.mkdirSync(ThumbnailManager.SAVED_THUMBNAILS_PATH);
+
+let _storageKey = "anime-storage",
     STORAGE_TTL_IN_SECONDS = 86400,
     _ANIMES: Map<number, [Date, AnimeEntry]> = new Map(),
     cleanDate = new Date(),
@@ -78,5 +99,5 @@ setInterval(() => {
     _ANIMES.set(Number(animeId), [new Date(date), new AnimeEntry(anime as any)]);
 });
 
-export { storageObject, sync, get, size };
+export { sync, get, size, ThumbnailManager };
 

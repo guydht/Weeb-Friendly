@@ -1,13 +1,13 @@
 import React, { Component } from "react";
-import { Button, FormCheck, Navbar as BootstrapNavbar, NavDropdown, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
+import { Button, Navbar as BootstrapNavbar, NavDropdown, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import Consts from "../../classes/Consts";
 import User from "../../classes/User";
 import ChooseDirectoryText from "../../components/ChooseDirectoryText";
 import SearchBar from "../../components/SearchBar";
+import { ReactComponent as SettingsIcon } from "../../icons/settings.svg";
 import CustomMiddleClick from "../../jsHelpers/CustomMiddleClick";
 import { checkScrollSpeed } from "../../utils/general";
-
 
 
 export default class NavBar extends Component {
@@ -61,6 +61,13 @@ export default class NavBar extends Component {
                 transform: this.state.visible ? "translateY(0)" : "translateY(-100%)"
             }}>
                 <BootstrapNavbar.Brand to="/" as={Link}>Weeb Friendly</BootstrapNavbar.Brand>
+                <BootstrapNavbar.Brand to="/settings" as={Link}>
+                    <OverlayTrigger
+                        placement="bottom"
+                        overlay={<Tooltip id="goto-settings">Settings</Tooltip>}>
+                        <SettingsIcon />
+                    </OverlayTrigger>
+                </BootstrapNavbar.Brand>
                 <BootstrapNavbar.Toggle aria-controls="basic-BootstrapNavbar-nav" />
                 <BootstrapNavbar.Collapse id="basic-BootstrapNavbar-nav" className="justify-content-between">
                     <ChooseDirectoryText />
@@ -72,15 +79,6 @@ export default class NavBar extends Component {
                                 )
                             })}
                         </NavDropdown>
-                        <OverlayTrigger trigger="hover" placement="bottom" overlay={<Tooltip id="middleClickToggle">Toggle Middle Click</Tooltip>}>
-                            <div className="my-auto">
-                                <FormCheck
-                                    type="switch"
-                                    id="middleClickTogge"
-                                    onChange={(e: React.ChangeEvent) => this.setMiddleClickToggle((e.target as HTMLInputElement).checked)}
-                                    label="" custom />
-                            </div>
-                        </OverlayTrigger>
                         <SearchBar />
                         {Consts.MAL_USER.isLoggedIn ?
                             <Button className="ml-2" onClick={() => this.logout()}>

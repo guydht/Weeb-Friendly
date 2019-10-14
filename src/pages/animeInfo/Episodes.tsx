@@ -11,12 +11,12 @@ import changableTextStyles from "../../css/components/ChangableText.module.css";
 import DownloadedFileThumbnail from "../../components/DownloadedFileThumbnail";
 import DownloadedItem from "../../classes/DownloadedItem";
 import TorrentManager from "../../classes/TorrentManager";
-import TorrentUtils, { SearchResult, Sources, sourcesPriority } from "../../utils/torrents";
+import TorrentUtils, { SearchResult, Sources } from "../../utils/torrents";
 import { groupBy } from "../../utils/general";
 import { AnimeInfoProps } from "../AnimeInfo";
 import { walkDir } from "../../utils/general";
 import SearchBar from "../../components/SearchBar";
-import styles from "./Episodes.module.css";
+import styles from "../../css/pages/Episodes.module.css";
 import { ReactComponent as DownloadIcon } from "../../icons/download.svg";
 
 
@@ -186,7 +186,7 @@ export default class Episodes extends Component<AnimeInfoProps & { episodes: Sea
             info: this.props.info,
             episodes: Object.fromEntries(Object.values(Sources).map(source => [source, []])) as { [source in Sources]: [] },
             loading: Object.fromEntries(Object.values(Sources).map(source => [source, true])) as { [source in Sources]: boolean },
-            currentSource: sourcesPriority[0]
+            currentSource: Consts.SOURCE_PREFERENCE[0]
         };
 
     componentDidMount() {
@@ -236,8 +236,10 @@ export default class Episodes extends Component<AnimeInfoProps & { episodes: Sea
         this.props.anime.synonyms.add(anime.name!);
         this.props.anime.sync();
         this.componentDidMount();
+        let loading = this.state.loading;
+        loading[this.state.currentSource] = false;
         this.setState({
-            loading: true
+            loading
         });
     };
 
@@ -297,10 +299,10 @@ export default class Episodes extends Component<AnimeInfoProps & { episodes: Sea
     render() {
         return (
             <div className="mx-1 mt-3">
-                <Tab.Container defaultActiveKey={sourcesPriority[0]}>
+                <Tab.Container defaultActiveKey={Consts.SOURCE_PREFERENCE[0]}>
                     <Nav variant="pills" defaultActiveKey={this.state.currentSource} className="mb-3">
                         {
-                            sourcesPriority.map(source => {
+                            Consts.SOURCE_PREFERENCE.map(source => {
                                 return (
                                     <Nav.Item key={source} onClick={() => this.changeSource(source)}>
                                         <Nav.Link eventKey={source}>{Object.keys(Sources).find(ele => (Sources as any)[ele] === source)}</Nav.Link>
@@ -311,7 +313,7 @@ export default class Episodes extends Component<AnimeInfoProps & { episodes: Sea
                     </Nav>
                     <Tab.Content>
                         {
-                            sourcesPriority.map(source => {
+                            Consts.SOURCE_PREFERENCE.map(source => {
                                 let episodes = this.state.episodes[source],
                                     loading = this.state.loading[source],
                                     groupedBySeries = groupBy(episodes, ["episodeData", "seriesName"]);

@@ -7,8 +7,8 @@ import AnimeEntry from "../../classes/AnimeEntry";
 import MALUtils, { ForumEntry } from "../../utils/MAL";
 import PageTransition from "../../components/PageTransition";
 import { AnimeInfoProps } from "../AnimeInfo";
-import "./css/Forum.css";
-import styles from "./css/Forum.module.css";
+import "../../css/global/Forum.css";
+import styles from "../../css/pages/Forum.module.css";
 
 
 export default class Forum extends Component<AnimeInfoProps> {
