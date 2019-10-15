@@ -1,17 +1,19 @@
 import React, { Component } from "react";
 import { Carousel, Spinner, Table } from "react-bootstrap";
+//@ts-ignore
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { Link } from "react-router-dom";
-import MALUtils from "../../utils/MAL";
+import AnimeEntry from "../../classes/AnimeEntry";
 import styles from "../../css/pages/SeasonalCarousel.module.css";
 import { chunkArray } from "../../utils/general";
+import MALUtils from "../../utils/MAL";
 
 
 export default class SeasonalCarousel extends Component {
     static GRID_SIZE_X = 5;
     static GRID_SIZE_Y = 2;
 
-    state = {
+    state: { seasonalAnimes: AnimeEntry[] } = {
         seasonalAnimes: []
     };
 

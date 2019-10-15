@@ -82,10 +82,10 @@ export default class NavBar extends Component {
                         <SearchBar />
                         {Consts.MAL_USER.isLoggedIn ?
                             <Button className="ml-2" onClick={() => this.logout()}>
-                                Log Out
+                            Log Out
                     </Button> :
                             <Button className="ml-2" onClick={() => this.showLogin()}>
-                                Login
+                            Login
                         </Button>}
                     </Row>
                 </BootstrapNavbar.Collapse>
@@ -93,11 +93,26 @@ export default class NavBar extends Component {
         )
     }
     logout() {
-        Consts.setMALUser(new User());
-        this.setState({
-            user: Consts.MAL_USER
+        fetch("https://myanimelist.net/logout.php", {
+            body: JSON.stringify({
+                csrf_token: Consts.CSRF_TOKEN
+            }),
+            method: "POST"
+        }).then(r => {
+            if (r.ok && r.status === 200) {
+                Consts.setMALUser(new User());
+                Consts.setCsrfToken('');
+                this.setState({
+                    user: Consts.MAL_USER
+                });
+                (window as any).reloadPage();
+            }
+            else
+                (window as any).displayToast({
+                    title: "Couldn't log out!",
+                    body: "MyAnimeList returned error while trying to log out! Error code: " + r.status
+                });
         });
-        (window as any).reloadPage();
     }
     showLogin() {
         Consts.setWantsToLogin(true);

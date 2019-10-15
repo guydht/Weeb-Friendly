@@ -4,10 +4,10 @@ import { Link } from "react-router-dom";
 import AnimeEntry from "../../classes/AnimeEntry";
 import Consts from "../../classes/Consts";
 import ChangableText from "../../components/ChangableText";
+import styles from "../../css/pages/Details.module.css";
 import { hasInternet } from "../../utils/general";
 import MALUtils, { MALStatuses } from "../../utils/MAL";
 import { AnimeInfoProps } from "../AnimeInfo";
-import styles from "../../css/pages/Details.module.css";
 
 export default class Details extends Component<AnimeInfoProps> {
 
@@ -82,7 +82,7 @@ export default class Details extends Component<AnimeInfoProps> {
                             <Row>
                                 <Col>
                                     <FormControl onChange={this.updateAnime.bind(this)} ref={this.statusElement}
-                                        as="select" className="w-auto" value={this.state.anime.myMalStatus as any}>
+                                        as="select" className="w-auto" defaultValue={this.state.anime.myMalStatus as any}>
                                         {
                                             Object.keys(MALStatuses).filter(ele => isNaN(Number(ele))).map(status => (
                                                 <option key={status} value={(MALStatuses as any)[status]}>{status}</option>
@@ -198,6 +198,8 @@ export default class Details extends Component<AnimeInfoProps> {
             this.statusElement.current.value = MALStatuses.Completed;
         else if (Number(this.episodElement.current.value) === 1)
             this.statusElement.current.value = MALStatuses.Watching;
+        if (Number(this.statusElement.current.value) === MALStatuses.Completed)
+            this.episodElement.current.value = this.state.anime.totalEpisodes;
         this.updateTimeout = window.setTimeout(() => {
             if (!this.statusElement.current || !this.episodElement.current || !this.scoreElement.current) return;
             MALUtils.updateAnime(this.state.anime as any, {
@@ -206,9 +208,10 @@ export default class Details extends Component<AnimeInfoProps> {
                 score: Number(this.scoreElement.current.value)
             }).then(ok => {
                 if (ok)
-                    (window as any).displayToast({ title: 'Successfully updated!', body: `Succesfully update ${this.state.anime.name}!` })
+                    (window as any).displayToast({ title: 'Successfully updated!', body: `Succesfully update ${this.state.anime.name}!` });
                 else
-                    (window as any).displayToast({ title: 'Something Went Wrong!', body: `MyanimeList sent error code :(` })
+                    (window as any).displayToast({ title: 'Something Went Wrong!', body: `MyanimeList sent error code :(` });
+                (window as any).reloadPage();
             });
         }, Details.UPDATE_TIMEOUT_MS);
     }

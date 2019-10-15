@@ -3,10 +3,10 @@ import { Forum } from "jikants/dist/src/interfaces/anime/Forum";
 import { Reviews } from "jikants/dist/src/interfaces/anime/Reviews";
 import { Seasons } from "jikants/dist/src/interfaces/season/Season";
 import { AnimeListTypes } from "jikants/dist/src/interfaces/user/AnimeList";
-import Consts from "../classes/Consts";
 import AnimeEntry from "../classes/AnimeEntry";
 import AnimeList from "../classes/AnimeList";
 import * as AnimeStorage from "../classes/AnimeStorage";
+import Consts from "../classes/Consts";
 import DownloadedItem from "../classes/DownloadedItem";
 import User from "../classes/User";
 import { getCurrentSeason, parseStupidAmericanDateString, stringCompare } from "./general";
@@ -88,7 +88,10 @@ export default class MALUtils {
         });
     }
     static async getUserAnimeList(user: User, listType: AnimeListTypes = "all", page = 1): Promise<AnimeList> {
-        let data = (await mal.findUser(user.username, "animelist", listType, { page }));
+        let data = (await mal.findUser(user.username, "animelist", listType, { page }).catch((e: string) => {
+            if (e === "Response: 429")
+                return this.getUserAnimeList(user, listType, page);
+        }));
         if (!data) return user.animeList;
         user.animeList[listType] = data.anime.reduce((map: any, result: any) => {
             map[result.mal_id] = new AnimeEntry({
@@ -142,6 +145,12 @@ export default class MALUtils {
             };
         if (episodes === 1)
             body['start_date'] = {
+                month: startDate.getMonth(),
+                day: startDate.getDate(),
+                year: startDate.getFullYear()
+            }
+        if (status === MALStatuses.Completed)
+            body['finish_date'] = {
                 month: startDate.getMonth(),
                 day: startDate.getDate(),
                 year: startDate.getFullYear()

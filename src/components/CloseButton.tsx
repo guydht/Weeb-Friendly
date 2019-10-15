@@ -8,14 +8,21 @@ export default class CloseButton extends Component<React.DetailedHTMLProps<React
         let placement = this.props.toolTipPlacement || "auto",
             overlay = this.props.toolTipElement || <Tooltip id={`tooltip-${placement}`}>
                 {this.props.tooltipText || ""}
-            </Tooltip>;
+            </Tooltip>,
+            props = { ...this.props };
+        delete props.onClick;
+        delete props.tooltipText;
+        delete props.toolTipElement;
+        delete props.toolTipPlacement;
+        delete props.className;
         if (this.props.tooltipText)
             return (
                 <OverlayTrigger
                     placement={placement}
                     overlay={overlay}>
                     <span
-                        className={styles.span}
+                        {...props}
+                        className={styles.span + (this.props.className ? " " + this.props.className : "")}
                         onClick={e => this.props.onClick(e)}>
                         <span aria-hidden="true">×</span>
                     </span>
@@ -23,8 +30,8 @@ export default class CloseButton extends Component<React.DetailedHTMLProps<React
             )
         return (
             <span
-                style={this.props.style || {}}
-                className={styles.span}
+                {...props}
+                className={styles.span + (this.props.className ? " " + this.props.className : "")}
                 onClick={e => this.props.onClick(e)}>
                 <span aria-hidden="true">×</span>
             </span>

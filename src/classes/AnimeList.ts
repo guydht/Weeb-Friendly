@@ -1,5 +1,5 @@
-import AnimeEntry from "./AnimeEntry";
 import { MALStatuses } from "../utils/MAL";
+import AnimeEntry from "./AnimeEntry";
 export default class AnimeList {
     constructor({ _watching = {}, _completed = {}, _dropped = {}, _all = {}, _plantowatch = {}, _onhold = {} }) {
         this._all = _all;
@@ -90,17 +90,18 @@ export default class AnimeList {
     get ptw(): Record<number, AnimeEntry> {
         return this._plantowatch;
     }
-    static fromJson({ _all: data = [] }: { _all: number[] }): AnimeList {
+    static fromJson({ _all: data = [], fetchedDate }: { _all: number[], fetchedDate: Date }): AnimeList {
         let list = new AnimeList({});
         let obj: Record<number, AnimeEntry> = {};
         data.forEach(id => {
             obj[Number(id)] = new AnimeEntry({ malId: Number(id) });
-        })
+        });
         list.all = obj;
+        list.fetchedDate = fetchedDate;
         return list;
     }
     readyForJson() {
-        return { _all: Object.keys(this.all) };
+        return { _all: Object.keys(this.all), fetchedDate: this.fetchedDate };
     }
     loadAnime(anime: AnimeEntry) {
         this.all[anime.malId!] = anime;

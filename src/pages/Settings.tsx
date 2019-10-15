@@ -14,7 +14,7 @@ export default class Settings extends Component {
             <Jumbotron className="text-center px-5">
                 <h2>Settings</h2>
                 <Container className={styles.container}>
-                    <Row className="mb-3">
+                    <Row className="mb-5">
                         <Col>
                             Sources Preferences:
                         </Col>
@@ -30,7 +30,7 @@ export default class Settings extends Component {
                             </Sortable>
                         </Col>
                     </Row>
-                    <Row className="mb-3">
+                    <Row className="mb-5">
                         <Col>
                             Quality Priority:
                         </Col>
@@ -46,12 +46,13 @@ export default class Settings extends Component {
                             </Sortable>
                         </Col>
                     </Row>
-                    <Row className="mb-3">
+                    <Row className="mb-5">
                         <Col>
                             Toggle Middle Click Functionallity:
                         </Col>
                         <Col>
                             <FormCheck
+                                className={styles.bigSwitch}
                                 type="switch"
                                 id="middleClickToggle"
                                 checked={Consts.MIDDLE_CLICK}
@@ -59,10 +60,11 @@ export default class Settings extends Component {
                                 label="" custom />
                         </Col>
                     </Row>
-                    <Row className="mb-3">
+                    <Row className="mb-5">
                         <Col>Save anime thumbnail photos locally</Col>
                         <Col>
                             <FormCheck
+                                className={styles.bigSwitch}
                                 type="switch"
                                 id="thumbnailStorage"
                                 checked={ThumbnailManager.SAVED_THUMBNAILS_STATE}

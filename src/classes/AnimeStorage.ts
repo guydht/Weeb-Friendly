@@ -85,18 +85,18 @@ let _storageKey = "anime-storage",
     };
 (window as any).animeStorage = _ANIMES;
 setInterval(() => {
-    if (needsUpdating || (window as any).guydhtToldMeToUpdateNowPls) {
+    if (needsUpdating) {
         let copy: { [key: number]: [Date, AnimeEntry] } = {};
         _ANIMES.forEach(([date, anime], animeId) => {
             copy[animeId] = [date, anime.readyForJSON()];
         });
-        storageObject.set(_storageKey, copy);
+        storageObject.set(_storageKey, Object.values(copy));
         needsUpdating = false;
     }
 }, 1000);
-((Object.entries(storageObject.get(_storageKey) || {})) as any[]).forEach(([animeId, [date, anime]]) => {
+((storageObject.get(_storageKey) || []) as any[]).forEach(([date, anime]) => {
     (anime as any).sync = false;
-    _ANIMES.set(Number(animeId), [new Date(date), new AnimeEntry(anime as any)]);
+    _ANIMES.set(Number(anime.malId), [new Date(date), new AnimeEntry(anime as any)]);
 });
 
 export { sync, get, size, ThumbnailManager };

@@ -431,12 +431,10 @@ function asd(AnimeName, elementContainer, videoURL) {
                 info.style.display = "";
                 slider.style.display = "none";
                 upperName.style.display = "none";
-                wrapper.style.cursor = "none";
             } else {
                 info.style.display = "none";
                 slider.style.display = "";
                 upperName.style.display = "";
-                wrapper.style.cursor = "initial";
             }
         }
         wrapper.onmouseleave = function () {
@@ -915,12 +913,13 @@ function asd(AnimeName, elementContainer, videoURL) {
                 slider.style.opacity = 1;
                 upperName.style.opacity = 1;
             }
-            video.style.cursor = "initial";
+            wrapper.style.cursor = "initial";
             clearTimeout(sliderFadeoutTimeout);
             sliderFadeoutTimeout = setTimeout(function () {
                 if (targetIsNotThis(e, slider) && sliderLocker === true) {
                     slider.style.opacity = 0;
                     upperName.style.opacity = 0;
+                    wrapper.style.cursor = "none";
                 }
             }, video.paused === false ? 1000 : 2000);
         };

@@ -2,7 +2,6 @@ import { MALStatuses } from "../utils/MAL";
 import { sync, ThumbnailManager } from "./AnimeStorage";
 
 const fs = window.require("fs"),
-    path = window.require("path"),
     request = window.require("request");
 
 export default class AnimeEntry {
@@ -24,6 +23,7 @@ export default class AnimeEntry {
         myMalRating = undefined,
         myRewatchAmount = undefined,
         imageURL = undefined,
+        _imageURL = undefined,
         name = undefined,
         _name = undefined,
         sync = true
@@ -44,6 +44,7 @@ export default class AnimeEntry {
         myMalRating?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10,
         myRewatchAmount?: number,
         imageURL?: string,
+        _imageURL?: string,
         name?: string,
         _name?: string,
         sync?: boolean
@@ -55,15 +56,15 @@ export default class AnimeEntry {
         this.synonyms = new Set(Array.from(synonyms || []).sort());
         this.synopsis = synopsis;
         this.totalEpisodes = totalEpisodes;
-        this.startDate = new Date(startDate!);
-        this.endDate = new Date(endDate!);
-        this.userStartDate = new Date(userStartDate!);
-        this.userEndDate = new Date(userEndDate!);
+        this.startDate = startDate ? new Date(startDate) : startDate;
+        this.endDate = endDate ? new Date(endDate) : endDate;
+        this.userStartDate = userStartDate ? new Date(userStartDate) : userStartDate;
+        this.userEndDate = userEndDate ? new Date(userEndDate) : userEndDate;
         this.myWatchedEpisodes = myWatchedEpisodes;
         this.myMalStatus = myMalStatus;
         this.myMalRating = myMalRating;
         this.myRewatchAmount = myRewatchAmount;
-        this.imageURL = imageURL;
+        this.imageURL = imageURL || _imageURL;
         this.name = name || _name;
         if (sync && (malId || name))
             this.sync();
