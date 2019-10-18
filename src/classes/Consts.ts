@@ -73,16 +73,16 @@ export default class Consts {
 
     static SOURCE_PREFERENCE_STORAGE_KEY = "default-source";
     static DEFAULT_SOURCE_PREFERENCE: Sources[] = [Sources.HorribleSubs, Sources.EraiRaws, Sources.Ohys];
-    static SOURCE_PREFERENCE: Sources[] = storage.get(Consts.SOURCE_PREFERENCE_STORAGE_KEY) || Consts.DEFAULT_SOURCE_PREFERENCE;
+    static SOURCE_PREFERENCE: Sources[] = (storage.get(Consts.SOURCE_PREFERENCE_STORAGE_KEY) || Consts.DEFAULT_SOURCE_PREFERENCE).map(Number);
     static get SOURCE_REFERENCE_KEYS(): string[] {
         return Consts.SOURCE_PREFERENCE.map(ele => Object.keys(Sources).find(source => (Sources as any)[source] === ele)!);
     }
-    static get SOURCE_PREFERENCE_ENTRIES(): string[][] {
-        return Consts.SOURCE_PREFERENCE.map(ele => Object.entries(Sources).find(source => (Sources as any)[source[0]] === ele)!);
+    static get SOURCE_PREFERENCE_ENTRIES(): [string, Sources][] {
+        return Consts.SOURCE_PREFERENCE.map(ele => Object.entries(Sources).find(source => (Sources as any)[source[0]] === ele) as any);
     }
-    static setSourcesPreference(source: Sources[]) {
-        Consts.SOURCE_PREFERENCE = source;
-        storage.set(Consts.SOURCE_PREFERENCE_STORAGE_KEY, source);
+    static setSourcesPreference(sources: Sources[]) {
+        Consts.SOURCE_PREFERENCE = sources.map(Number);
+        storage.set(Consts.SOURCE_PREFERENCE_STORAGE_KEY, sources.map(Number));
     }
 
     static WATCH_PLAYER_SIZE_STORAGE_KEY = "player_size";

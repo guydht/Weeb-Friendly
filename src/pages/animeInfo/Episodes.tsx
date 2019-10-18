@@ -7,17 +7,16 @@ import { Button, ButtonGroup, Card, Col, Container, Modal, Nav, OverlayTrigger, 
 import { LazyLoadComponent } from "react-lazy-load-image-component";
 import AnimeEntry from "../../classes/AnimeEntry";
 import Consts from "../../classes/Consts";
-import changableTextStyles from "../../css/components/ChangableText.module.css";
-import DownloadedFileThumbnail from "../../components/DownloadedFileThumbnail";
 import DownloadedItem from "../../classes/DownloadedItem";
 import TorrentManager from "../../classes/TorrentManager";
-import TorrentUtils, { SearchResult, Sources } from "../../utils/torrents";
-import { groupBy } from "../../utils/general";
-import { AnimeInfoProps } from "../AnimeInfo";
-import { walkDir } from "../../utils/general";
+import DownloadedFileThumbnail from "../../components/DownloadedFileThumbnail";
 import SearchBar from "../../components/SearchBar";
+import changableTextStyles from "../../css/components/ChangableText.module.css";
 import styles from "../../css/pages/Episodes.module.css";
 import { ReactComponent as DownloadIcon } from "../../icons/download.svg";
+import { groupBy, walkDir } from "../../utils/general";
+import TorrentUtils, { SearchResult, Sources } from "../../utils/torrents";
+import { AnimeInfoProps } from "../AnimeInfo";
 
 
 export class DisplayEpisodes extends Component<AnimeInfoProps & { episodes: SearchResult[] }> {
@@ -302,10 +301,10 @@ export default class Episodes extends Component<AnimeInfoProps & { episodes: Sea
                 <Tab.Container defaultActiveKey={Consts.SOURCE_PREFERENCE[0]}>
                     <Nav variant="pills" defaultActiveKey={this.state.currentSource} className="mb-3">
                         {
-                            Consts.SOURCE_PREFERENCE.map(source => {
+                            Consts.SOURCE_PREFERENCE_ENTRIES.map(([sourceName, source]) => {
                                 return (
                                     <Nav.Item key={source} onClick={() => this.changeSource(source)}>
-                                        <Nav.Link eventKey={source}>{Object.keys(Sources).find(ele => (Sources as any)[ele] === source)}</Nav.Link>
+                                        <Nav.Link eventKey={source}>{sourceName}</Nav.Link>
                                     </Nav.Item>
                                 );
                             })

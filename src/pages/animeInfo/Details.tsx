@@ -159,7 +159,7 @@ export default class Details extends Component<AnimeInfoProps> {
                                                     data.map((ele: any) => {
                                                         if (ele.type === "anime")
                                                             return (
-                                                                <Link key={ele.mal_id} to={{
+                                                                <Link key={ele.mal_id} className="mr-3" to={{
                                                                     pathname: "/anime/" + ele.mal_id,
                                                                     state: {
                                                                         animeEntry: new AnimeEntry({

@@ -4,18 +4,25 @@ import AnimeEntry from "../classes/AnimeEntry";
 import Consts from "../classes/Consts";
 
 export enum Sources {
-    HorribleSubs = "HorribleSubs",
-    Ohys = "ohys",
-    EraiRaws = "11974",
-    All = "All",
-    Any = "Any"
+    HorribleSubs,
+    Ohys,
+    EraiRaws,
+    All,
+    Any
 }
+
 const siPantsuMapping = {
-    "HorribleSubs": si,
-    "ohys": si,
-    "All": si,
-    "Any": si,
-    "11974": pantsu
+    [Sources.HorribleSubs]: {
+        si: "HorribleSubs",
+        pantsu: "12035"
+    },
+    [Sources.Ohys]: {
+        si: "ohys"
+    },
+    [Sources.EraiRaws]: {
+        pantsu: "11974",
+        si: "Erai-raws"
+    }
 }
 
 export default class TorrentUtils {
@@ -42,31 +49,31 @@ export default class TorrentUtils {
     private static async searchSource(anime: AnimeEntry, fetchAll: boolean = false, source: Sources): Promise<SearchResult[]> {
         for (let name of anime.synonyms) {
             try {
-                let apiSource = (siPantsuMapping as any)[source];
-                if (apiSource === si) {
-                    let results;
+                let apiSource = (siPantsuMapping as any)[source],
+                    results = [];
+                if (apiSource.si) {
+                    let sourceValue = apiSource.si;
                     if (fetchAll)
-                        results = await si.searchAllByUser(source, name);
+                        results.push(...await si.searchAllByUser(sourceValue, name).map(siResultToSearchResult.bind(this, source)));
                     else
-                        results = await si.searchByUserAndByPage(source, name, 1);
-                    if (results && results.length)
-                        return results.map(siResultToSearchResult.bind(this, source));
+                        results.push(...si.searchByUserAndByPage(sourceValue, name, 1).map(siResultToSearchResult.bind(this, source)));
                 }
-                else {
-                    let results;
+                if (apiSource.pantsu) {
+                    let sourceValue = apiSource.pantsu;
                     if (fetchAll)
-                        results = await pantsu.searchAll({
+                        results.push(...await pantsu.searchAll({
                             term: name,
-                            userID: source
-                        })
+                            userID: sourceValue
+                        }).map(pantsuResultToSearchResult.bind(this, source)));
                     else
-                        results = await pantsu.search({
+                        results.push(...await pantsu.search({
                             term: name,
-                            userID: source
-                        });
-                    if (results && results.length)
-                        return results.map(pantsuResultToSearchResult.bind(this, source));
+                            userID: sourceValue
+                        }).map(pantsuResultToSearchResult.bind(this, source)));
                 }
+                console.log(apiSource, results);
+                if (results.length)
+                    return results;
             }
             catch (e) {
             }
@@ -92,18 +99,18 @@ export default class TorrentUtils {
         return await this.getLatestOfSource(page, source);
     }
     private static async getLatestOfSource(page: number, source: Sources): Promise<SearchResult[]> {
-        let apiSource = (siPantsuMapping as any)[source];
-        switch (apiSource) {
-            case si:
-                return (await si.searchByUserAndByPage(source, '', page)).map(siResultToSearchResult.bind(this, source));
-            case pantsu:
-                return (await pantsu.search({
-                    term: '*',
-                    userId: source,
-                    page
-                })).map(pantsuResultToSearchResult.bind(this, source));
-        }
-        return [];
+        let apiSource = (siPantsuMapping as any)[source],
+            results = [];
+        console.log(apiSource, source);
+        if (apiSource.si)
+            results.push(...(await si.searchByUserAndByPage(apiSource.si, '', page)).map(siResultToSearchResult.bind(this, source)));
+        if (apiSource.pantsu)
+            results.push(...(await pantsu.search({
+                term: '*',
+                userId: apiSource.pantsu,
+                page
+            })).map(pantsuResultToSearchResult.bind(this, source)));
+        return results;
     }
 }
 function siResultToSearchResult(source: Sources, siResult: any): SearchResult {
@@ -131,6 +138,13 @@ function siResultToSearchResult(source: Sources, siResult: any): SearchResult {
                 quality: Number((result.name.match(/(?<=\s[0-9]+x)[0-9]+(?=\sx264)/g) || [])[0]),
                 episodeType: (result.name.match(/(?<=\s-\s[0-9]+(\.[0-9]+)?\s)[a-zA-Z]+/g) || [])[0]
             };
+        case Sources.EraiRaws:
+            result.episodeData = {
+                episodeNumber: Number((result.name.match(/(?<=\s-\s)[0-9]+(\.[0-9]+)?(?=\s)/g) || [])[0]),
+                seriesName: (result.name.match(/(?<=\[Erai-raws\]\s).+(?=\s-\s[0-9]+)/g) || [])[0],
+                quality: Number((result.name.match(/[0-9]+(?=p)/g) || [])[0]),
+                episodeType: (result.name.match(/(?<=\[[0-9]+p\]\[])[^[]]+(?=\])+/g) || result.name.match(/(?<=\s-\s[0-9]+(\.[0-9]+)?\s)[a-zA-Z]+/g) || [])[0]
+            };
     }
     result.animeEntry = new AnimeEntry({
         name: result.episodeData.seriesName
@@ -139,10 +153,12 @@ function siResultToSearchResult(source: Sources, siResult: any): SearchResult {
 }
 function pantsuResultToSearchResult(source: Sources, pantsuResult: any) {
     let categoryMapping: any = {
-        "3": "English-translated"
+        "5": { label: "English-translated" },
+        "6": { label: "Raw" },
+        "13": { label: "Non-English-Translated" }
     };
     let result = new SearchResult();
-    result.category = categoryMapping[pantsuResult.category];
+    result.category = categoryMapping[pantsuResult.sub_category];
     result.name = pantsuResult.name;
     result.link = {
         magnet: pantsuResult.magnet,
