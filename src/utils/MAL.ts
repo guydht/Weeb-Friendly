@@ -33,10 +33,7 @@ export default class MALUtils {
         searchString = searchString || anime.name!;
         let data = (await mal.search("anime", searchString));
         if (!data) return [];
-        let parsedData = data.results.sort((a: { title: string; }, b: { title: string; }) => {
-            return stringCompare(searchString.toLowerCase(), a.title.toLowerCase()) -
-                stringCompare(searchString.toLowerCase(), b.title.toLowerCase());
-        }).map((result: any) => {
+        let parsedData = data.results.map((result: any) => {
             let fromData = new AnimeEntry({});
             fromData.malId = result.mal_id;
             fromData.totalEpisodes = result.episodes;
