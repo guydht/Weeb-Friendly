@@ -33,7 +33,6 @@
     "electron-json-config": "^1.5.3",
     "eslint": "^6.5.1",
     "filereader-stream": "^2.0.0",
-    "jikan-client": "^1.0.0",
     "jikan-node": "^1.2.0",
     "jikants": "^1.2.13",
     "matroska-subtitles": "^2.0.3",
