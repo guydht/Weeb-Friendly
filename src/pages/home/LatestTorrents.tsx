@@ -1,20 +1,19 @@
-
 import React, { Component } from "react";
 import { Carousel, Spinner, Table } from "react-bootstrap";
 //@ts-ignore
 import { LazyLoadComponent, LazyLoadImage } from "react-lazy-load-image-component";
 import { Link } from "react-router-dom";
 import AnimeEntry from "../../classes/AnimeEntry";
-import Consts from "../../classes/Consts";
 import TorrentManager from "../../classes/TorrentManager";
+import ChooseSource from "../../components/ChooseSource";
 import SearchBar from "../../components/SearchBar";
 import styles from "../../css/pages/SeasonalCarousel.module.css";
 import { chunkArray, Confirm } from "../../utils/general";
-import TorrentUtils, { SearchResult } from "../../utils/torrents";
+import TorrentUtils, { SearchResult, Sources } from "../../utils/torrents";
 import { DisplayEpisodes } from "../animeInfo/Episodes";
 import SeasonalCarousel from "./SeasonalCarousel";
 
-export default class LatestTorrents extends Component {
+class DisplayLatestTorrents extends Component<{ source?: Sources }>{
 
     state: { torrents: SearchResult[], nextPageToLoad: number } = {
         torrents: [],
@@ -26,17 +25,19 @@ export default class LatestTorrents extends Component {
     }
 
     loadMoreUpdated() {
-        TorrentUtils.latest(this.state.nextPageToLoad, Consts.SOURCE_PREFERENCE[0]).then(latest => {
+        if (this.props.source === undefined) return;
+        TorrentUtils.latest(this.state.nextPageToLoad, this.props.source).then(latest => {
             this.state.torrents.push(...DisplayEpisodes.groupByQuality(latest.filter(ele => ele.animeEntry.name)));
             this.setState({ torrents: this.state.torrents, nextPageToLoad: this.state.nextPageToLoad + 1 });
         })
     }
 
     render() {
+        if (this.props.source === undefined) return null;
         if (!this.state.torrents.length)
             return (
                 <div>
-                    <small className="d-block">Loading Torrents From {Consts.SOURCE_REFERENCE_KEYS[0]}...</small>
+                    <small className="d-block">Loading Torrents From {Sources[this.props.source]}...</small>
                     <Spinner animation="grow" />
                 </div>
             )
@@ -48,7 +49,7 @@ export default class LatestTorrents extends Component {
         return (
             <div>
                 <h1>
-                    Latest {Consts.SOURCE_REFERENCE_KEYS[0]} Updates:
+                    Latest {Sources[this.props.source]} Updates:
             </h1>
                 <Carousel interval={null} className="px-5 mx-5 mt-5" onSelect={handleSelect}>
                     {
@@ -129,5 +130,17 @@ export default class LatestTorrents extends Component {
             if (ok && searchResult.links && searchResult.links[0] && searchResult.links[0].magnet)
                 TorrentManager.add({ magnetURL: (searchResult as any).links[0].magnet, name: downloadName })
         })
+    }
+}
+
+export default class LatestTorrents extends Component {
+    render() {
+        return (
+            <div className="mx-auto">
+                <ChooseSource>
+                    <DisplayLatestTorrents />
+                </ChooseSource>
+            </div>
+        )
     }
 }
