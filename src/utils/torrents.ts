@@ -54,28 +54,27 @@ export default class TorrentUtils {
                 if (apiSource.si) {
                     let sourceValue = apiSource.si;
                     if (fetchAll)
-                        results.push(...await si.searchAllByUser(sourceValue, name).map(siResultToSearchResult.bind(this, source)));
+                        results.push(...(await si.searchAllByUser(sourceValue, name)).map(siResultToSearchResult.bind(this, source)));
                     else
-                        results.push(...si.searchByUserAndByPage(sourceValue, name, 1).map(siResultToSearchResult.bind(this, source)));
+                        results.push(...(await si.searchByUserAndByPage(sourceValue, name, 1)).map(siResultToSearchResult.bind(this, source)));
                 }
                 if (apiSource.pantsu) {
                     let sourceValue = apiSource.pantsu;
                     if (fetchAll)
-                        results.push(...await pantsu.searchAll({
+                        results.push(...(await pantsu.searchAll({
                             term: name,
                             userID: sourceValue
-                        }).map(pantsuResultToSearchResult.bind(this, source)));
+                        })).map(pantsuResultToSearchResult.bind(this, source)));
                     else
-                        results.push(...await pantsu.search({
+                        results.push(...(await pantsu.search({
                             term: name,
                             userID: sourceValue
-                        }).map(pantsuResultToSearchResult.bind(this, source)));
+                        })).map(pantsuResultToSearchResult.bind(this, source)));
                 }
-                console.log(apiSource, results);
                 if (results.length)
                     return results;
             }
-            catch (e) {
+            catch (e) {console.log(e);
             }
         }
         return [];
@@ -138,6 +137,7 @@ function siResultToSearchResult(source: Sources, siResult: any): SearchResult {
                 quality: Number((result.name.match(/(?<=\s[0-9]+x)[0-9]+(?=\sx264)/g) || [])[0]),
                 episodeType: (result.name.match(/(?<=\s-\s[0-9]+(\.[0-9]+)?\s)[a-zA-Z]+/g) || [])[0]
             };
+            break;
         case Sources.EraiRaws:
             result.episodeData = {
                 episodeNumber: Number((result.name.match(/(?<=\s-\s)[0-9]+(\.[0-9]+)?(?=\s)/g) || [])[0]),
@@ -177,6 +177,13 @@ function pantsuResultToSearchResult(source: Sources, pantsuResult: any) {
                 seriesName: (result.name.match(/(?<=\[Erai-raws\]\s).+(?=\s-\s[0-9]+)/g) || [])[0],
                 quality: Number((result.name.match(/[0-9]+(?=p)/g) || [])[0]),
                 episodeType: (result.name.match(/(?<=\[[0-9]+p\]\[])[^[]]+(?=\])+/g) || result.name.match(/(?<=\s-\s[0-9]+(\.[0-9]+)?\s)[a-zA-Z]+/g) || [])[0]
+            };
+            break;
+        case Sources.HorribleSubs:
+            result.episodeData = {
+                episodeNumber: Number((result.name.match(/[0-9]+(\.[0-9]+)?(?=\s\[[0-9]+p\])/g) || [])[0]),
+                seriesName: (result.name.match(/(?<=\[HorribleSubs\]\s).+(?=\s-\s[0-9]+)/g) || [])[0],
+                quality: Number((result.name.match(/(?<=\s-\s[0-9]+(\.[0-9]+)?\s\[)[0-9]+(?=p)/g) || [])[0])
             };
     }
     result.animeEntry = new AnimeEntry({
