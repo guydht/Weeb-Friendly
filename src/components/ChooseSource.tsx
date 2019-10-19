@@ -22,7 +22,7 @@ export default class ChooseSource extends Component<{ contentComponent?: ReactEl
         delete props.contentComponent;
         delete props.children
         return (
-            <Tab.Container defaultActiveKey={Consts.SOURCE_PREFERENCE[0]}>
+            <Tab.Container {...props} defaultActiveKey={Consts.SOURCE_PREFERENCE[0]}>
                 <Nav variant="pills" defaultActiveKey={this.state.currentSource} className="mb-3 justify-content-center">
                     {
                         Consts.SOURCE_PREFERENCE_ENTRIES.map(([sourceName, source]) => {
