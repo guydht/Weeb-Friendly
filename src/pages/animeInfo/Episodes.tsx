@@ -2,13 +2,12 @@ import { AnimeById } from 'jikants/dist/src/interfaces/anime/ById';
 import { createSliderWithTooltip, Range } from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import React, { Component } from "react";
-import { Button, ButtonGroup, Card, Col, Container, Modal, Nav, OverlayTrigger, Popover, Row, Tab } from "react-bootstrap";
-//@ts-ignore
-import { LazyLoadComponent } from "react-lazy-load-image-component";
+import { Button, ButtonGroup, Card, Col, Container, Modal, OverlayTrigger, Popover, Row, Spinner } from "react-bootstrap";
 import AnimeEntry from "../../classes/AnimeEntry";
 import Consts from "../../classes/Consts";
 import DownloadedItem from "../../classes/DownloadedItem";
 import TorrentManager from "../../classes/TorrentManager";
+import ChooseSource from '../../components/ChooseSource';
 import DownloadedFileThumbnail from "../../components/DownloadedFileThumbnail";
 import SearchBar from "../../components/SearchBar";
 import changableTextStyles from "../../css/components/ChangableText.module.css";
@@ -18,13 +17,35 @@ import { groupBy, walkDir } from "../../utils/general";
 import TorrentUtils, { SearchResult, Sources } from "../../utils/torrents";
 import { AnimeInfoProps } from "../AnimeInfo";
 
-
-export class DisplayEpisodes extends Component<AnimeInfoProps & { episodes: SearchResult[] }> {
+export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Sources }>{
 
     downloadedFromSeries: DownloadedItem[] = [];
 
-    state = {
-        chosenForDownload: []
+    state: {
+        anime: AnimeEntry,
+        info: AnimeById,
+        episodes: SearchResult[],
+        loading: boolean,
+        chosenForDownload: number[]
+    } = {
+            anime: this.props.anime,
+            info: this.props.info,
+            episodes: [],
+            loading: true,
+            chosenForDownload: []
+        };
+
+    componentDidMount() {
+        this.loadEpisodes();
+    }
+
+    loadEpisodes() {
+        this.searchAnime(this.state.anime, this.props.source).then(episodes => {
+            this.setState({
+                episodes,
+                loading: false
+            });
+        });
     }
 
     searchDownloadedFromSeries() {
@@ -36,9 +57,21 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { episodes: Sear
 
     render() {
         this.searchDownloadedFromSeries();
-        const grouped = DisplayEpisodes.groupByQuality(this.props.episodes),
+        const grouped = DisplayEpisodes.groupByQuality(this.state.episodes),
+            groupedBySeries = groupBy(this.state.episodes, ["episodeData", "seriesName"]),
             TooltipRange = createSliderWithTooltip(Range),
             chosenForDownload = this.chosenForDownload;
+        if (this.state.loading)
+            return (
+                <div className="mx-auto">
+                    Loading Episodes of {this.state.anime.name} from {Sources[this.props.source]}
+                    <Spinner animation="grow" />
+                </div>
+            )
+        if (!this.state.episodes.length)
+            return this.notSureAboutSeriesCcomponent;
+        if (!groupedBySeries.length)
+            return this.notSureAboutSeriesCcomponent(groupedBySeries);
         return [(
             grouped.length > 1 && (
                 <div key={1} className="mb-3">
@@ -129,7 +162,7 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { episodes: Sear
     get chosenForDownload() {
         if (this.state.chosenForDownload.length)
             return this.state.chosenForDownload;
-        return [1, DisplayEpisodes.groupByQuality(this.props.episodes).length]
+        return [1, DisplayEpisodes.groupByQuality(this.state.episodes).length]
     }
 
     downloadedItemOfEpisode(episode: SearchResult): DownloadedItem | undefined {
@@ -166,42 +199,11 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { episodes: Sear
         });
     }
     confirmDownloadEpisodes([episodeStart, episodeEnd]: number[]) {
-        let episodes = DisplayEpisodes.groupByQuality(this.props.episodes);
+        let episodes = DisplayEpisodes.groupByQuality(this.state.episodes);
         episodes.slice(episodeStart - 1, episodeEnd).forEach(episode => {
             this.startDownload(episode.links.slice(-1)[0].magnet, episode);
         });
     }
-}
-
-export default class Episodes extends Component<AnimeInfoProps & { episodes: SearchResult[], loading: boolean, chosenForDownload: number[] }> {
-    state: {
-        anime: AnimeEntry,
-        info: AnimeById,
-        episodes: Record<Sources, SearchResult[]>,
-        loading: Record<Sources, boolean>,
-        currentSource: Sources
-    } = {
-            anime: this.props.anime,
-            info: this.props.info,
-            episodes: Object.fromEntries(Object.values(Sources).map(source => [source, []])) as { [source in Sources]: [] },
-            loading: Object.fromEntries(Object.values(Sources).map(source => [source, true])) as { [source in Sources]: boolean },
-            currentSource: Consts.SOURCE_PREFERENCE[0]
-        };
-
-    componentDidMount() {
-        let source = this.state.currentSource;
-        this.searchAnime(this.state.anime, source).then(episodes => {
-            let episodeState = this.state.episodes,
-                loading = this.state.loading;
-            episodeState[source] = episodes.sort((a, b) => b.episodeData.episodeNumber - a.episodeData.episodeNumber);
-            loading[source] = false;
-            this.setState({
-                episodes: episodeState,
-                loading
-            });
-        });
-    }
-
     async searchAnime(anime: AnimeEntry, source: Sources = Sources.Any, fetchAll = false): Promise<SearchResult[]> {
         let episodes = await TorrentUtils.search(anime, fetchAll, source);
         let groupedBySeries = groupBy(episodes, ['episodeData', 'seriesName']);
@@ -211,34 +213,12 @@ export default class Episodes extends Component<AnimeInfoProps & { episodes: Sea
             }) || episodes;
         return episodes.sort((a, b) => b.episodeData.episodeNumber - a.episodeData.episodeNumber);
     }
-    changeSource(source: Sources) {
-        if (source === this.state.currentSource || this.state.episodes[source].length) return;
-        let loading = this.state.loading;
-        loading[source] = true;
-        this.setState({
-            loading
-        });
-        this.searchAnime(this.state.anime, source).then(episodes => {
-            let episodeState = this.state.episodes,
-                loading = this.state.loading;
-            episodeState[source] = episodes.sort((a, b) => b.episodeData.episodeNumber - a.episodeData.episodeNumber);
-            loading[source] = false
-            this.setState({
-                episodes: episodeState,
-                loading
-            });
-        });
-    }
-
-
     userChoseAnime = (anime: AnimeEntry) => {
         this.props.anime.synonyms.add(anime.name!);
         this.props.anime.sync();
-        this.componentDidMount();
-        let loading = this.state.loading;
-        loading[this.state.currentSource] = false;
+        this.loadEpisodes();
         this.setState({
-            loading
+            loading: false
         });
     };
 
@@ -251,7 +231,7 @@ export default class Episodes extends Component<AnimeInfoProps & { episodes: Sea
                 <Modal.Body>
                     Try and search it:
             <SearchBar gotoAnimePageOnChoose={false} showImage={false} onItemClick={this.userChoseAnime.bind(this)}
-                        onInputChange={e => this.searchAnime(new AnimeEntry({ name: (e.target as any).value }), this.state.currentSource)
+                        onInputChange={e => this.searchAnime(new AnimeEntry({ name: (e.target as any).value }), this.props.source)
                             .then(results => e.setResults(results.map(ele => ele.animeEntry).filter((ele, i, arr) => arr.map(ele => ele.name).indexOf(ele.name) === i)))}
                         onInputClick={e => (e.target as any).value === "" && ((e.target as any).value = this.state.anime.name)} />
                 </Modal.Body>
@@ -259,16 +239,14 @@ export default class Episodes extends Component<AnimeInfoProps & { episodes: Sea
         </div>
     );
 
-    notSureAboutSeriesCcomponent(groupedBySeries: SearchResult[][], source: Sources) {
+    notSureAboutSeriesCcomponent(groupedBySeries: SearchResult[][]) {
         const onChoose = (episodes: SearchResult[]) => {
             this.state.anime.sync();
             this.state.anime.synonyms.add(episodes[0].episodeData.seriesName);
             this.state.anime.sync(true);
-            // eslint-disable-next-line
-            this.state.episodes[source] = episodes;
             this.setState({
                 anime: this.state.anime,
-                episodes: this.state.episodes
+                episodes
             });
             (window as any).reloadPage();
         }
@@ -294,47 +272,15 @@ export default class Episodes extends Component<AnimeInfoProps & { episodes: Sea
             </div>
         )
     }
-
+}
+export default class Episodes extends Component<AnimeInfoProps>{
     render() {
         return (
-            <div className="mx-1 mt-3">
-                <Tab.Container defaultActiveKey={Consts.SOURCE_PREFERENCE[0]}>
-                    <Nav variant="pills" defaultActiveKey={this.state.currentSource} className="mb-3">
-                        {
-                            Consts.SOURCE_PREFERENCE_ENTRIES.map(([sourceName, source]) => {
-                                return (
-                                    <Nav.Item key={source} onClick={() => this.changeSource(source)}>
-                                        <Nav.Link eventKey={source}>{sourceName}</Nav.Link>
-                                    </Nav.Item>
-                                );
-                            })
-                        }
-                    </Nav>
-                    <Tab.Content>
-                        {
-                            Consts.SOURCE_PREFERENCE.map(source => {
-                                let episodes = this.state.episodes[source],
-                                    loading = this.state.loading[source],
-                                    groupedBySeries = groupBy(episodes, ["episodeData", "seriesName"]);
-                                return (
-                                    <Tab.Pane eventKey={source} key={source}>
-                                        <LazyLoadComponent>
-                                            {
-                                                loading ? "" :
-                                                    episodes.length ?
-                                                        groupedBySeries.length === 1 ?
-                                                            <DisplayEpisodes {...this.props} episodes={episodes} />
-                                                            : this.notSureAboutSeriesCcomponent(groupedBySeries, source)
-                                                        : this.couldntFindEpisodesComponent
-                                            }
-                                        </LazyLoadComponent>
-                                    </Tab.Pane>
-                                )
-                            })
-                        }
-                    </Tab.Content>
-                </Tab.Container >
+            <div className="mt-4">
+                <ChooseSource>
+                    <DisplayEpisodes {...this.props} source={Sources.Any} />
+                </ChooseSource>
             </div>
-        );
+        )
     }
 }
