@@ -107,7 +107,7 @@ export default withRouter(class DownloadedAnime extends Component {
         if (this.filterElement.current) {
             let filterValue = this.filterElement.current.value.toLowerCase();
             if (filterValue)
-                items = items.filter(ele => filterValue.startsWith("!") ?
+                items = items.filter(ele => filterValue.startsWith("!") && filterValue.length > 1 ?
                     !ele.absolutePath.toLowerCase().includes(filterValue.slice(1)) : ele.absolutePath.toLowerCase().includes(filterValue));
         }
         let sorted = items.sort(current.sortFunction);

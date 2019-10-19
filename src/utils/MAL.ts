@@ -9,7 +9,7 @@ import * as AnimeStorage from "../classes/AnimeStorage";
 import Consts from "../classes/Consts";
 import DownloadedItem from "../classes/DownloadedItem";
 import User from "../classes/User";
-import { getCurrentSeason, parseStupidAmericanDateString, stringCompare } from "./general";
+import { getCurrentSeason, parseStupidAmericanDateString } from "./general";
 
 let mal = window.require("jikan-node");
 mal = new mal();
@@ -27,7 +27,6 @@ export enum MALStatuses {
 
 export default class MALUtils {
     static MAX_ANIMES_PER_PAGE = 300;
-    static MINIMUM_ANIMENAME_SIMILARITY = 0.7;
 
     static async searchAnime(anime: AnimeEntry, searchString: string = ""): Promise<AnimeEntry[]> {
         searchString = searchString || anime.name!;
