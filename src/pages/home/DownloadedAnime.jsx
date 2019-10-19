@@ -71,7 +71,7 @@ export default withRouter(class DownloadedAnime extends Component {
                         </InputGroup>
                     </Row>
                     <Row>
-                        <div className={styles.grid + " guydht-scrollbar mx-5"}>
+                        <div className={styles.grid + " mx-5"}>
                             {
                                 this.sortedItems.map(downloadedItem => {
                                     return (

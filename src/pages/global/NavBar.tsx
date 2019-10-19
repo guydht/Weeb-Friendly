@@ -35,12 +35,12 @@ export default class NavBar extends Component {
                 })
         });
         for (let theme of Consts.THEMES) {
-            let beforeTheme = new Set(document.querySelectorAll("style"));
+            let beforeTheme = new Set(document.styleSheets);
             require("../../css/theme/bootstrap." + theme.toLowerCase().replace(" ", ".") + ".min.css");
-            let themeStyles = [...document.querySelectorAll("style")].filter(ele => !beforeTheme.has(ele));
-            beforeTheme = new Set(document.querySelectorAll("style"));
-            themeStyles.forEach(ele => ele.dataset.theme = theme);
-            themeStyles.forEach(ele => (ele as any).disabled = theme !== Consts.CURRENT_THEME);
+            let themeStyles = [...document.styleSheets].filter(ele => !beforeTheme.has(ele));
+            beforeTheme = new Set(document.styleSheets);
+            themeStyles.forEach(ele => (ele as any).theme = theme);
+            themeStyles.forEach(ele => ele.disabled = theme !== Consts.CURRENT_THEME);
         }
     }
 
@@ -82,10 +82,10 @@ export default class NavBar extends Component {
                         <SearchBar />
                         {Consts.MAL_USER.isLoggedIn ?
                             <Button className="ml-2" onClick={() => this.logout()}>
-                            Log Out
+                                Log Out
                     </Button> :
                             <Button className="ml-2" onClick={() => this.showLogin()}>
-                            Login
+                                Login
                         </Button>}
                     </Row>
                 </BootstrapNavbar.Collapse>
@@ -119,8 +119,9 @@ export default class NavBar extends Component {
         (window as any).reloadPage();
     }
     setTheme(theme = Consts.CURRENT_THEME) {
-        [...document.querySelectorAll("style[data-theme]")].forEach(ele => {
-            (ele as any).disabled = (ele as any).dataset.theme !== theme;
+        [...document.styleSheets].forEach(ele => {
+            if ((ele as any).theme)
+                ele.disabled = (ele as any).theme !== theme;
         });
         Consts.setCurrentTheme(theme);
     }

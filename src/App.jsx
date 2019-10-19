@@ -29,7 +29,7 @@ export default class App extends Component {
     // eslint-disable-next-line
     if (!this.state.showVideo) this.state.videoItem = null;
     return (
-      <div className="guydht-scrollbar">
+      <div>
         <BrowserRouter>
           <NavBar />
           <div style={{ marginTop: 77 }}>

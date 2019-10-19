@@ -53,7 +53,7 @@ export default class SearchBar extends Component<SearchBarProps> {
                     onChange={(e: any) => this.searchAnime(e)}
                     onBlur={() => this.setState({ loading: false, loadingText: "" })} />
                 <ListGroup className={styles.container}>
-                    <ListGroup className={styles.wrapper + " guydht-scrollbar"}>
+                    <ListGroup className={styles.wrapper}>
                         {
                             this.state.entries.length && this.state.displayEntries ?
                                 this.state.entries.map((entry: AnimeEntry) => {

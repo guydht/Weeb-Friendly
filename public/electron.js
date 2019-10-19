@@ -24,10 +24,15 @@ function createWindow() {
 
     // and load the index.html of the app.
     mainWindow.loadURL(url.format({
-        pathname: process.env.NODE_ENV === "development" ?
-            "localhost:3000" : path.join(__dirname, 'build/index.html'),
-        protocol: 'http'
+        pathname: path.join(__dirname, '../build/index.html'),
+        protocol: 'file'
     }));
+
+    // mainWindow.loadURL(url.format({
+    //     pathname: 'localhost:3000',
+    //     protocol: 'http'
+    // }));
+
 
     // Open the DevTools.
     mainWindow.webContents.openDevTools();
