@@ -5,7 +5,6 @@ import { Seasons } from "jikants/dist/src/interfaces/season/Season";
 import { AnimeListTypes } from "jikants/dist/src/interfaces/user/AnimeList";
 import AnimeEntry from "../classes/AnimeEntry";
 import AnimeList from "../classes/AnimeList";
-import * as AnimeStorage from "../classes/AnimeStorage";
 import Consts from "../classes/Consts";
 import DownloadedItem from "../classes/DownloadedItem";
 import User from "../classes/User";
@@ -98,7 +97,7 @@ export default class MALUtils {
                 userStartDate: parseStupidAmericanDateString(result.watch_start_date),
                 userEndDate: parseStupidAmericanDateString(result.watch_end_date),
                 myMalRating: result.score as any,
-                myMalStatus: MALStatuses[result.watching_status] as any,
+                myMalStatus: result.watching_status,
                 myWatchedEpisodes: result.watched_episodes,
                 imageURL: result.image_url,
                 malUrl: result.url,
@@ -131,7 +130,7 @@ export default class MALUtils {
     static UPDATE_ANIME_URL = "https://myanimelist.net/ownlist/anime/edit.json";
     static ADD_ANIME_URL = "https://myanimelist.net/ownlist/anime/add.json";
     static async updateAnime(anime: AnimeEntry & HasMalId, { episodes, status, score }: { episodes?: number, status?: MALStatuses, score?: number }): Promise<boolean> {
-        let startDate = new Date(),
+        let rightNow = new Date(),
             body: any = {
                 anime_id: anime.malId,
                 status: status,
@@ -141,15 +140,15 @@ export default class MALUtils {
             };
         if (episodes === 1)
             body['start_date'] = {
-                month: startDate.getMonth(),
-                day: startDate.getDate(),
-                year: startDate.getFullYear()
+                month: rightNow.getMonth(),
+                day: rightNow.getDate(),
+                year: rightNow.getFullYear()
             }
         if (status === MALStatuses.Completed)
             body['finish_date'] = {
-                month: startDate.getMonth(),
-                day: startDate.getDate(),
-                year: startDate.getFullYear()
+                month: rightNow.getMonth(),
+                day: rightNow.getDate(),
+                year: rightNow.getFullYear()
             }
         let request = await fetch(this.UPDATE_ANIME_URL, {
             method: "POST",
@@ -157,9 +156,10 @@ export default class MALUtils {
         });
         if (request.ok) {
             anime.myWatchedEpisodes = episodes;
-            (anime.myMalStatus as any) = status;
-            (anime.myMalRating as any) = score;
-            if (episodes === 1) anime.startDate = startDate;
+            anime.myMalStatus = status;
+            Consts.MAL_USER.animeList.loadAnime(anime);
+            anime.myMalRating = score as any;
+            if (episodes === 1) anime.startDate = rightNow;
             anime.sync();
         }
         return request.ok;
@@ -186,15 +186,15 @@ export default class MALUtils {
         return ok;
     }
     static async UpdateWatchedEpisode(downloadedItem: DownloadedItem): Promise<boolean> {
-        let anime = downloadedItem.animeEntry,
-            episode = downloadedItem.episodeData.episodeNumber,
-            status = anime.totalEpisodes === episode ? MALStatuses.Completed : MALStatuses.Watching,
+        if (!downloadedItem.animeEntry.malId) return false;
+        let episode = downloadedItem.episodeData.episodeNumber,
+            status = downloadedItem.animeEntry.totalEpisodes === episode ? MALStatuses.Completed : MALStatuses.Watching,
             ok: boolean = true;
-        if (!anime.myMalStatus)
-            ok = await MALUtils.addAnime(anime as any)
+        if (!downloadedItem.animeEntry.myMalStatus)
+            ok = await MALUtils.addAnime(downloadedItem.animeEntry as AnimeEntry & { malId: Number })
         if (!ok) return ok;
-        ok = await MALUtils.updateAnime(anime as any, { episodes: episode, status });
-        Consts.MAL_USER.animeList.loadAnime(anime);
+        ok = await MALUtils.updateAnime(downloadedItem.animeEntry as AnimeEntry & { malId: Number }, { episodes: episode, status });
+        Consts.MAL_USER.animeList.loadAnime(downloadedItem.animeEntry);
         Consts.setMALUser(Consts.MAL_USER);
         return ok;
     }
@@ -232,9 +232,6 @@ export default class MALUtils {
         let data = await mal.findAnime(anime.malId, "reviews");
         return data;
     }
-    static syncAnime = AnimeStorage.sync;
-    static getAnime = AnimeStorage.get;
-    static get storageSize() { return AnimeStorage.size(); };
 }
 
 export class ForumEntry {

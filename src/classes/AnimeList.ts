@@ -23,7 +23,7 @@ export default class AnimeList {
             let key = Number(strKey);
             value.sync();
             (this._all as any)[key] = value;
-            switch ((MALStatuses as any)[(value as AnimeEntry).myMalStatus!]) {
+            switch ((value as AnimeEntry).myMalStatus!) {
                 case MALStatuses.Watching:
                     (this._watching as any)[key] = value;
                     break
