@@ -38,7 +38,6 @@ export default withRouter(class DownloadedFileThumbnail extends Component {
     }
     showAnime(downloadedItem) {
         clearTimeout(this.doubleClickTimeout);
-        downloadedItem.animeEntry.sync();
         if (downloadedItem.animeEntry.malId) {
             this.props.history.push({
                 pathname: "/anime/" + downloadedItem.animeEntry.malId,

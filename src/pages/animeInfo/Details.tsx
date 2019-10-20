@@ -21,7 +21,6 @@ export default class Details extends Component<AnimeInfoProps> {
     };
 
     render() {
-        this.state.anime.sync();
         return (
             <div className={styles.container}>
                 {
@@ -219,7 +218,6 @@ export default class Details extends Component<AnimeInfoProps> {
         this.state.anime.synonyms.delete(synonymToChange);
         if (newSynonym)
             this.state.anime.synonyms.add(newSynonym);
-        console.log(this.state.anime, arguments);
         this.state.anime.sync(true);
         this.setState({ anime: this.state.anime });
     }
