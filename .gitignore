@@ -62,3 +62,4 @@ typings/
 
 .thumbnail-image-storage
 build/
+dist/
