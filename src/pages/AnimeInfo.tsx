@@ -19,44 +19,96 @@ export interface AnimeInfoProps {
     info: AnimeById;
     anime: AnimeEntry;
 }
-
+let emptyFrom = {
+    day: -1,
+    month: -1,
+    year: -1
+},
+emptyProp = {
+    from: {...emptyFrom},
+    to: {...emptyFrom}
+},
+emptyAired = {
+    from: new Date("undefined"),
+    prop: {...emptyProp},
+    string: "",
+    to: new Date("undefined")
+},
+emptyRelated = {
+    Adaptation: [],
+    "Side story": [],
+    Summary: []
+},
+emptyInfo = {
+    aired: {...emptyAired},
+    airing: null,
+    background: "",
+    broadcast: "",
+    duration: "",
+    ending_themes: [],
+    episodes: null,
+    favorites: null,
+    genres: [],
+    image_url: "",
+    licensors: [],
+    mal_id: null,
+    members: null,
+    opening_themes: [],
+    popularity: null,
+    premiered: "",
+    producers: [],
+    rank: null,
+    rating: "",
+    related: {...emptyRelated},
+    request_cache_expiry: null,
+    request_cached: null,
+    request_hash: "",
+    score: null,
+    scored_by: null,
+    source: "",
+    status: "",
+    studios: [],
+    synopsis: "",
+    title_english: "",
+    title_japanese: "",
+    title_synonyms: [],
+    title: "",
+    trailer_url: "",
+    type: "",
+    url: ""
+}
 
 export default class AnimeInfo extends Component {
 
     private PAGE_LINKS = { Details, Episodes: Episodes, Reviews, Recommendations, Stats, News, Forum, Pictures }
 
-    state = {
-        info: undefined,
-        anime: ((this.props as any).location.state || {}).animeEntry as AnimeEntry,
+    state: { info?: AnimeById, anime: AnimeEntry, highResPhoto: string } = {
+        anime: (((this.props as any).location.state || {}).animeEntry || new AnimeEntry({ malId: (this.props as any).match.params.id })) as AnimeEntry,
         highResPhoto: ""
     }
     componentDidUpdate() {
-        if (this.state.anime.malId !== Number((this.props as any).match.params.id))
+        if (this.state.anime && this.state.anime.malId !== Number((this.props as any).match.params.id))
             this.setState({
                 anime: (this.props as any).location.state.animeEntry,
                 info: undefined
             });
-        this.state.anime.sync();
     }
 
     render() {
-        if (this.state.anime)
-            this.state.anime.sync();
         if (!this.state.anime || !this.state.anime.malId || !this.state.info) {
             let id = (this.props as any).match.params.id;
             if (id) {
-                let anime = new AnimeEntry({ malId: Number(id) }).sync();
+                let anime = new AnimeEntry({ malId: Number(id) });
                 MALUtils.getAnimeInfo(anime as AnimeEntry & { malId: number }).then(info => {
                     this.setState({
                         info,
-                        anime: anime
+                        anime
                     });
                 });
-                return null;
             }
-            (this.props as any).history.push('/');
-            return null;
         }
+        // eslint-disable-next-line
+        this.state.anime.name = this.state.anime.name || "";
         return (
             <div className="mx-5 px-5">
                 <Row>
@@ -69,10 +121,10 @@ export default class AnimeInfo extends Component {
                 <Row style={{ flexWrap: "nowrap" }}>
                     <Col md="auto">
                         <ImageZoom image={{
-                            src: this.state.info ? (this.state.info as any).image_url : "",
+                            src: this.state.anime.imageURL || "",
                             alt: this.state.anime.name
                         }} zoomImage={{
-                            src: this.state.highResPhoto || this.state.info ? (this.state.info as any).image_url : "",
+                            src: this.state.highResPhoto || this.state.info ? (this.state.info as any).image_url : this.state.anime.imageURL || "",
                             alt: this.state.anime.name
                         }} defaultStyles={{
                             overlay: {
@@ -94,7 +146,7 @@ export default class AnimeInfo extends Component {
                                         <Tab eventKey={name} title={name} mountOnEnter={true} key={i}>
                                             <LazyLoadComponent>
                                                 <Container>
-                                                    <MyComponent anime={this.state.anime} info={this.state.info! as AnimeById} />
+                                                    <MyComponent anime={this.state.anime} info={this.state.info || {...emptyInfo} as any} />
                                                 </Container>
                                             </LazyLoadComponent>
                                         </Tab>
