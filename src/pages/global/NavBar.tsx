@@ -34,13 +34,14 @@ export default class NavBar extends Component {
                     visible: true
                 })
         });
-        for (let theme of Consts.THEMES) {
-            let beforeTheme = new Set(document.styleSheets);
-            require("../../css/theme/bootstrap." + theme.toLowerCase().replace(" ", ".") + ".min.css");
-            let themeStyles = [...document.styleSheets].filter(ele => !beforeTheme.has(ele));
-            beforeTheme = new Set(document.styleSheets);
-            themeStyles.forEach(ele => (ele as any).theme = theme);
-            themeStyles.forEach(ele => ele.disabled = theme !== Consts.CURRENT_THEME);
+        for (const theme of Consts.THEMES) {
+            let style = document.createElement("style");
+            style.dataset.theme = theme;
+            fetch("./css/theme/bootstrap." + theme.toLowerCase().replace(" ", ".") + ".min.css").then(r => r.text()).then(text => {
+                style.innerHTML = text;
+                document.head.append(style);
+                (style as any).disabled = style.dataset.theme !== Consts.CURRENT_THEME;
+            });
         }
     }
 
@@ -61,13 +62,13 @@ export default class NavBar extends Component {
                 transform: this.state.visible ? "translateY(0)" : "translateY(-100%)"
             }}>
                 <BootstrapNavbar.Brand to="/" as={Link}>Weeb Friendly</BootstrapNavbar.Brand>
-                <BootstrapNavbar.Brand to="/settings" as={Link}>
+                <Link to="/settings" className="mr-3">
                     <OverlayTrigger
                         placement="bottom"
                         overlay={<Tooltip id="goto-settings">Settings</Tooltip>}>
                         <SettingsIcon />
                     </OverlayTrigger>
-                </BootstrapNavbar.Brand>
+                </Link>
                 <BootstrapNavbar.Toggle aria-controls="basic-BootstrapNavbar-nav" />
                 <BootstrapNavbar.Collapse id="basic-BootstrapNavbar-nav" className="justify-content-between">
                     <ChooseDirectoryText />
@@ -119,9 +120,8 @@ export default class NavBar extends Component {
         (window as any).reloadPage();
     }
     setTheme(theme = Consts.CURRENT_THEME) {
-        [...document.styleSheets].forEach(ele => {
-            if ((ele as any).theme)
-                ele.disabled = (ele as any).theme !== theme;
+        [...document.querySelectorAll("style[data-theme]")].forEach(ele => {
+            (ele as any).disabled = (ele as any).dataset.theme !== theme;
         });
         Consts.setCurrentTheme(theme);
     }
