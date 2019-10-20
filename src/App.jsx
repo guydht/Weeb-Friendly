@@ -1,49 +1,53 @@
 import React, { Component } from 'react';
-import { BrowserRouter, Route, Switch } from "react-router-dom";
+import { MemoryRouter, Route, Switch } from "react-router-dom";
 import "./classes/AnimeStorage";
 import "./classes/Consts";
+import "./css/global/App.css";
+import "./css/global/Forum.css";
 import DownloadManager from './pages/global/DownloadManager';
 import Login from './pages/global/Login';
 import NavBar from './pages/global/NavBar';
 import ToastMessage from './pages/global/ToastMessages';
 import Watch from './pages/global/Watch';
 import routerConfig from "./routerConfig";
-import "./classes/Consts";
-
-const fs = window.require("fs");
-let globalStyles = fs.readdirSync("./src/css/global/");
-globalStyles.forEach(global => {
-  import("./css/global/" + global);
-});
 
 export default class App extends Component {
+
   state = {
     showVideo: false,
     videoItem: null
   }
+
+  router = React.createRef();
+
   componentDidMount() {
     window.setAppState = this.setState.bind(this);
     window.reloadPage = this.forceUpdate.bind(this);
+
+    window.addEventListener("beforeunload", () => {
+      sessionStorage.setItem("lastPathname", this.router.current.history.location.pathname);
+    });
+
   }
   render() {
     // eslint-disable-next-line
     if (!this.state.showVideo) this.state.videoItem = null;
     return (
       <div>
-        <BrowserRouter>
+        <MemoryRouter ref={this.router} initialEntries={[sessionStorage.getItem("lastPathname") || ""]} initialIndex={0}>
           <NavBar />
-          <div style={{ marginTop: 77 }}>
+          <div style={{ marginTop: 70 }}>
             <Switch>
               {
-                Object.entries(routerConfig).map(([thePath, theComponent]) => {
+                Object.entries(routerConfig).map(([thePath, TheComponent]) => {
                   return (
-                    <Route exact path={thePath} component={theComponent} key={thePath} />
+                    <Route path={thePath} component={TheComponent} key={thePath} />
                   )
                 })
               }
             </Switch>
           </div>
-        </BrowserRouter>
+        </MemoryRouter>
         <Login />
         {
           this.state.showVideo &&
