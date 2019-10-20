@@ -62,10 +62,9 @@ function asd(AnimeName, elementContainer, videoURL) {
         };
         chooseSubs.onclick = () => setSecondScreen(subtitleTracks.map(function handleSubs(trackName, i) {
             return [trackName, () => {
-                subtitleTracks = subtitleTracks.map(name => name.replace(" - active", ""));
+                subtitleTracks = subtitleTracks.map(name => name.replace(/\s-\sactive/g, ""));
                 container.dispatchEvent(new CustomEvent("guydhtChangeSubs", { detail: subtitleTracks[i] }));
-                trackName += " - active"
-                subtitleTracks[i] = trackName;
+                subtitleTracks[i] += " - active";
                 setSecondScreen(subtitleTracks.map(handleSubs));
             }];
         }));
