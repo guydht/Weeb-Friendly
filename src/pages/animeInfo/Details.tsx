@@ -15,23 +15,19 @@ export default class Details extends Component<AnimeInfoProps> {
     statusElement = React.createRef() as RefObject<any>;
     episodElement = React.createRef() as RefObject<any>;
 
-    state = {
-        anime: this.props.anime,
-        info: this.props.info
-    };
-
     render() {
+        console.log(this.state, this.props);
         return (
             <div className={styles.container}>
                 {
-                    this.state.info && (
+                    this.props.info && (
                         <Row className="mt-4" style={{ fontSize: "130%" }}>
                             <Col md="auto" className="text-center">
                                 <Badge>Score</Badge>
-                                <h5>{this.state.anime.score || "Unknown"}</h5>
+                                <h5>{this.props.anime.score || "Unknown"}</h5>
                                 {
-                                    this.state.info.scored_by &&
-                                    <small>{this.state.info.scored_by} Users</small>
+                                    this.props.info.scored_by &&
+                                    <small>{this.props.info.scored_by} Users</small>
                                 }
                             </Col>
                             <Col style={{
@@ -39,19 +35,19 @@ export default class Details extends Component<AnimeInfoProps> {
                                 flexDirection: "column"
                             }}>
                                 <Row>
-                                    <Col>Ranked: <strong>{this.state.info.rank || "Unknown"}</strong></Col>
-                                    <Col>Aired: <strong>{this.state.info.aired.string}</strong></Col>
-                                    <Col>Members: <strong>{this.state.info.members || "Unknown"}</strong></Col>
+                                    <Col>Ranked: <strong>{this.props.info.rank || "Unknown"}</strong></Col>
+                                    <Col>Aired: <strong>{this.props.info.aired.string}</strong></Col>
+                                    <Col>Members: <strong>{this.props.info.members || "Unknown"}</strong></Col>
                                 </Row>
                                 <Row>
-                                    <Col>Season: <strong>{this.state.info.premiered || "Unknown"}</strong></Col>
-                                    <Col>Type: <strong>{this.state.info.type || "Unknown"}</strong></Col>
-                                    <Col>Studio: <strong>{this.state.info.studios.length ? this.state.info.studios[0].name : "Unknown"}</strong></Col>
+                                    <Col>Season: <strong>{this.props.info.premiered || "Unknown"}</strong></Col>
+                                    <Col>Type: <strong>{this.props.info.type || "Unknown"}</strong></Col>
+                                    <Col>Studio: <strong>{this.props.info.studios.length ? this.props.info.studios[0].name : "Unknown"}</strong></Col>
                                 </Row>
                                 <Row>
-                                    <Col>Status: <strong>{this.state.info.status}</strong></Col>
-                                    <Col>Genres: <strong>{this.state.info.genres.map(ele => ele.name).join(", ")}</strong></Col>
-                                    <Col>Popularity: <strong>{this.state.info.popularity || "Unknown"}</strong></Col>
+                                    <Col>Status: <strong>{this.props.info.status}</strong></Col>
+                                    <Col>Genres: <strong>{this.props.info.genres.map(ele => ele.name).join(", ")}</strong></Col>
+                                    <Col>Popularity: <strong>{this.props.info.popularity || "Unknown"}</strong></Col>
                                 </Row>
                             </Col>
                         </Row>
@@ -63,25 +59,25 @@ export default class Details extends Component<AnimeInfoProps> {
                     </Col>
                     <Col>
                         {
-                            [...this.state.anime.synonyms].map((name) => {
-                                if (name === this.state.anime.name) return null;
+                            [...this.props.anime.synonyms].map((name) => {
+                                if (name === this.props.anime.name) return null;
                                 return <ChangableText key={name} text={name} onChange={(value: any) => this.changeAnimeSynonyms(name, value)} />;
                             })
                         }
                     </Col>
                 </Row>
                 {
-                    Consts.MAL_USER.isLoggedIn && Consts.MAL_USER.animeList.all[this.state.anime.malId!] ? (
+                    Consts.MAL_USER.isLoggedIn && Consts.MAL_USER.animeList.all[this.props.anime.malId!] ? (
                         <div>
                             <Row>
                                 <Col className="mt-3">
-                                    <h3>{Consts.MAL_USER.username}'s status of {this.state.anime.name}:</h3>
+                                    <h3>{Consts.MAL_USER.username}'s status of {this.props.anime.name}:</h3>
                                 </Col>
                             </Row>
                             <Row>
                                 <Col>
                                     <FormControl onChange={this.updateAnime.bind(this)} ref={this.statusElement}
-                                        as="select" className="w-auto" defaultValue={this.state.anime.myMalStatus as any}>
+                                        as="select" className="w-auto" defaultValue={this.props.anime.myMalStatus as any}>
                                         {
                                             Object.keys(MALStatuses).filter(ele => isNaN(Number(ele))).map(status => (
                                                 <option key={status} value={(MALStatuses as any)[status]}>{status}</option>
@@ -91,7 +87,7 @@ export default class Details extends Component<AnimeInfoProps> {
                                 </Col>
                                 <Col>
                                     <FormControl onChange={this.updateAnime.bind(this)} ref={this.scoreElement} as="select"
-                                        className="w-auto" defaultValue={(this.state.anime.myMalRating || 0).toString()}>
+                                        className="w-auto" defaultValue={(this.props.anime.myMalRating || 0).toString()}>
                                         <option value="0">Select</option>
                                         {
                                             AnimeEntry.SCORES.map((score, i) =>
@@ -103,21 +99,21 @@ export default class Details extends Component<AnimeInfoProps> {
                                 <Col>
                                     <FormControl
                                         type="number"
-                                        max={this.state.anime.totalEpisodes}
+                                        max={this.props.anime.totalEpisodes}
                                         min={0}
                                         style={{ background: "transparent", width: "1.5em" }}
                                         plaintext
                                         onChange={this.updateAnime.bind(this)}
                                         className="d-inline guydhtNoSpinner"
                                         ref={this.episodElement}
-                                        defaultValue={(this.state.anime.myWatchedEpisodes || 0).toString()} />/{this.state.anime.totalEpisodes}
+                                        defaultValue={(this.props.anime.myWatchedEpisodes || 0).toString()} />/{this.props.anime.totalEpisodes}
                                 </Col>
                             </Row>
                         </div>
                     ) : <Row>
                             {
                                 Consts.MAL_USER.isLoggedIn && hasInternet() ? (
-                                    <Button onClick={() => this.addAnime(this.state.anime)}>Add to MyAnimeList</Button>
+                                    <Button onClick={() => this.addAnime(this.props.anime)}>Add to MyAnimeList</Button>
                                 ) : Consts.MAL_USER.isLoggedIn && (
                                     <span>
                                         Can't add to MyAnimeList since you dont have internet connectivity!
@@ -135,14 +131,14 @@ export default class Details extends Component<AnimeInfoProps> {
                         <Modal.Body>
                             <p>
                                 {
-                                    this.state.anime.synopsis
+                                    this.props.anime.synopsis
                                 }
                             </p>
                         </Modal.Body>
                     </Modal.Dialog>
                 </Row>
                 {
-                    !!Object.values(this.state.info.related).length &&
+                    !!Object.values(this.props.info.related).length &&
                     <Row>
                         <Modal.Dialog className={styles.modal}>
                             <Modal.Header>
@@ -151,7 +147,7 @@ export default class Details extends Component<AnimeInfoProps> {
 
                             <Modal.Body>
                                 {
-                                    Object.entries(this.state.info.related).map(([type, data]) => {
+                                    Object.entries(this.props.info.related).map(([type, data]) => {
                                         return (
                                             <p key={type}>
                                                 {type}: {
@@ -193,21 +189,21 @@ export default class Details extends Component<AnimeInfoProps> {
     updateAnime() {
         if (!this.statusElement.current || !this.episodElement.current || !this.scoreElement.current) return;
         clearTimeout(this.updateTimeout);
-        if (Number(this.episodElement.current.value) === this.state.anime.totalEpisodes)
+        if (Number(this.episodElement.current.value) === this.props.anime.totalEpisodes)
             this.statusElement.current.value = MALStatuses.Completed;
         else if (Number(this.episodElement.current.value) === 1)
             this.statusElement.current.value = MALStatuses.Watching;
         if (Number(this.statusElement.current.value) === MALStatuses.Completed)
-            this.episodElement.current.value = this.state.anime.totalEpisodes;
+            this.episodElement.current.value = this.props.anime.totalEpisodes;
         this.updateTimeout = window.setTimeout(() => {
             if (!this.statusElement.current || !this.episodElement.current || !this.scoreElement.current) return;
-            MALUtils.updateAnime(this.state.anime as any, {
+            MALUtils.updateAnime(this.props.anime as any, {
                 episodes: Number(this.episodElement.current.value),
                 status: Number(this.statusElement.current.value),
                 score: Number(this.scoreElement.current.value)
             }).then(ok => {
                 if (ok)
-                    (window as any).displayToast({ title: 'Successfully updated!', body: `Succesfully update ${this.state.anime.name}!` });
+                    (window as any).displayToast({ title: 'Successfully updated!', body: `Succesfully update ${this.props.anime.name}!` });
                 else
                     (window as any).displayToast({ title: 'Something Went Wrong!', body: `MyanimeList sent error code :(` });
                 (window as any).reloadPage();
@@ -215,10 +211,10 @@ export default class Details extends Component<AnimeInfoProps> {
         }, Details.UPDATE_TIMEOUT_MS);
     }
     changeAnimeSynonyms(synonymToChange: string, newSynonym: string) {
-        this.state.anime.synonyms.delete(synonymToChange);
+        this.props.anime.synonyms.delete(synonymToChange);
         if (newSynonym)
-            this.state.anime.synonyms.add(newSynonym);
-        this.state.anime.sync(true);
-        this.setState({ anime: this.state.anime });
+            this.props.anime.synonyms.add(newSynonym);
+        this.props.anime.sync(true);
+        this.setState({});
     }
 }

@@ -1,4 +1,3 @@
-import { AnimeById } from 'jikants/dist/src/interfaces/anime/ById';
 import { createSliderWithTooltip, Range } from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import React, { Component } from "react";
@@ -22,14 +21,10 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
     downloadedFromSeries: DownloadedItem[] = [];
 
     state: {
-        anime: AnimeEntry,
-        info: AnimeById,
         episodes: SearchResult[],
         loading: boolean,
         chosenForDownload: number[]
     } = {
-            anime: this.props.anime,
-            info: this.props.info,
             episodes: [],
             loading: true,
             chosenForDownload: []
@@ -40,7 +35,7 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
     }
 
     loadEpisodes() {
-        this.searchAnime(this.state.anime, this.props.source).then(episodes => {
+        this.searchAnime(this.props.anime, this.props.source).then(episodes => {
             this.setState({
                 episodes,
                 loading: false
@@ -64,7 +59,7 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
         if (this.state.loading)
             return (
                 <div className="mx-auto" style={{ width: "fit-content", textAlign: "center" }}>
-                    <div>Loading Episodes of {this.state.anime.name} from {Sources[this.props.source]}</div>
+                    <div>Loading Episodes of {this.props.anime.name} from {Sources[this.props.source]}</div>
                     <Spinner animation="grow" />
                 </div>
             )
@@ -232,14 +227,14 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
         <div className="mx-1 mt-3">
             <Modal.Dialog className={styles.modal}>
                 <Modal.Header>
-                    <Modal.Title>Couldn't Find any episodes for {this.state.anime.name} :(</Modal.Title>
+                    <Modal.Title>Couldn't Find any episodes for {this.props.anime.name} :(</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     Try and search it:
             <SearchBar gotoAnimePageOnChoose={false} showImage={false} onItemClick={this.userChoseAnime.bind(this)}
                         onInputChange={e => this.searchAnime(new AnimeEntry({ name: (e.target as any).value }), this.props.source)
                             .then(results => e.setResults(results.map(ele => ele.animeEntry).filter((ele, i, arr) => arr.map(ele => ele.name).indexOf(ele.name) === i)))}
-                        onInputClick={e => (e.target as any).value === "" && ((e.target as any).value = this.state.anime.name)} />
+                        onInputClick={e => (e.target as any).value === "" && ((e.target as any).value = this.props.anime.name)} />
                 </Modal.Body>
             </Modal.Dialog>
         </div>
@@ -247,10 +242,9 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
 
     notSureAboutSeriesComponent(groupedBySeries: SearchResult[][]) {
         const onChoose = (episodes: SearchResult[]) => {
-            this.state.anime.synonyms.add(episodes[0].episodeData.seriesName);
-            this.state.anime.sync(true);
+            this.props.anime.synonyms.add(episodes[0].episodeData.seriesName);
+            this.props.anime.sync(true);
             this.setState({
-                anime: this.state.anime,
                 episodes
             });
             (window as any).reloadPage();
@@ -259,11 +253,11 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
             <div className="mx-1 mt-3">
                 <Modal.Dialog className={styles.modal}>
                     <Modal.Header>
-                        <Modal.Title>Found {groupedBySeries.length} different series for {this.state.anime.name} :(</Modal.Title>
+                        <Modal.Title>Found {groupedBySeries.length} different series for {this.props.anime.name} :(</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                         <div>
-                            Please tell me which series is {this.state.anime.name} So I'll add it to the synonyms :)
+                            Please tell me which series is {this.props.anime.name} So I'll add it to the synonyms :)
                         </div>
                         {
                             groupedBySeries.map((episodes, i) => {

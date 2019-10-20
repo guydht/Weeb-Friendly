@@ -3,7 +3,6 @@ import React, { Component } from "react";
 import { Accordion, Col, Container, Jumbotron, Modal, OverlayTrigger, Row, Spinner, Tooltip } from "react-bootstrap";
 //@ts-ignore
 import { LazyLoadImage } from "react-lazy-load-image-component";
-import AnimeEntry from "../../classes/AnimeEntry";
 import PageTransition from "../../components/PageTransition";
 import styles from "../../css/pages/Forum.module.css";
 import { hasInternet } from "../../utils/general";
@@ -14,15 +13,14 @@ import Home from "../Home";
 
 export default class Forum extends Component<AnimeInfoProps> {
 
-    state: { anime: AnimeEntry, topics?: ForumType["topics"], forumEntry?: ForumEntry, loading: boolean } = {
-        anime: this.props.anime,
+    state: { topics?: ForumType["topics"], forumEntry?: ForumEntry, loading: boolean } = {
         loading: true
     }
 
     transitionController = React.createRef<PageTransition>();
 
     componentDidMount() {
-        MALUtils.animeForum(this.state.anime as any).then(topics => {
+        MALUtils.animeForum(this.props.anime as any).then(topics => {
             if (topics && topics.length)
                 this.setState({ topics, loading: false });
         });
