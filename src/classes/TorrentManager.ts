@@ -1,4 +1,5 @@
 import { Torrent } from "webtorrent";
+import { walkDir } from "../utils/general";
 import Consts from "./Consts";
 
 const path = window.require("path"),
@@ -33,6 +34,7 @@ export default class TorrentManager {
                             newAbsolutePath = path.join(Consts.DOWNLOADS_FOLDER, name + extension);
                         fs.rename(absolutePath, newAbsolutePath);
                         Consts.removeFromSavedTorrents(returnedTorrent);
+                        Consts.DOWNLOADED_ITEMS = walkDir(Consts.DOWNLOADS_FOLDER);
                         (window as any).reloadPage();
                     });
                 });
@@ -51,6 +53,7 @@ export default class TorrentManager {
         let pathName = path.join(torrent.path, torrent.name);
         torrent.destroy();
         fs.unlink(pathName);
+        Consts.DOWNLOADED_ITEMS = walkDir(Consts.DOWNLOADS_FOLDER);
         Consts.removeFromSavedTorrents(torrent);
     }
     static pause(torrent: Torrent) {

@@ -1,9 +1,8 @@
 import { Torrent } from 'webtorrent';
 import CustomMiddleClick from '../jsHelpers/CustomMiddleClick';
 import { waitFor } from '../jsHelpers/jifa';
-import { hasInternet } from '../utils/general';
+import { walkDir } from '../utils/general';
 import { Sources } from '../utils/torrents';
-import AnimeList from "./AnimeList";
 import TorrentManager from './TorrentManager';
 import User from './User';
 
@@ -61,6 +60,7 @@ export default class Consts {
     static setDownloadsFolder(val: string) {
         Consts.DOWNLOADS_FOLDER = val;
         storage.set(Consts.DOWNLOADS_FOLDER_STORAGE_KEY, val);
+        Consts.DOWNLOADED_ITEMS = walkDir(val);
     }
 
     static QUALITY_PREFERENCE_STORAGE_KEY = "quality-storage";
@@ -112,6 +112,8 @@ export default class Consts {
         storage.set(Consts.MIDDLE_CLICK_STORAGE_KEY, activated);
     }
 
+    static DOWNLOADED_ITEMS = walkDir(Consts.DOWNLOADS_FOLDER);
+
     static removeFromSavedTorrents(torrent: Torrent) {
         Consts.SAVED_TORRENTS.delete(torrent);
         storage.set(Consts.SAVED_TORRENTS_STORAGE_KEY, Array.from(Consts.SAVED_TORRENTS).map(torrent => {
@@ -128,10 +130,6 @@ function getUserFromStorage(): User {
     Object.defineProperty(user.animeList, "fetchedDate", { value: fetchedDate });
     if (fetchedDate) {
         fetchedDate.setHours(fetchedDate.getHours() + ANIMELIST_VAlIDITY_TIMEOUT_IN_HOURS);
-        hasInternet().then(ok => {
-            if (ok && fetchedDate && fetchedDate < new Date())
-                user.animeList = new AnimeList({});
-        });
     }
     return user;
 }

@@ -13,7 +13,7 @@ import SearchBar from "../../components/SearchBar";
 import changableTextStyles from "../../css/components/ChangableText.module.css";
 import styles from "../../css/pages/Episodes.module.css";
 import { ReactComponent as DownloadIcon } from "../../icons/download.svg";
-import { groupBy, walkDir } from "../../utils/general";
+import { groupBy } from "../../utils/general";
 import TorrentUtils, { SearchResult, Sources } from "../../utils/torrents";
 import { AnimeInfoProps } from "../AnimeInfo";
 
@@ -49,7 +49,7 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
     }
 
     searchDownloadedFromSeries() {
-        this.downloadedFromSeries = walkDir(Consts.DOWNLOADS_FOLDER).filter(item => {
+        this.downloadedFromSeries = Consts.DOWNLOADED_ITEMS.filter(item => {
             return item.animeEntry.malId === this.props.anime.malId ||
                 (item.animeEntry.name.match(/[a-zA-Z0-9\s]*/g) || []).join("") === (this.props.anime.name!.match(/[a-zA-Z0-9\s]*/g) || []).join("")
         });
@@ -63,15 +63,15 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
             chosenForDownload = this.chosenForDownload;
         if (this.state.loading)
             return (
-                <div className="mx-auto">
-                    Loading Episodes of {this.state.anime.name} from {Sources[this.props.source]}
+                <div className="mx-auto" style={{ width: "fit-content", textAlign: "center" }}>
+                    <div>Loading Episodes of {this.state.anime.name} from {Sources[this.props.source]}</div>
                     <Spinner animation="grow" />
                 </div>
             )
         if (!this.state.episodes.length)
-            return this.notSureAboutSeriesCcomponent;
+            return this.couldntFindEpisodesComponent;
         if (!groupedBySeries.length)
-            return this.notSureAboutSeriesCcomponent(groupedBySeries);
+            return this.notSureAboutSeriesComponent(groupedBySeries);
         return [(
             grouped.length > 1 && (
                 <div key={1} className="mb-3">
@@ -81,7 +81,7 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
                     <Button onClick={() => this.confirmDownloadEpisodes(chosenForDownload)}>
                         Download Episode {chosenForDownload[0]} - {chosenForDownload[1]} ({chosenForDownload[1] - chosenForDownload[0] + 1} Episodes)?
                         </Button>
-                    (In highest available Quality)
+                    (In {Consts.QUALITY_PREFERENCE[0]}p, according to your quality preferences in the settings.)
                 </div>
             )
         ), (
@@ -201,7 +201,13 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
     confirmDownloadEpisodes([episodeStart, episodeEnd]: number[]) {
         let episodes = DisplayEpisodes.groupByQuality(this.state.episodes);
         episodes.slice(episodeStart - 1, episodeEnd).forEach(episode => {
-            this.startDownload(episode.links.slice(-1)[0].magnet, episode);
+            let qualityOfBiggestPriority = episode.episodeData.qualities.sort((a: number, b: number) => {
+                a = Consts.QUALITY_PREFERENCE.indexOf([...Consts.QUALITY_PREFERENCE].sort((q1, q2) => Math.abs(q1 - a) - Math.abs(q2 - a))[0]);
+                b = Consts.QUALITY_PREFERENCE.indexOf([...Consts.QUALITY_PREFERENCE].sort((q1, q2) => Math.abs(q1 - b) - Math.abs(q2 - b))[0]);
+                return b - a;
+            })[0],
+                indexOfChosenQuality = episode.episodeData.qualities.indexOf(qualityOfBiggestPriority);
+            this.startDownload(episode.links[indexOfChosenQuality].magnet, episode);
         });
     }
     async searchAnime(anime: AnimeEntry, source: Sources = Sources.Any, fetchAll = false): Promise<SearchResult[]> {
@@ -215,7 +221,7 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
     }
     userChoseAnime = (anime: AnimeEntry) => {
         this.props.anime.synonyms.add(anime.name!);
-        this.props.anime.sync();
+        this.props.anime.sync(true);
         this.loadEpisodes();
         this.setState({
             loading: false
@@ -239,9 +245,8 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
         </div>
     );
 
-    notSureAboutSeriesCcomponent(groupedBySeries: SearchResult[][]) {
+    notSureAboutSeriesComponent(groupedBySeries: SearchResult[][]) {
         const onChoose = (episodes: SearchResult[]) => {
-            this.state.anime.sync();
             this.state.anime.synonyms.add(episodes[0].episodeData.seriesName);
             this.state.anime.sync(true);
             this.setState({
