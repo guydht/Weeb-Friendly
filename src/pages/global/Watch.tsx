@@ -21,7 +21,7 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
 
     componentDidMount() {
         if (!this.props.downloadedItem.animeEntry || !this.props.downloadedItem.animeEntry.malId ||
-            this.props.downloadedItem.animeEntry.myWatchedEpisodes || 0 >= this.props.downloadedItem.episodeData.episodeNumber) return;
+            (this.props.downloadedItem.animeEntry.myWatchedEpisodes || 0) >= this.props.downloadedItem.episodeData.episodeNumber) return;
         const progressFromLocalStorage = () => {
             let obj = JSON.parse(localStorage.getItem("videoLastTime") || "{}"),
                 relevant = obj[this.props.downloadedItem.fileName];
@@ -43,9 +43,10 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                                         title: "Anime Updated Successfully",
                                         body: `Successfully updated ${this.props.downloadedItem.fileName} in MAL!`
                                     }) : (window as any).displayToast({
-                                        title: "Failed updaating Anime",
+                                        title: "Failed updating Anime",
                                         body: `Failed updating ${this.props.downloadedItem.fileName} in MAL!`
                                     });
+                                    (window as any).reloadPage();
                                 })
                             }
                         })
