@@ -74,7 +74,7 @@ export default class TorrentUtils {
                 if (results.length)
                     return results;
             }
-            catch (e) {console.log(e);
+            catch (e) {
             }
         }
         return [];
@@ -100,7 +100,6 @@ export default class TorrentUtils {
     private static async getLatestOfSource(page: number, source: Sources): Promise<SearchResult[]> {
         let apiSource = (siPantsuMapping as any)[source],
             results = [];
-        console.log(apiSource, source);
         if (apiSource.si)
             results.push(...(await si.searchByUserAndByPage(apiSource.si, '', page)).map(siResultToSearchResult.bind(this, source)));
         if (apiSource.pantsu)
