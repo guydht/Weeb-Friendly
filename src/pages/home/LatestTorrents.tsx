@@ -120,7 +120,7 @@ class DisplayLatestTorrents extends Component<{ source?: Sources }>{
     }
     setMALLink(searchResult: SearchResult, animeEntry: AnimeEntry) {
         animeEntry.synonyms.add(searchResult.episodeData.seriesName);
-        searchResult.animeEntry = animeEntry.sync();
+        searchResult.animeEntry = animeEntry;
         this.setState({});
     }
     downloadNow(searchResult: any) {
