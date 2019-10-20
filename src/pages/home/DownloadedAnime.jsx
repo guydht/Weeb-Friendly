@@ -3,17 +3,15 @@ import { Button, ButtonGroup, Container, FormControl, InputGroup, Row } from "re
 import Form from "react-bootstrap/FormGroup";
 import { withRouter } from "react-router";
 import Consts from "../../classes/Consts";
-import { walkDir } from "../../utils/general";
 import DownloadedFileThumbnail from "../../components/DownloadedFileThumbnail";
+import styles from "../../css/pages/DownloadedAnime.module.css";
 import { waitFor } from "../../jsHelpers/jifa";
 import MALUtils from "../../utils/MAL";
-import styles from "../../css/pages/DownloadedAnime.module.css";
 
 export default withRouter(class DownloadedAnime extends Component {
 
     filterElement = React.createRef();
 
-    downloadedItems = walkDir(Consts.DOWNLOADS_FOLDER);
     state = {
         sortOptions: [
             {
@@ -32,13 +30,10 @@ export default withRouter(class DownloadedAnime extends Component {
         ]
     };
     componentDidMount() {
-        if (this.downloadedItems.every(ele => !ele.malId) || MALUtils.storageSize === 0)
+        if (Consts.DOWNLOADED_ITEMS.every(ele => !ele.malId) || MALUtils.storageSize === 0)
             waitFor(() => MALUtils.storageSize > 0, () => {
                 this.setState({});
             });
-    }
-    componentWillUpdate() {
-        this.downloadedItems = walkDir(Consts.DOWNLOADS_FOLDER);
     }
 
     render() {
@@ -103,7 +98,7 @@ export default withRouter(class DownloadedAnime extends Component {
     }
     get sortedItems() {
         let current = this.currentOption,
-            items = [...this.downloadedItems];
+            items = [...Consts.DOWNLOADED_ITEMS];
         if (this.filterElement.current) {
             let filterValue = this.filterElement.current.value.toLowerCase();
             if (filterValue)
