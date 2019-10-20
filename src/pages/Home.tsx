@@ -1,14 +1,27 @@
 import React, { Component } from "react";
-import { Jumbotron } from "react-bootstrap";
-import { hasInternet } from "../utils/general";
+import { Jumbotron, Toast } from "react-bootstrap";
 import Consts from "../classes/Consts";
+import { hasInternet } from "../utils/general";
 import CurrentlyWatching from "./home/CurrentlyWatching";
 import DownloadedAnime from "./home/DownloadedAnime";
 import LatestTorrents from "./home/LatestTorrents";
 import SeasonalCarousel from "./home/SeasonalCarousel";
 
 
-export default class Browser extends Component {
+export default class Home extends Component {
+
+    static noInternetComponent(componentDiscription: string) {
+        return (
+            <Toast className="mx-auto mt-5">
+                <Toast.Header>
+                    <span className="">You don't have internet connection!</span>
+                </Toast.Header>
+                <Toast.Body>
+                    To see {componentDiscription}, Please connect to the internet!
+                </Toast.Body>
+            </Toast>
+        )
+    }
 
     render() {
         return (
@@ -18,8 +31,8 @@ export default class Browser extends Component {
                     <DownloadedAnime />
                 }
                 {
-                    Consts.MAL_USER.isLoggedIn &&
-                    <CurrentlyWatching />
+                    Consts.MAL_USER.isLoggedIn && hasInternet() ?
+                        <CurrentlyWatching /> : Home.noInternetComponent("Currently Watching")
                 }
                 {
                     hasInternet() && (

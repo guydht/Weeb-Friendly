@@ -4,11 +4,12 @@ import { Accordion, Col, Container, Jumbotron, Modal, OverlayTrigger, Row, Spinn
 //@ts-ignore
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import AnimeEntry from "../../classes/AnimeEntry";
-import MALUtils, { ForumEntry } from "../../utils/MAL";
 import PageTransition from "../../components/PageTransition";
-import { AnimeInfoProps } from "../AnimeInfo";
-import "../../css/global/Forum.css";
 import styles from "../../css/pages/Forum.module.css";
+import { hasInternet } from "../../utils/general";
+import MALUtils, { ForumEntry } from "../../utils/MAL";
+import { AnimeInfoProps } from "../AnimeInfo";
+import Home from "../Home";
 
 
 export default class Forum extends Component<AnimeInfoProps> {
@@ -28,7 +29,6 @@ export default class Forum extends Component<AnimeInfoProps> {
     }
 
     render() {
-        this.state.anime.sync();
         return (
             <PageTransition ref={this.transitionController} className="mt-5" >
                 <Container>
@@ -51,12 +51,7 @@ export default class Forum extends Component<AnimeInfoProps> {
                                     </div>
                                 </Modal.Dialog>
                             )
-                        }) : null
-                    }
-                    {
-                        <div className={styles.loadingContainer} style={{
-                            zIndex: this.state.loading ? 9 : -1, opacity: this.state.loading ? 1 : 0,
-                        }}>
+                        }) : hasInternet() ? (
                             <Modal.Dialog>
                                 <Modal.Header>
                                     Loading....
@@ -65,7 +60,7 @@ export default class Forum extends Component<AnimeInfoProps> {
                                     <Spinner animation="border" />
                                 </Modal.Body>
                             </Modal.Dialog>
-                        </div>
+                        ) : Home.noInternetComponent("Forums")
                     }
                 </Container>
                 <Container>
