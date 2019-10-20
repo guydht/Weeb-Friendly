@@ -3,14 +3,6 @@ import moment from "moment";
 import AnimeEntry from "../classes/AnimeEntry";
 import DownloadedItem from "../classes/DownloadedItem";
 
-function objectToFormData(object: object): FormData {
-    let formData = new FormData();
-    for (let key in object)
-        formData.append(key, (object as any)[key]);
-    return formData;
-}
-
-
 function levenshteinDistance(s1: string, s2: string): number {
     s1 = s1.toLowerCase();
     s2 = s2.toLowerCase();
@@ -79,12 +71,8 @@ function getCurrentSeason(): Seasons {
     return "fall";
 }
 
-function hasInternet(): Promise<boolean> {
-    return new Promise(resolve => {
-        window.require("dns").lookup("google.com", function (err: any) {
-            resolve(!(err && err.code === "ENOTFOUND"));
-        })
-    });
+function hasInternet(): boolean {
+    return navigator.onLine;
 }
 
 class CacheLocalStorage {
@@ -322,4 +310,5 @@ function parseStupidAmericanDateString(dateString: string) {
     return moment(dateString).toDate();
 }
 
-export { objectToFormData, stringCompare, stringRelativeSimilarity, levenshteinDistance, getCurrentSeason, hasInternet, CacheLocalStorage, chunkArray, groupBy, Confirm, checkScrollSpeed, parseStupidAmericanDateString, walkDir };
+export { stringCompare, stringRelativeSimilarity, levenshteinDistance, getCurrentSeason, hasInternet, CacheLocalStorage, chunkArray, groupBy, Confirm, checkScrollSpeed, parseStupidAmericanDateString, walkDir };
+
