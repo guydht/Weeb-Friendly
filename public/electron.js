@@ -22,16 +22,25 @@ function createWindow() {
         }
     });
 
-    // and load the index.html of the app.
-    mainWindow.loadURL(url.format({
-        pathname: path.join(__dirname, '../build/index.html'),
-        protocol: 'file'
-    }));
+    // mainWindow.webContents.on("did-fail-load", err => {
+    //     mainWindow.loadURL(url.format({
+    //         pathname: path.join(__dirname, '../build/index.html'),
+    //         protocol: 'file'
+    //     }))
+    // });
 
+    mainWindow.webContents.load
+
+    // and load the index.html of the app.
     // mainWindow.loadURL(url.format({
-    //     pathname: 'localhost:3000',
-    //     protocol: 'http'
+    //     pathname: path.join(__dirname, '../build/index.html'),
+    //     protocol: 'file'
     // }));
+
+    mainWindow.loadURL(url.format({
+        pathname: 'localhost:3000',
+        protocol: 'http'
+    }));
 
 
     // Open the DevTools.
