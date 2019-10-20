@@ -36,6 +36,7 @@
     "@types/react-router-dom": "^5.1.0",
     "@types/webtorrent": "^0.107.0",
     "bootstrap": "^4.3.1",
+    "electron-is-dev": "^1.1.0",
     "electron-json-config": "^1.5.3",
     "eslint": "^6.5.1",
     "jikan-node": "^1.2.0",

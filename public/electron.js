@@ -1,6 +1,7 @@
 const electron = require('electron'),
     url = require("url"),
-    path = require("path");
+    path = require("path"),
+    isDev = require("electron-is-dev");
 
 process.env.NODE_ENV = "development";
 // Module to control application life.
@@ -22,23 +23,23 @@ function createWindow() {
         }
     });
 
-    // mainWindow.webContents.on("did-fail-load", err => {
-    //     mainWindow.loadURL(url.format({
-    //         pathname: path.join(__dirname, '../build/index.html'),
-    //         protocol: 'file'
-    //     }))
-    // });
-
-    // and load the index.html of the app.
-    // mainWindow.loadURL(url.format({
-    //     pathname: path.join(__dirname, '../build/index.html'),
-    //     protocol: 'file'
-    // }));
-
-    mainWindow.loadURL(url.format({
-        pathname: 'localhost:3000',
-        protocol: 'http'
-    }));
+    if (isDev)
+        mainWindow.loadURL(url.format({
+            pathname: 'localhost:3000',
+            protocol: 'http'
+        }));
+    else {
+        mainWindow.webContents.on("did-fail-load", err => {
+            mainWindow.loadURL(url.format({
+                pathname: path.join(__dirname, '../build/index.html'),
+                protocol: 'file'
+            }))
+        });
+        mainWindow.loadURL(url.format({
+            pathname: path.join(__dirname, '../build/index.html'),
+            protocol: 'file'
+        }));
+    }
 
     // Emitted when the window is closed.
     mainWindow.on('closed', function () {
