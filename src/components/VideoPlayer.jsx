@@ -37,7 +37,7 @@ export default class VideoPlayer extends Component {
                     video: container.querySelector("video"),
                     subContent: subtitles[0],
                     fonts: fonts,
-                    workerUrl: "/OctopusWorker.js"
+                    workerUrl: "./OctopusWorker.js"
                 };
                 subtitleNames[0] += " - active";
                 container.setSubtitleTracksNames(subtitleNames);
@@ -48,7 +48,7 @@ export default class VideoPlayer extends Component {
                         this.subtitlesOctopus.setTrack(subtitles[index]);
                     }
                 });
-                if (!this.subtitlesOctopus) {
+                if (!this.subtitlesOctopus || this.subtitlesOctopus.destroyed) {
                     this.subtitlesOctopus = new SubtitlesOctopus(options);
                     this.subtitlesOctopus.resizeInterval = setInterval(() => {
                         let currentVideoSize = video.getBoundingClientRect().toJSON();
