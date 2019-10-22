@@ -23,19 +23,19 @@ export default class Forum extends Component<AnimeInfoProps> {
         MALUtils.animeForum(this.props.anime as any).then(topics => {
             if (topics && topics.length)
                 this.setState({ topics, loading: false });
-        });
+        }).catch(() => { this.setState({ loading: false }); this.componentDidMount() });
     }
 
     render() {
         return (
-            <PageTransition ref={this.transitionController} className="mt-5" >
+            <PageTransition style={{ overflow: "visible" }} ref={this.transitionController} className="mt-5" >
                 <Container>
                     {
-                        this.state.topics ? this.state.topics.map((topic, i) => {
+                        this.state.topics && this.state.topics.map((topic, i) => {
                             return (
-                                <Modal.Dialog className="my-1" size="xl" onClick={() => this.loadForum(topic)} key={i}>
+                                <Modal.Dialog className="my-1" size="xl" key={i}>
                                     <div className={styles.modalWrapper}>
-                                        <Modal.Header
+                                        <Modal.Header onClick={() => this.loadForum(topic)}
                                             className={"ml-3 my-auto " + styles.modalHeader}>
                                             {topic.title}
                                         </Modal.Header>
@@ -49,16 +49,21 @@ export default class Forum extends Component<AnimeInfoProps> {
                                     </div>
                                 </Modal.Dialog>
                             )
-                        }) : hasInternet() ? (
-                            <Modal.Dialog>
-                                <Modal.Header>
-                                    Loading....
-                                </Modal.Header>
-                                <Modal.Body>
-                                    <Spinner animation="border" />
-                                </Modal.Body>
-                            </Modal.Dialog>
-                        ) : Home.noInternetComponent("Forums")
+                        })
+                    }
+                    {
+                        hasInternet() && this.state.loading ? (
+                            <div className={styles.loadingContainer} style={{ position: this.state.topics ? "absolute" : "initial" }}>
+                                <Modal.Dialog>
+                                    <Modal.Header>
+                                        Loading....
+                                    </Modal.Header>
+                                    <Modal.Body>
+                                        <Spinner animation="border" />
+                                    </Modal.Body>
+                                </Modal.Dialog>
+                            </div>
+                        ) : !hasInternet() ? Home.noInternetComponent("Forums") : null
                     }
                 </Container>
                 <Container>
@@ -113,7 +118,8 @@ export default class Forum extends Component<AnimeInfoProps> {
                 forumEntry: this.forumEntries.get(topic),
                 loading: false
             });
-            this.transitionController.current!.moveTo(1);
+            if (this.transitionController.current)
+                this.transitionController.current.moveTo(1);
             return;
         }
         this.setState({
@@ -125,8 +131,9 @@ export default class Forum extends Component<AnimeInfoProps> {
                 forumEntry,
                 loading: false
             });
-            this.transitionController.current!.moveTo(1);
-        })
+            if (this.transitionController.current)
+                this.transitionController.current.moveTo(1);
+        }).catch(() => this.setState({ loading: false }));
     }
 }
 
