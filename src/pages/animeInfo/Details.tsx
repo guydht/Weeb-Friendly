@@ -16,7 +16,6 @@ export default class Details extends Component<AnimeInfoProps> {
     episodElement = React.createRef() as RefObject<any>;
 
     render() {
-        console.log(this.state, this.props);
         return (
             <div className={styles.container}>
                 {
@@ -56,14 +55,15 @@ export default class Details extends Component<AnimeInfoProps> {
                 <Row>
                     <Col style={{ flex: 0 }}>
                         Synonyms:
-                    </Col>
+                   </Col>
                     <Col>
                         {
                             [...this.props.anime.synonyms].map((name) => {
                                 if (name === this.props.anime.name) return null;
-                                return <ChangableText key={name} text={name} onChange={(value: any) => this.changeAnimeSynonyms(name, value)} />;
+                                return <ChangableText key={name} text={name} removeButtonTooltipText="Remove Synonyms" onChange={(value: any) => this.changeAnimeSynonyms(name, value)} />;
                             })
                         }
+                        <ChangableText key={this.props.anime.synonyms.size} text="+" removeButton={false} onChange={(value: any) => value && this.addAnimeSynonym(value)} onClick={e => (e.target as any).innerHTML = ""} />
                     </Col>
                 </Row>
                 {
@@ -76,7 +76,7 @@ export default class Details extends Component<AnimeInfoProps> {
                             </Row>
                             <Row>
                                 <Col>
-                                    <FormControl onChange={this.updateAnime.bind(this)} ref={this.statusElement}
+                                    <FormControl key={this.props.anime.myMalStatus} onChange={this.updateAnime.bind(this)} ref={this.statusElement}
                                         as="select" className="w-auto" defaultValue={this.props.anime.myMalStatus as any}>
                                         {
                                             Object.keys(MALStatuses).filter(ele => isNaN(Number(ele))).map(status => (
@@ -86,7 +86,7 @@ export default class Details extends Component<AnimeInfoProps> {
                                     </FormControl>
                                 </Col>
                                 <Col>
-                                    <FormControl onChange={this.updateAnime.bind(this)} ref={this.scoreElement} as="select"
+                                    <FormControl key={this.props.anime.myMalRating} onChange={this.updateAnime.bind(this)} ref={this.scoreElement} as="select"
                                         className="w-auto" defaultValue={(this.props.anime.myMalRating || 0).toString()}>
                                         <option value="0">Select</option>
                                         {
@@ -98,6 +98,7 @@ export default class Details extends Component<AnimeInfoProps> {
                                 </Col>
                                 <Col>
                                     <FormControl
+                                        key={this.props.anime.myWatchedEpisodes}
                                         type="number"
                                         max={this.props.anime.totalEpisodes}
                                         min={0}
@@ -106,7 +107,7 @@ export default class Details extends Component<AnimeInfoProps> {
                                         onChange={this.updateAnime.bind(this)}
                                         className="d-inline guydhtNoSpinner"
                                         ref={this.episodElement}
-                                        defaultValue={(this.props.anime.myWatchedEpisodes || 0).toString()} />/{this.props.anime.totalEpisodes}
+                                        defaultValue={(this.props.anime.myWatchedEpisodes || 0).toString()} />/{this.props.anime.totalEpisodes || "?"}
                                 </Col>
                             </Row>
                         </div>
@@ -210,11 +211,18 @@ export default class Details extends Component<AnimeInfoProps> {
             });
         }, Details.UPDATE_TIMEOUT_MS);
     }
+    addAnimeSynonym(synonym: string) {
+        this.props.anime.syncGet();
+        this.props.anime.synonyms.add(synonym);
+        this.props.anime.syncPut(true);
+        this.forceUpdate();
+    }
     changeAnimeSynonyms(synonymToChange: string, newSynonym: string) {
+        this.props.anime.syncGet();
         this.props.anime.synonyms.delete(synonymToChange);
-        if (newSynonym)
+        if (newSynonym && newSynonym.trim())
             this.props.anime.synonyms.add(newSynonym);
-        this.props.anime.sync(true);
-        this.setState({});
+        this.props.anime.syncPut(true);
+        this.forceUpdate();
     }
 }
