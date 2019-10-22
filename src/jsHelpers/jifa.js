@@ -224,11 +224,12 @@ function asd(AnimeName, elementContainer, videoURL) {
             if (document.webkitFullscreenElement === container) exitFullscreenMode();
             else enterFullscreenMode();
         }
-        var previousPosition = {}, containerStyle = {}, fullScreenRect = {}, fullscreenWait;
+        var previousPosition = {}, containerStyle = {}, fullScreenRect = {}, fullscreenWait, finishFullscreenExitTimeout;
 
 
         function enterFullscreenMode() {
             clearInterval(fullscreenWait);
+            clearTimeout(finishFullscreenExitTimeout);
             previousPosition = wrapper.getBoundingClientRect().toJSON();
             containerStyle = absPosition(wrapper);
             wrapper.style.transition = "all 0s";
@@ -240,14 +241,15 @@ function asd(AnimeName, elementContainer, videoURL) {
             fullscreenWait = waitFor(function () {
                 return document.webkitFullscreenElement != null;
             }, function () {
-                wrapper.style = "left: 0; top: 0; bottom: 0; right: 0; width: 100%; height: 100%; z-index: 999999; position: fixed; transition: all 0.5s;";
-                setTimeout(() => fullScreenRect = wrapper.getBoundingClientRect().toJSON(), 500);
+                wrapper.style = "left: 0; top: 0; bottom: 0; right: 0; width: 100%; height: 100%; z-index: 999999; position: fixed; transition: all 0.5s; border: none;";
+                finishFullscreenExitTimeout = setTimeout(() => fullScreenRect = wrapper.getBoundingClientRect().toJSON(), 500);
             }, 1);
             wrapper.classList.add("fullscreened");
         }
 
         function exitFullscreenMode() {
             clearInterval(fullscreenWait);
+            clearTimeout(finishFullscreenExitTimeout);
             wrapper.style.position = "fixed";
             wrapper.style.transition = "all 0s";
             for (var i in containerStyle) {
@@ -266,8 +268,8 @@ function asd(AnimeName, elementContainer, videoURL) {
                 wrapper.style.transition = "all 0.5s";
                 for (var i in previousPosition)
                     wrapper.style[i] = previousPosition[i] + "px";
-            }, 1);
-            setTimeout(function () {
+            });
+            finishFullscreenExitTimeout = setTimeout(function () {
                 wrapper.style = "transition: all 0s; border: 1px solid rgba(20, 80, 170, 0.7);";
             }, 500);
         }
@@ -1020,5 +1022,5 @@ function transitionSVG(current, newPath, time, transition) {
     current.children[0].beginElement();
     return timeout;
 }
-export { asd, targetIsNotThis, transitionSVG, secondsToTimeDisplay, waitFor };
 
+export { asd, waitFor };
