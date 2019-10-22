@@ -28,6 +28,14 @@ export default class App extends Component {
       sessionStorage.setItem("lastPathname", this.router.current.history.location.pathname);
     });
 
+    window.addEventListener("keydown", e => {
+      if (e.ctrlKey && e.code === "KeyR" && !e.shiftKey && !e.altKey) {
+        sessionStorage.setItem("lastPathname", this.router.current.history.location.pathname);
+        this.forceUpdate();
+        e.preventDefault();
+      }
+    });
+
   }
   render() {
     // eslint-disable-next-line
