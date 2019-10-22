@@ -88,6 +88,7 @@ export default withRouter(class DownloadedFileThumbnail extends Component {
                 let fs = window.require("fs");
                 fs.unlink(this.props.downloadedItem.absolutePath, err => {
                     if (!err) {
+                        Consts.DOWNLOADED_ITEMS.splice(Consts.DOWNLOADED_ITEMS.findIndex(ele => ele.absolutePath === this.props.downloadedItem.absolutePath), 1);
                         window.reloadPage();
                         window.displayToast({ title: "Successfully deleted video", body: this.props.downloadedItem.fileName + " was successfully deleted!" });
                     }
