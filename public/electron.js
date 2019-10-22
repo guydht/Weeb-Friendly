@@ -21,7 +21,8 @@ function createWindow() {
             webSecurity: false,
             nodeIntegration: true,
             devTools: isDev
-        }
+        },
+        icon: path.join(__dirname, "icon.ico")
     });
 
     if (isDev)
