@@ -1,8 +1,8 @@
 import React, { ChangeEvent, Component, KeyboardEvent } from "react";
 import { FormControl } from "react-bootstrap";
-import CloseButton from "./CloseButton";
 import styles from "../css/components/ChangableText.module.css";
-export default class ChangableText extends Component<{ text: string, onChange?: (value: string) => any | void } & React.DetailedHTMLProps<React.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>> {
+import CloseButton from "./CloseButton";
+export default class ChangableText extends Component<{ text: string, onChange?: (value: string) => void, removeButton?: boolean, removeButtonTooltipText?: string } & React.DetailedHTMLProps<React.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>> {
 
     state = {
         isChanging: false,
@@ -14,6 +14,9 @@ export default class ChangableText extends Component<{ text: string, onChange?: 
         let props = { ...this.props };
         delete props.text;
         delete props.onChange;
+        delete props.onClick;
+        delete props.removeButton;
+        delete props.removeButtonTooltipText;
         if (this.state.isChanging)
             return (
                 <span style={{ position: "relative" }}
@@ -24,14 +27,24 @@ export default class ChangableText extends Component<{ text: string, onChange?: 
                         onChange={(e: ChangeEvent<HTMLInputElement>) => this.onTextChange(e)}
                         autoFocus={true}
                         onKeyDown={(e: KeyboardEvent) => this.onKeyPress(e)} />
-                    <CloseButton style={{ right: "7px", top: "-2px" }} tooltipText="Remove Synonym" toolTipPlacement="top" onClick={() => this.deleteText()} />
+                    <CloseButton style={{ right: "7px", top: "-2px", display: this.props.removeButton === false ? "none" : "" }} tooltipText={this.props.removeButtonTooltipText} toolTipPlacement="top" onClick={() => this.deleteText()} />
                 </span>
             );
         if (this.state.text)
             return (
-                <span {...props} onClick={() => this.startTextChange()} className={styles.textWrapper}>{this.state.text}</span>
+                <span {...props} onClick={e => {
+                    this.props.onClick && this.props.onClick(e);
+                    this.setState({ text: (e.target as HTMLInputElement).innerHTML });
+                    this.startTextChange();
+                }} className={styles.textWrapper}>{this.state.text}</span>
             );
-        return null;
+        return (
+            <span {...props} onClick={e => {
+                this.props.onClick && this.props.onClick(e);
+                this.setState({ text: (e.target as HTMLInputElement).innerHTML });
+                this.startTextChange();
+            }} className={styles.textWrapper}>{this.props.text}</span>
+        );
     }
 
     onTextChange(e: ChangeEvent<HTMLInputElement>) {
