@@ -75,7 +75,7 @@
   "main": "public/electron.js",
   "scripts": {
     "start": "electron . & react-scripts start",
-    "build": "react-scripts build & electron-builder .",
+    "build": "react-scripts build && electron-builder .",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "electron": "electron .",
