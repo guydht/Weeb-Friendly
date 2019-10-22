@@ -2,7 +2,8 @@ import AnimeEntry from "./AnimeEntry";
 
 const storageObject = window.require("electron-json-config"),
     fs = window.require("fs"),
-    path = window.require("path");
+    path = window.require("path"),
+    electron = window.require("electron");
 class ThumbnailManager {
     static SAVED_THUMBNAILS_STATE_STORAGE_KEY = "saved-thumbnail-state";
     static SAVED_THUMBNAILS_STATE = storageObject.get(ThumbnailManager.SAVED_THUMBNAILS_STATE_STORAGE_KEY) || false;
@@ -12,7 +13,7 @@ class ThumbnailManager {
     }
 
     static SAVED_THUMBNAILS_STORAGE_KEY = "saved-thumbnail-storage";
-    static SAVED_THUMBNAILS_PATH = path.resolve("./.thumbnail-image-storage/") + "/";
+    static SAVED_THUMBNAILS_PATH = path.join((electron.app || electron.remote.app).getPath("cache"), "/thumbnail-image-storage/");
     static SAVED_THUMBNAILS = new Set<number>(storageObject.get(ThumbnailManager.SAVED_THUMBNAILS_STORAGE_KEY) || []);
     static setThumbnailStorage(thumbnailStorage: Set<number> = ThumbnailManager.SAVED_THUMBNAILS) {
         ThumbnailManager.SAVED_THUMBNAILS = thumbnailStorage;
