@@ -62,4 +62,5 @@ typings/
 
 .thumbnail-image-storage
 build/
+!build/electron.js
 dist/
