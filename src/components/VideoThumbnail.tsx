@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-interface VideoThumbnailProps {
+type RenderParams = {
     videoUrl: string;
     snapshotTime?: number;
     // Time in seconds in video on which to capture snapshot.
@@ -9,22 +9,93 @@ interface VideoThumbnailProps {
     renderedWidth?: number;
 }
 
-export default class VideoThumbnail extends Component {
-    private DEFAULT_SNAPSHOT_TIME = 0.4;
-    private LOADED_METADATA_STATE = 'metadata-loaded';
-    private LOADED_DATA_STATE = 'loaded-data';
-    private SUSPENDED_STATE = 'suspended-state'
-    private SEEKED_STATE = 'seeked';
+let waitingForVideo = 0;
+const rendererVideo = document.createElement("video"),
+    queue: [RenderParams, (canvas: HTMLCanvasElement) => void][] = [],
+    tryLoadingNextInQueue = () => {
+        if (waitingForVideo === 0 && queue.length) {
+            waitingForVideo++;
+            let params = queue.splice(0, 1)[0];
+            renderVideo(params[0]).then(canvas => {
+                params[1](canvas);
+                waitingForVideo--;
+                tryLoadingNextInQueue();
+            });
+        }
+        if (waitingForVideo === 1 && queue.length) {
+            waitingForVideo++;
+            let params = queue.splice(0, 1)[0];
+            renderVideo(params[0]).then(canvas => {
+                params[1](canvas);
+                waitingForVideo--;
+                tryLoadingNextInQueue();
+            });
+        }
+    },
+    addToQueue = (renderParams: RenderParams, onLoaded: (canvas: HTMLCanvasElement) => void, index?: number) => {
+        queue.splice(index || 0, 0, [renderParams, onLoaded]);
+        tryLoadingNextInQueue();
+    };
+(window as any).queue = queue;
+function renderVideo(renderParams: RenderParams): Promise<HTMLCanvasElement> {
+    let localRendererVideo = rendererVideo.cloneNode(true) as HTMLVideoElement;
+    return new Promise(resolve => {
+        const DEFAULT_SNAPSHOT_TIME = 0.4,
+            LOADED_METADATA_STATE = 'metadata-loaded',
+            LOADED_DATA_STATE = 'loaded-data',
+            SUSPENDED_STATE = 'suspended-state',
+            SEEKED_STATE = 'seeked',
+            videoState = {
+                [LOADED_METADATA_STATE]: false,
+                [SUSPENDED_STATE]: false,
+                [LOADED_DATA_STATE]: false,
+                [SEEKED_STATE]: false
+            },
+            canvas = document.createElement("canvas"),
+            giveUpTimeout = setTimeout(() => {
+                resolve(canvas);
+            }, 10000);;
+        localRendererVideo.src = renderParams.videoUrl;
+        localRendererVideo.onloadedmetadata = () => videoStateUpdated(LOADED_METADATA_STATE);
+        localRendererVideo.onsuspend = () => videoStateUpdated(SUSPENDED_STATE);
+        localRendererVideo.onloadeddata = () => videoStateUpdated(LOADED_DATA_STATE);
+        localRendererVideo.onseeked = () => videoStateUpdated(SEEKED_STATE);
+        function videoStateUpdated(state: string) {
+            (videoState as any)[state] = true;
+            if (state === LOADED_METADATA_STATE)
+                videoLoadedMetadata();
+            else if (videoState[SUSPENDED_STATE] && videoState[LOADED_DATA_STATE] && videoState[SEEKED_STATE])
+                videoLoadedData();
+        }
+        function videoLoadedMetadata() {
+            let snapshotTime = renderParams.snapshotTime || DEFAULT_SNAPSHOT_TIME;
+            snapshotTime = snapshotTime > 0 && snapshotTime <= 1 ? localRendererVideo.duration * snapshotTime : snapshotTime; //Support 0.x for snapshot duration
+            localRendererVideo.currentTime = snapshotTime;
+        }
+        function videoLoadedData() {
+            let ctx = canvas.getContext("2d"),
+                ratioOfImage = localRendererVideo.videoHeight / localRendererVideo.videoWidth,
+                renderedHeight = renderParams.renderedHeight,
+                renderedWidth = renderParams.renderedWidth;
+            if (renderedWidth && !renderedHeight)
+                renderedHeight = renderedWidth * ratioOfImage;
+            else if (!renderedWidth && renderedHeight)
+                renderedWidth = renderedHeight / ratioOfImage;
+            renderedWidth = renderedWidth || canvas.width;
+            renderedHeight = renderedHeight || canvas.height;
+            canvas.height = renderedHeight;
+            canvas.width = renderedWidth;
+            ctx!.drawImage(localRendererVideo, 0, 0, localRendererVideo.videoWidth, localRendererVideo.videoHeight, 0, 0, canvas.width, canvas.height);
+            localRendererVideo.src = "";
+            clearTimeout(giveUpTimeout);
+            resolve(canvas);
+        }
+    });
+}
 
-    videoState = {
-        [this.LOADED_METADATA_STATE]: false,
-        [this.SUSPENDED_STATE]: false,
-        [this.LOADED_DATA_STATE]: false,
-    }
+export default class VideoThumbnail extends Component<RenderParams> {
 
-    props!: VideoThumbnailProps;
-    canvas = React.createRef<any>();
-    video = document.createElement("video");
+    canvas = React.createRef<HTMLCanvasElement>();
 
     render() {
         let filteredProps: any = { ...this.props };
@@ -36,41 +107,13 @@ export default class VideoThumbnail extends Component {
         )
     }
     componentDidMount() {
-        this.video.src = this.props.videoUrl;
-        this.video.onloadedmetadata = () => this.videoStateUpdated(this.LOADED_METADATA_STATE);
-        this.video.onsuspend = () => this.videoStateUpdated(this.SUSPENDED_STATE);
-        this.video.onloadeddata = () => this.videoStateUpdated(this.LOADED_DATA_STATE);
-        this.video.onseeked = () => this.videoStateUpdated(this.SEEKED_STATE);
-    }
-    videoStateUpdated(state_updated: string) {
-        if(!this.canvas.current)
-            return this.video.src = "";
-        this.videoState[state_updated] = true;
-        if (state_updated === this.LOADED_METADATA_STATE)
-            this.videoLoadedMetadata();
-        else if (this.videoState[this.SUSPENDED_STATE] && this.videoState[this.LOADED_DATA_STATE] && this.videoState[this.SEEKED_STATE])
-            this.videoLoadedData();
-    }
-    videoLoadedData() {
-        let ctx = this.canvas.current.getContext("2d"),
-            ratioOfImage = this.video.videoHeight / this.video.videoWidth,
-            renderedHeight = this.props.renderedHeight,
-            renderedWidth = this.props.renderedWidth;
-        if (renderedWidth && !renderedHeight)
-            renderedHeight = renderedWidth * ratioOfImage;
-        else if (!renderedWidth && renderedHeight)
-            renderedWidth = renderedHeight / ratioOfImage;
-        renderedWidth = renderedWidth || this.canvas.current.width 
-        renderedHeight = renderedHeight || this.canvas.current.height
-        this.canvas.current.height = renderedHeight;
-        this.canvas.current.width = renderedWidth;
-        ctx.drawImage(this.video, 0, 0, this.video.videoWidth, this.video.videoHeight, 0, 0, this.canvas.current.width, this.canvas.current.height);
-        this.video.src = "";
-    }
-    videoLoadedMetadata() {
-        let snapshotTime = this.props.snapshotTime || this.DEFAULT_SNAPSHOT_TIME;
-        snapshotTime = snapshotTime > 0 && snapshotTime <= 1 ? this.video.duration * snapshotTime : snapshotTime;
-        this.video.currentTime = snapshotTime;
+        addToQueue(this.props, canvas => {
+            if (this.canvas.current) {
+                this.canvas.current.height = canvas.height;
+                this.canvas.current.width = canvas.width;
+                this.canvas.current.getContext("2d")!.drawImage(canvas, 0, 0, canvas.width, canvas.height);
+            }
+        });
     }
 
 }
