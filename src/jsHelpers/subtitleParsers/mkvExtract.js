@@ -28,7 +28,7 @@ function handleURL(url, atData) {
           stream.on("data", onData);
           stream.on("complete", onComplete);
           resolve(await createDecoderFromStream(stream, atData));
-        }, 10000);
+        }, 2000);
       };
     stream.on("complete", onComplete);
     stream.on("data", onData);
