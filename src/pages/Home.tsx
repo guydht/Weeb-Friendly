@@ -13,8 +13,8 @@ export default class Home extends Component {
     static noInternetComponent(componentDiscription: string) {
         return (
             <Toast className="mx-auto mt-5">
-                <Toast.Header>
-                    <span className="">You don't have internet connection!</span>
+                <Toast.Header closeButton={false}>
+                    <span>You don't have internet connection!</span>
                 </Toast.Header>
                 <Toast.Body>
                     To see {componentDiscription}, Please connect to the internet!
