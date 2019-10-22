@@ -15,6 +15,7 @@
   },
   "displayName": "Weeb Friendly",
   "build": {
+    "appId": "weeb.friendly.entertainment.app",
     "asar": true,
     "linux": {
       "target": [
@@ -74,12 +75,12 @@
   "main": "public/electron.js",
   "scripts": {
     "start": "electron . & react-scripts start",
-    "build": "react-scripts build",
+    "build": "react-scripts build & electron-builder .",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "electron": "electron .",
     "react": "react-scripts start",
-    "electron-build": "electron-builder ."
+    "build-electron": "electron-builder ."
   },
   "homepage": "."
 }
