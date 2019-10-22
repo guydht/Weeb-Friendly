@@ -212,7 +212,6 @@ var SubtitlesOctopus = function (options) {
 
     function renderFrames() {
         var data = self.renderFramesData;
-        var beforeDrawTime = performance.now();
         self.ctx.clearRect(0, 0, self.canvas.width, self.canvas.height);
         for (var i = 0; i < data.canvases.length; i++) {
             var image = data.canvases[i];
@@ -224,8 +223,6 @@ var SubtitlesOctopus = function (options) {
             self.ctx.drawImage(self.bufferCanvas, image.x, image.y);
         }
         if (self.debug) {
-            var drawTime = Math.round(performance.now() - beforeDrawTime);
-            console.log(Math.round(data.spentTime) + ' ms (+ ' + drawTime + ' ms draw)');
             self.renderStart = performance.now();
         }
     }
@@ -243,11 +240,9 @@ var SubtitlesOctopus = function (options) {
         var data = event.data;
         switch (data.target) {
             case 'stdout': {
-                console.log(data.content);
                 break;
             }
             case 'stderr': {
-                console.error(data.content);
                 break;
             }
             case 'window': {
