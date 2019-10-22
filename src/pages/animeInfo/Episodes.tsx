@@ -23,11 +23,13 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
     state: {
         episodes: SearchResult[],
         loading: boolean,
-        chosenForDownload: number[]
+        chosenForDownload: number[],
+        displayDownloadedOnly: boolean
     } = {
             episodes: [],
             loading: true,
-            chosenForDownload: []
+            chosenForDownload: [],
+            displayDownloadedOnly: false
         };
 
     componentDidMount() {
@@ -215,8 +217,9 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
         return episodes.sort((a, b) => b.episodeData.episodeNumber - a.episodeData.episodeNumber);
     }
     userChoseAnime = (anime: AnimeEntry) => {
+        this.props.anime.syncGet();
         this.props.anime.synonyms.add(anime.name!);
-        this.props.anime.sync(true);
+        this.props.anime.syncPut(true);
         this.loadEpisodes();
         this.setState({
             loading: false
@@ -242,8 +245,9 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
 
     notSureAboutSeriesComponent(groupedBySeries: SearchResult[][]) {
         const onChoose = (episodes: SearchResult[]) => {
+            this.props.anime.syncGet();
             this.props.anime.synonyms.add(episodes[0].episodeData.seriesName);
-            this.props.anime.sync(true);
+            this.props.anime.syncPut(true);
             this.setState({
                 episodes
             });
@@ -276,8 +280,12 @@ export default class Episodes extends Component<AnimeInfoProps>{
     render() {
         return (
             <div className="mt-4">
-                <ChooseSource>
-                    <DisplayEpisodes {...this.props} source={Sources.Any} />
+                <ChooseSource render={source => (
+                    <div>
+                        {/* <span className="float-right f-right ">Display downloaded episodes only: <Form.Check type="switch" /></span> */}
+                        <DisplayEpisodes source={source} {...this.props} />
+                    </div>
+                )}>
                 </ChooseSource>
             </div>
         )

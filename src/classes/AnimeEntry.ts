@@ -1,5 +1,5 @@
 import { MALStatuses } from "../utils/MAL";
-import { sync, ThumbnailManager } from "./AnimeStorage";
+import { get, sync, ThumbnailManager } from "./AnimeStorage";
 
 const fs = window.require("fs"),
     request = window.require("request");
@@ -67,7 +67,7 @@ export default class AnimeEntry {
         this.imageURL = imageURL || _imageURL;
         this.name = name || _name;
         if (sync && (malId || name))
-            this.sync();
+            this.syncGet();
     }
     synonyms: Set<string>;
     malId?: number;
@@ -115,11 +115,8 @@ export default class AnimeEntry {
     get name(): string | undefined {
         return this._name;
     }
-    sync(forceSynonyms: boolean = false) {
-        Object.entries(sync(this, forceSynonyms)).forEach(([key, value]) => {
-            if (value)
-                (this as any)[key] = value;
-        });
+    syncPut(forceSynonyms: boolean = false) {
+        sync(this, forceSynonyms);
         return this;
     }
     readyForJSON() {
@@ -127,5 +124,14 @@ export default class AnimeEntry {
         copy.synonyms = [...this.synonyms];
         copy.genres = [...(this.genres || [])];
         return copy;
+    }
+    syncGet() {
+        let inStorage = get(this);
+        if (inStorage)
+            Object.entries(inStorage).forEach(([key, value]) => {
+                if (value !== this[key as keyof AnimeEntry])
+                    (this as any)[key] = value;
+            });
+        return this;
     }
 }

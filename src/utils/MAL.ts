@@ -43,7 +43,7 @@ export default class MALUtils {
             fromData.synopsis = result.synopsis;
             fromData.name = result.title;
             fromData.malUrl = result.url;
-            return fromData.sync();
+            return fromData.syncPut();
         });
         return parsedData;
     }
@@ -59,7 +59,7 @@ export default class MALUtils {
             fromData.imageURL = ele.image_url;
             fromData.malId = ele.mal_id;
             fromData.name = ele.title;
-            return fromData.sync();
+            return fromData.syncPut();
         });
     }
     static async getCurrentSeasonalAnime() {
@@ -79,7 +79,7 @@ export default class MALUtils {
             fromData.synopsis = result.synopsis;
             fromData.name = result.title;
             fromData.malUrl = result.url;
-            return fromData.sync();
+            return fromData.syncPut();
         });
     }
     static async getUserAnimeList(user: User, listType: AnimeListTypes = "all", page = 1): Promise<AnimeList> {
@@ -138,7 +138,7 @@ export default class MALUtils {
                 num_watched_episodes: episodes,
                 csrf_token: Consts.CSRF_TOKEN
             };
-        if (episodes === 1)
+        if (episodes === 1 && !(anime.startDate && !isNaN(anime.startDate.getDate())))
             body['start_date'] = {
                 month: rightNow.getMonth(),
                 day: rightNow.getDate(),
@@ -155,12 +155,14 @@ export default class MALUtils {
             body: JSON.stringify(body)
         });
         if (request.ok) {
+            anime.syncGet();
             anime.myWatchedEpisodes = episodes;
             anime.myMalStatus = status;
-            Consts.MAL_USER.animeList.loadAnime(anime);
             anime.myMalRating = score as any;
-            if (episodes === 1) anime.startDate = rightNow;
-            anime.sync();
+            if (episodes === 1 && !(anime.startDate && !isNaN(anime.startDate.getDate())))
+                anime.startDate = rightNow;
+            anime.syncPut();
+            Consts.MAL_USER.animeList.loadAnime(anime);
         }
         return request.ok;
     }
@@ -177,15 +179,17 @@ export default class MALUtils {
         });
         let ok = request.ok || (await request.json()).errors[0].message === "The anime is already in your list.";
         if (ok) {
+            anime.syncGet();
             anime.myMalStatus = MALStatuses.Watching;
             anime.myWatchedEpisodes = 0;
-            anime.sync();
+            anime.syncPut();
             Consts.MAL_USER.animeList.loadAnime(anime);
             Consts.setMALUser(Consts.MAL_USER);
         }
         return ok;
     }
     static async UpdateWatchedEpisode(downloadedItem: DownloadedItem): Promise<boolean> {
+        downloadedItem.animeEntry.syncGet();
         if (!downloadedItem.animeEntry.malId) return false;
         let episode = downloadedItem.episodeData.episodeNumber,
             status = downloadedItem.animeEntry.totalEpisodes === episode ? MALStatuses.Completed : MALStatuses.Watching,

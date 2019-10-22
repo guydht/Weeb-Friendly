@@ -36,7 +36,7 @@ let _storageKey = "anime-storage",
     },
     sync = (anime: AnimeEntry, forceSynonyms: boolean = false): AnimeEntry => {
         cleanOld();
-        if (!anime) return new AnimeEntry({ sync: false });
+        if (!anime) return new AnimeEntry({});
         let current = get(anime);
         if (!current) {
             if (anime.malId)

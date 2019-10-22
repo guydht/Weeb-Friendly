@@ -5,6 +5,7 @@ import { Col, Container, Row, Tab, Tabs } from "react-bootstrap";
 import { LazyLoadComponent } from "react-lazy-load-image-component";
 import ImageZoom from "react-medium-image-zoom";
 import AnimeEntry from "../classes/AnimeEntry";
+import { hasInternet } from "../utils/general";
 import MALUtils from "../utils/MAL";
 import Recommendations from "./animeInfo/ Recommendations";
 import Details from "./animeInfo/Details";
@@ -24,68 +25,64 @@ let emptyFrom = {
     month: -1,
     year: -1
 },
-emptyProp = {
-    from: {...emptyFrom},
-    to: {...emptyFrom}
-},
-emptyAired = {
-    from: new Date("undefined"),
-    prop: {...emptyProp},
-    string: "",
-    to: new Date("undefined")
-},
-emptyRelated = {
-    Adaptation: [],
-    "Side story": [],
-    Summary: []
-},
-emptyInfo = {
-    aired: {...emptyAired},
-    airing: null,
-    background: "",
-    broadcast: "",
-    duration: "",
-    ending_themes: [],
-    episodes: null,
-    favorites: null,
-    genres: [],
-    image_url: "",
-    licensors: [],
-    mal_id: null,
-    members: null,
-    opening_themes: [],
-    popularity: null,
-    premiered: "",
-    producers: [],
-    rank: null,
-    rating: "",
-    related: {...emptyRelated},
-    request_cache_expiry: null,
-    request_cached: null,
-    request_hash: "",
-    score: null,
-    scored_by: null,
-    source: "",
-    status: "",
-    studios: [],
-    synopsis: "",
-    title_english: "",
-    title_japanese: "",
-    title_synonyms: [],
-    title: "",
-    trailer_url: "",
-    type: "",
-    url: ""
-}
+    emptyProp = {
+        from: { ...emptyFrom },
+        to: { ...emptyFrom }
+    },
+    emptyAired = {
+        from: new Date("undefined"),
+        prop: { ...emptyProp },
+        string: "",
+        to: new Date("undefined")
+    },
+    emptyInfo = {
+        aired: { ...emptyAired },
+        airing: null,
+        background: "",
+        broadcast: "",
+        duration: "",
+        ending_themes: [],
+        episodes: null,
+        favorites: null,
+        genres: [],
+        image_url: "",
+        licensors: [],
+        mal_id: null,
+        members: null,
+        opening_themes: [],
+        popularity: null,
+        premiered: "",
+        producers: [],
+        rank: null,
+        rating: "",
+        related: {},
+        request_cache_expiry: null,
+        request_cached: null,
+        request_hash: "",
+        score: null,
+        scored_by: null,
+        source: "",
+        status: "",
+        studios: [],
+        synopsis: "",
+        title_english: "",
+        title_japanese: "",
+        title_synonyms: [],
+        title: "",
+        trailer_url: "",
+        type: "",
+        url: ""
+    }
 
 export default class AnimeInfo extends Component {
 
     private PAGE_LINKS = { Details, Episodes: Episodes, Reviews, Recommendations, Stats, News, Forum, Pictures }
 
     state: { info?: AnimeById, anime: AnimeEntry, highResPhoto: string } = {
-        anime: (((this.props as any).location.state || {}).animeEntry || new AnimeEntry({ malId: (this.props as any).match.params.id })) as AnimeEntry,
+        anime: (((this.props as any).location.state || {}).animeEntry || new AnimeEntry({ malId: Number((this.props as any).match.params.id) })) as AnimeEntry,
         highResPhoto: ""
     }
+
     componentDidUpdate() {
         if (this.state.anime && this.state.anime.malId !== Number((this.props as any).match.params.id))
             this.setState({
@@ -107,8 +104,7 @@ export default class AnimeInfo extends Component {
                 });
             }
         }
-        // eslint-disable-next-line
-        this.state.anime.name = this.state.anime.name || "";
+        this.state.anime.syncGet();
         return (
             <div className="mx-5 px-5">
                 <Row>
@@ -136,7 +132,7 @@ export default class AnimeInfo extends Component {
                             zoomImage: {
                                 cursor: "pointer"
                             }
-                        }} onZoom={() => this.searchHighResPhoto((this.state.info as any).image_url)} />
+                        }} onZoom={() => (hasInternet() && this.state.info && this.searchHighResPhoto((this.state.info as any).image_url)) as object} />
                     </Col>
                     <Col md="auto" style={{ flex: 1 }}>
                         <Tabs id="mal-links" defaultActiveKey={"Details"} className="justify-content-center">
@@ -146,7 +142,7 @@ export default class AnimeInfo extends Component {
                                         <Tab eventKey={name} title={name} mountOnEnter={true} key={i}>
                                             <LazyLoadComponent>
                                                 <Container>
-                                                    <MyComponent anime={this.state.anime} info={this.state.info || {...emptyInfo} as any} />
+                                                    <MyComponent anime={this.state.anime} info={this.state.info || { ...emptyInfo } as any} />
                                                 </Container>
                                             </LazyLoadComponent>
                                         </Tab>

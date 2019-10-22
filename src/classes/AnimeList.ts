@@ -21,7 +21,7 @@ export default class AnimeList {
         let allKeys = Object.entries(value);
         Object.values(allKeys).forEach(([strKey, value]) => {
             let key = Number(strKey);
-            value.sync();
+            value.syncGet();
             (this._all as any)[key] = value;
             switch ((value as AnimeEntry).myMalStatus!) {
                 case MALStatuses.Watching:
