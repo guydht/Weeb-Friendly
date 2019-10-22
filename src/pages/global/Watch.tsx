@@ -21,9 +21,9 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
     movingElement = React.createRef<MovableComponent>();
 
     componentDidMount() {
-        this.props.downloadedItem.animeEntry.syncGet();
         if (!this.props.downloadedItem.animeEntry || !this.props.downloadedItem.animeEntry.malId ||
             (this.props.downloadedItem.animeEntry.myWatchedEpisodes || 0) >= this.props.downloadedItem.episodeData.episodeNumber) return;
+        this.props.downloadedItem.animeEntry.syncGet();
         const progressFromLocalStorage = () => {
             let obj = JSON.parse(localStorage.getItem("videoLastTime") || "{}"),
                 relevant = obj[this.props.downloadedItem.fileName];
