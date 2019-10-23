@@ -3,11 +3,12 @@ const electron = require('electron'),
     path = require("path"),
     isDev = require("electron-is-dev");
 
-process.env.NODE_ENV = "development";
 // Module to control application life.
 const app = electron.app;
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow;
+
+const windowStateKeeper = require('electron-window-state');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -15,15 +16,28 @@ let mainWindow;
 
 function createWindow() {
     // Create the browser window.
+
+    let mainWindowState = windowStateKeeper({
+        defaultWidth: 800,
+        defaultHeight: 600
+    });
+
     mainWindow = new BrowserWindow({
-        width: 800, height: 600,
+        x: mainWindowState.x,
+        y: mainWindowState.y,
+        width: mainWindowState.width,
+        height: mainWindowState.height,
+        useContentSize: true,
         webPreferences: {
             webSecurity: false,
             nodeIntegration: true,
             devTools: isDev
         },
-        icon: path.join(__dirname, "icon.ico")
+        icon: path.join(__dirname, "icon.ico"),
+        autoHideMenuBar: true
     });
+
+    mainWindowState.manage(mainWindow);
 
     if (isDev)
         mainWindow.loadURL(url.format({
@@ -31,14 +45,14 @@ function createWindow() {
             protocol: 'http'
         }));
     else {
-        mainWindow.webContents.on("did-fail-load", err => {
+        mainWindow.webContents.on("did-fail-load", () => {
             mainWindow.loadURL(url.format({
-                pathname: path.join(__dirname, '../build/index.html'),
+                pathname: path.join(__dirname, 'index.html'),
                 protocol: 'file'
-            }))
+            }));
         });
         mainWindow.loadURL(url.format({
-            pathname: path.join(__dirname, '../build/index.html'),
+            pathname: path.join(__dirname, 'index.html'),
             protocol: 'file'
         }));
     }
