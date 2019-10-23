@@ -119,25 +119,29 @@ function ttl_date(days: number) {
 let fs = window.require("fs"),
     path = window.require("path"),
     walkDir = function (dir: string) {
-        let results: any[] = [];
-        let list = fs.readdirSync(dir);
-        list.forEach(function (filename: string) {
-            let file = path.join(dir, filename);
-            let stat = fs.statSync(file);
-            if (stat.isDirectory())
-                results = results.concat(walkDir(file));
-            else {
-                let withoutExtension = filename.replace(path.extname(filename), ""),
-                    animeEntry = new AnimeEntry({ name: withoutExtension.substring(0, withoutExtension.lastIndexOf(" Episode ")) || withoutExtension });
-                results.push(new DownloadedItem(
-                    file,
-                    withoutExtension,
-                    stat.birthtime,
-                    animeEntry
-                ));
-            }
-        });
-        return results;
+        try {
+            let results: any[] = [];
+            let list = fs.readdirSync(dir);
+            list.forEach(function (filename: string) {
+                let file = path.join(dir, filename);
+                let stat = fs.statSync(file);
+                if (stat.isDirectory())
+                    results = results.concat(walkDir(file));
+                else {
+                    let withoutExtension = filename.replace(path.extname(filename), ""),
+                        animeEntry = new AnimeEntry({ name: withoutExtension.substring(0, withoutExtension.lastIndexOf(" Episode ")) || withoutExtension });
+                    results.push(new DownloadedItem(
+                        file,
+                        withoutExtension,
+                        stat.birthtime,
+                        animeEntry
+                    ));
+                }
+            });
+            return results;
+        }
+        catch (e) { }
+        return [];
     }
 
 function chunkArray<T>(myArray: T[], chunk_size: number): T[][] {

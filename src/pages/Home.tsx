@@ -32,7 +32,7 @@ export default class Home extends Component {
                 }
                 {
                     Consts.MAL_USER.isLoggedIn && hasInternet() ?
-                        <CurrentlyWatching /> : Home.noInternetComponent("Currently Watching")
+                        <CurrentlyWatching /> : Consts.MAL_USER.isLoggedIn && Home.noInternetComponent("Currently Watching")
                 }
                 {
                     hasInternet() && (
