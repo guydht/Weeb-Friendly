@@ -40,7 +40,7 @@ export default class DownloadManager extends Component {
             };
         if (!this.state.torrents.length)
             return null;
-        this.state.torrents.sort((a, b) => a.name.localeCompare(b.name));
+        this.state.torrents.sort((a, b) => a.name && b.name ? a.name.localeCompare(b.name) : 0);
         return (
             <MovableComponent
                 style={{ position: "fixed", top: 0, left: 10, height: this.state.hideFlag ? 0 : "auto", zIndex: 2029 }}>
