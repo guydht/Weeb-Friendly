@@ -204,7 +204,7 @@ function Confirm(String: any, sendResponse: any, timer?: any, yesText?: any, noT
         (this as any).style.boxShadow = "0 0 12px rgb(153, 153, 153)";
         if (timer === true) loadConfirm = setInterval(loadingConfirm, 25);
     };
-    document.body.appendChild(div);
+    (document.fullscreenElement || document.body).appendChild(div);
     (div.children[1] as any).onmouseover = (div.children[2] as any).onmouseover = function () {
         (this as any).style.boxShadow = "0 0 12px rgb(30, 30, 30)";
     };
