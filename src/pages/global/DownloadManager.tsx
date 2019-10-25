@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import { Button, ButtonGroup, Col, Container, ListGroup, OverlayTrigger, ProgressBar, Row, Tooltip } from "react-bootstrap";
 import { Torrent } from "webtorrent";
+import TorrentManager from "../../classes/TorrentManager";
 import CloseButton from "../../components/CloseButton";
 import MovableComponent from "../../components/MovableComponent";
-import TorrentManager from "../../classes/TorrentManager";
 import styles from "../../css/pages/DownloadManager.module.css";
 
 export default class DownloadManager extends Component {
@@ -40,6 +40,7 @@ export default class DownloadManager extends Component {
             };
         if (!this.state.torrents.length)
             return null;
+        this.state.torrents.sort((a, b) => a.name.localeCompare(b.name));
         return (
             <MovableComponent
                 style={{ position: "fixed", top: 0, left: 10, height: this.state.hideFlag ? 0 : "auto", zIndex: 2029 }}>
@@ -60,8 +61,8 @@ export default class DownloadManager extends Component {
                                 return (
                                     <ListGroup.Item key={torrent.name}>
                                         <OverlayTrigger trigger="hover" overlay={
-                                        <Tooltip id="tooltip-auto" style={{zIndex: 9999}}>
-                                            Renamed to: "{(torrent as any).torrentName}"
+                                            <Tooltip id="tooltip-auto" style={{ zIndex: 9999 }}>
+                                                Renamed to: "{(torrent as any).torrentName}"
                                             </Tooltip>
                                         } placement="auto">
                                             <h5>
