@@ -96,10 +96,12 @@ function createDecoderFromStream(stream, atData) {
             fixedLines[i] = fixedLine;
           }
         });
-      let data = (isASS ? headingParts[0] + eventMatches[0] + "\r\n" : "") + fixedLines.join("\r\n") + headingParts[1] + "\r\n";
+      let data = (isASS ? headingParts[0] + eventMatches[0] + "\r\n" : "") + fixedLines.join("\r\n") + headingParts[1] + "\r\n",
+        extName = isASS ? ".ass" : ".srt";
       files.push({
-        name: track.header.split("\n")[1].substring(7),
-        data
+        name: track.language ? track.language + extName : "Subtitle " + track.number + extName,
+        data,
+        title: track.header.split("\n")[1].substring(7)
       });
     });
     atData(files);

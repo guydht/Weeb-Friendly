@@ -28,7 +28,7 @@ export default class VideoPlayer extends Component {
                 for (let f of subFiles) {
                     if ((f.name.endsWith(".ass") || f.name.endsWith(".ssa"))) {
                         subtitles.push(f.data);
-                        subtitleNames.push(f.name);
+                        subtitleNames.push(f.title);
                     }
                     else if (f.name.endsWith(".ttf"))
                         fonts.push(URL.createObjectURL(new Blob([f.data])));
@@ -39,7 +39,6 @@ export default class VideoPlayer extends Component {
                     fonts: fonts,
                     workerUrl: "./OctopusWorker.js"
                 };
-                subtitleNames[0] += " - active";
                 container.setSubtitleTracksNames(subtitleNames);
                 container.addEventListener("guydhtChangeSubs", event => {
                     let index = subtitleNames.indexOf(event.detail);

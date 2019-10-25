@@ -58,7 +58,8 @@ function asd(AnimeName, elementContainer, videoURL) {
             upperName = container.querySelector("#guydhtVideoUpperSlider");
         let subtitleTracks = []
         container.setSubtitleTracksNames = tracksNames => {
-            subtitleTracks = tracksNames;
+            subtitleTracks = [...tracksNames];
+            subtitleTracks[0] += " - active";
         };
         chooseSubs.onclick = () => setSecondScreen(subtitleTracks.map(function handleSubs(trackName, i) {
             return [trackName, () => {
@@ -76,13 +77,13 @@ function asd(AnimeName, elementContainer, videoURL) {
                 li.onclick = i[1];
                 secondSettingsList.append(li);
             }
-            changeSettings();
+            changeSettingsWindow();
         }
         settings.addEventListener("blur", function () {
             secondSettingsList.children[0].click();
         });
 
-        function changeSettings() {
+        function changeSettingsWindow() {
             settingsList.style = "transform: translateX(-100%); max-height: 0;";
             secondSettingsList.style = "transform: none; max-height: fit-content;";
         }
@@ -1024,3 +1025,4 @@ function transitionSVG(current, newPath, time, transition) {
 }
 
 export { asd, waitFor };
+
