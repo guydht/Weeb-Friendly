@@ -140,7 +140,7 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                     src={(this.props.downloadedItem as any).videoSrc || Consts.FILE_URL_PROTOCOL + this.props.downloadedItem.absolutePath}
                     name={this.props.downloadedItem.fileName}>
                     {
-                        this.props.downloadedItem.animeEntry.malId && (
+                        this.props.downloadedItem.animeEntry && this.props.downloadedItem.animeEntry.malId && (
                             <AnimeInfo
                                 className={(this.state.showAnimePage ? styles.animeInfo : "d-none") + " mx-5 px-5 mt-5"}
                                 anime={this.props.downloadedItem.animeEntry} />
