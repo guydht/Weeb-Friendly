@@ -19,6 +19,19 @@ function middleClick() {
     cover.appendChild(style);
     cursor.innerHTML = "<svg viewbox='0 0 100 100'><circle cx='50' cy='50' r='12'></circle><path d='M50 100 L40 80 L 60 80 Z'></path></svg>";
     document.querySelector("html").addEventListener("mousedown", onmousedown);
+    let fullscreenedElement;
+    window.addEventListener("webkitfullscreenchange", () => {
+        if (document.fullscreenElement) {
+            fullscreenedElement = document.fullscreenElement;
+            fullscreenedElement.addEventListener("mousedown", onmousedown);
+            cover.remove();
+        }
+        else {
+            fullscreenedElement.removeEventListener("mousedown", onmousedown);
+            fullscreenedElement = null;
+            cover.remove();
+        }
+    });
     cover.onmouseup = cover.onclick = function (e) {
         e.stopPropagation();
         return false;
@@ -57,9 +70,9 @@ function middleClick() {
     function onmousedown(e) {
         if (e.button !== 1) return;
         e.preventDefault();
-        if (!cover.parentNode) document.body.appendChild(cover);
+        if (!cover.parentNode) (document.fullscreenElement || document.body).appendChild(cover);
         if (middleClickFlag === false) return;
-        if (document.webkitFullscreenElement || document.pointerLockElement) {
+        if (document.pointerLockElement) {
             e.preventDefault();
             return;
         }
