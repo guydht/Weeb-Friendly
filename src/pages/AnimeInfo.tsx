@@ -74,17 +74,18 @@ let emptyFrom = {
         url: ""
     }
 
-export default class AnimeInfo extends Component {
+export default class AnimeInfo extends Component<{ anime?: AnimeEntry } & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>> {
 
     private PAGE_LINKS = { Details, Episodes: Episodes, Reviews, Recommendations, Stats, News, Forum, Pictures }
 
     state: { info?: AnimeById, anime: AnimeEntry, highResPhoto: string } = {
-        anime: (((this.props as any).location.state || {}).animeEntry || new AnimeEntry({ malId: Number((this.props as any).match.params.id) })) as AnimeEntry,
+        anime: this.props.anime ||
+            (((this.props as any).location.state || {}).animeEntry || new AnimeEntry({ malId: Number((this.props as any).match.params.id) })) as AnimeEntry,
         highResPhoto: ""
     }
 
     componentDidUpdate() {
-        if (this.state.anime && this.state.anime.malId !== Number((this.props as any).match.params.id))
+        if (!this.props.anime && this.state.anime && this.state.anime.malId !== Number((this.props as any).match.params.id))
             this.setState({
                 anime: (this.props as any).location.state.animeEntry,
                 info: undefined
@@ -93,7 +94,7 @@ export default class AnimeInfo extends Component {
 
     render() {
         if (!this.state.anime || !this.state.anime.malId || !this.state.info) {
-            let id = (this.props as any).match.params.id;
+            let id = this.state.anime.malId || (this.props as any).match.params.id;
             if (id) {
                 let anime = new AnimeEntry({ malId: Number(id) });
                 MALUtils.getAnimeInfo(anime as AnimeEntry & { malId: number }).then(info => {
@@ -105,8 +106,10 @@ export default class AnimeInfo extends Component {
             }
         }
         this.state.anime.syncGet();
+        let props = { ...this.props };
+        delete props.anime;
         return (
-            <div className="mx-5 px-5">
+            <div className={`mx-5 px-5${props.className ? " " + props.className : ""}`} {...props}>
                 <Row>
                     <h2>
                         {

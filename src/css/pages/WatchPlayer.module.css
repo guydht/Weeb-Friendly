@@ -1,9 +1,18 @@
 .container {
-    height: 30vh;
-    width: 30vh;
-    position: fixed;
-    z-index: 2030;
-    bottom: 0;
-    right: 0;
-    resize: both;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    overflow-x: hidden;
+}
+
+.container::-webkit-scrollbar {
+    width: 0 !important
+}
+
+.animeInfo {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    min-height: 100%;
 }

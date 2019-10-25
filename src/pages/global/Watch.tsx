@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { Jumbotron } from "react-bootstrap";
 import Consts from "../../classes/Consts";
 import DownloadedItem from "../../classes/DownloadedItem";
 import MovableComponent from "../../components/MovableComponent";
@@ -6,16 +7,25 @@ import VideoPlayer from "../../components/VideoPlayer";
 import styles from "../../css/pages/WatchPlayer.module.css";
 import { Confirm } from "../../utils/general";
 import MALUtils from "../../utils/MAL";
+import AnimeInfo from "../AnimeInfo";
 
 export default class Watch extends Component<{ downloadedItem: DownloadedItem }> {
 
     static UPDATE_ANIME_PROGRESS_THRESHOLD = 0.9;
 
-    state = {
-        showingVideo: true,
-        videoOpacity: 1,
-        wantsToUpdateInMAL: true
-    };
+    state: {
+        showingVideo: boolean,
+        videoOpacity: number,
+        wantsToUpdateInMAL: boolean,
+        showAnimePage: boolean,
+        preventScroll: boolean
+    } = {
+            showingVideo: true,
+            videoOpacity: 1,
+            wantsToUpdateInMAL: true,
+            showAnimePage: false,
+            preventScroll: false
+        };
 
     removingVideo = false;
     movingElement = React.createRef<MovableComponent>();
@@ -56,7 +66,30 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                 }
             }
         }, 500);
+        window.addEventListener("webkitfullscreenchange", this.bindedFullScreenListener);
+        document.addEventListener("pointerlockchange", this.bindedPointerLockListener);
     }
+
+    componentWillUnmount() {
+        window.removeEventListener("webkitfullscreenchange", this.bindedFullScreenListener);
+        document.removeEventListener("pointerlockchange", this.bindedPointerLockListener);
+    }
+
+    fullScreenListener() {
+        this.setState({
+            showAnimePage: document.fullscreenElement !== null
+        });
+    }
+
+    bindedFullScreenListener = this.fullScreenListener.bind(this);
+
+    pointerLockListener() {
+        this.setState({
+            preventScroll: document.pointerLockElement !== null
+        });
+    }
+
+    bindedPointerLockListener = this.pointerLockListener.bind(this);
 
     componentDidUpdate() {
         if (this.removingVideo)
@@ -84,17 +117,16 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                 });
             }, 500);
         };
-        let styleObject = { transition: "opacity .5s", opacity: this.state.videoOpacity };
+        let styleObject: any = { transition: "opacity .5s", opacity: this.state.videoOpacity, position: "fixed", zIndex: 2030 };
         for (let key in Consts.WATCH_PLAYER_SIZE)
             (styleObject as any)[key] = Consts.WATCH_PLAYER_SIZE[key];
         if (!this.state.showingVideo)
             return null;
         return (
             <MovableComponent
-                style={styleObject}
-                className={styles.container}
                 onResizeFinish={this.onResizeFinish.bind(this)}
                 ref={this.movingElement}
+                style={styleObject}
                 resizable={true}>
                 <span
                     style={{ position: "absolute", zIndex: 1, right: 0, cursor: "pointer" }}
@@ -102,9 +134,19 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                     <span aria-hidden="true">×</span>
                 </span>
                 <VideoPlayer
-                    style={{ zIndex: 0 }}
+                    style={{ position: this.state.showAnimePage ? "fixed" : "initial", overflowY: this.state.preventScroll ? "hidden" : "auto" }}
+                    as={Jumbotron}
+                    className={styles.container}
                     src={(this.props.downloadedItem as any).videoSrc || Consts.FILE_URL_PROTOCOL + this.props.downloadedItem.absolutePath}
-                    name={this.props.downloadedItem.fileName} />
+                    name={this.props.downloadedItem.fileName}>
+                    {
+                        this.props.downloadedItem.animeEntry.malId && (
+                            <AnimeInfo
+                                className={(this.state.showAnimePage ? styles.animeInfo : "d-none") + " mx-5 px-5 mt-5"}
+                                anime={this.props.downloadedItem.animeEntry} />
+                        )
+                    }
+                </VideoPlayer>
             </MovableComponent>
         )
     }

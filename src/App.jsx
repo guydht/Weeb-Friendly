@@ -44,7 +44,7 @@ export default class App extends Component {
       <div>
         <MemoryRouter ref={this.router} initialEntries={[sessionStorage.getItem("lastPathname") || ""]} initialIndex={0}>
           <NavBar />
-          <div style={{ marginTop: 70 }}>
+          <div style={{ marginTop: 70, minHeight: "100vh" }}>
             <Switch>
               {
                 Object.entries(routerConfig).map(([thePath, TheComponent]) => {
@@ -55,14 +55,14 @@ export default class App extends Component {
               }
             </Switch>
           </div>
+          {
+            this.state.showVideo &&
+            <Watch downloadedItem={this.state.videoItem} />
+          }
+          <Login />
+          <DownloadManager />
+          <ToastMessage />
         </MemoryRouter>
-        <Login />
-        {
-          this.state.showVideo &&
-          <Watch downloadedItem={this.state.videoItem} />
-        }
-        <DownloadManager />
-        <ToastMessage />
       </div>
     )
   }
