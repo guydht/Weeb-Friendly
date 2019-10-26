@@ -16,6 +16,7 @@ export default class Details extends Component<AnimeInfoProps> {
     episodElement = React.createRef() as RefObject<any>;
 
     render() {
+        console.log({ ...this.props.anime });
         return (
             <div className={styles.container}>
                 {

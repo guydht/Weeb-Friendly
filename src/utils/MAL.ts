@@ -102,7 +102,7 @@ export default class MALUtils {
                 imageURL: result.image_url,
                 malUrl: result.url,
                 name: result.title,
-            });
+            }).syncPut();
             return map;
         }, {});
         if (data.anime.length === this.MAX_ANIMES_PER_PAGE)
@@ -114,6 +114,7 @@ export default class MALUtils {
         let data = (await mal.findAnime(anime.malId));
         if (!data)
             return data;
+        anime.syncGet()
         anime.score = data.score;
         anime.name = data.title;
         anime.genres = new Set(data.genres.map((ele: { Name: string; }) => ele.Name));
@@ -125,6 +126,7 @@ export default class MALUtils {
         anime.synopsis = data.synopsis;
         anime.malUrl = data.url;
         anime.totalEpisodes = data.episodes;
+        anime.syncPut();
         return data;
     }
     static UPDATE_ANIME_URL = "https://myanimelist.net/ownlist/anime/edit.json";

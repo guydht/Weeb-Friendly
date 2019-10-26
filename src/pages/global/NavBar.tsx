@@ -99,7 +99,7 @@ export default class NavBar extends Component {
                 csrf_token: Consts.CSRF_TOKEN
             }),
             method: "POST"
-        }).then(r => {
+        }).then(() => {
             Consts.setMALUser(new User());
             Consts.setCsrfToken('');
             this.setState({
