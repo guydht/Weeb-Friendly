@@ -108,6 +108,7 @@ export default class AnimeInfo extends Component<{ anime?: AnimeEntry } & React.
         this.state.anime.syncGet();
         let props = { ...this.props };
         delete props.anime;
+        delete (props as any).staticContext;
         return (
             <div className={`mx-5 px-5${props.className ? " " + props.className : ""}`} {...props}>
                 <Row>

@@ -4,8 +4,8 @@ import { Col, Form, FormControl, ListGroup, ListGroupItem, Row, Spinner } from "
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { Link } from "react-router-dom";
 import AnimeEntry from "../classes/AnimeEntry";
-import MALUtils from "../utils/MAL";
 import styles from "../css/components/SearchBar.module.css";
+import MALUtils from "../utils/MAL";
 
 interface SearchBarProps {
     placeholder?: string;
@@ -101,8 +101,7 @@ export default class SearchBar extends Component<SearchBarProps> {
     async searchAnime(e: any) {
         e.persist();
         let searchName = e.target.value;
-        if (this.searchInputTimeout)
-            clearTimeout(this.searchInputTimeout);
+        clearTimeout(this.searchInputTimeout);
         this.setState({
             loading: true,
             loadingText: "Loading...",
@@ -121,14 +120,13 @@ export default class SearchBar extends Component<SearchBarProps> {
                     let results = await MALUtils.searchAnime(new AnimeEntry({ name: searchName })),
                         equal = results.filter(result => searchName.toLowerCase().match(/[a-z0-9]+/g).join("") ===
                             result.name!.toLowerCase().match(/[a-z0-9]+/g)!.join(""));
+                    this.setState({
+                        entries: results,
+                        loading: false,
+                        loadingText: ""
+                    });
                     if (equal.length === 1)
                         this.chooseEntry(equal[0]);
-                    else
-                        this.setState({
-                            entries: results,
-                            loading: false,
-                            loadingText: ""
-                        });
                 }
                 else
                     this.setState({
@@ -140,6 +138,7 @@ export default class SearchBar extends Component<SearchBarProps> {
         return value.length > 3;
     }
     chooseEntry(entry: AnimeEntry) {
-        (this.props.onItemClick || function () { })(entry);
+        if (this.props.onItemClick)
+            this.props.onItemClick(entry);
     }
 }

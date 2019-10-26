@@ -165,6 +165,8 @@ function groupBy<T>(arr: T[], propertyPath: string[]): T[][] {
 }
 
 function Confirm(String: any, sendResponse: any, timer?: any, yesText?: any, noText?: any) {
+    if (document.pointerLockElement)
+        document.exitPointerLock();
     String = String.charAt(0).toUpperCase() + String.replace(/\s\w|^./g, (letter: any) => letter.toUpperCase()).slice(1);
     var div = document.createElement("div"),
         stringDotsFlag = false,
@@ -212,7 +214,7 @@ function Confirm(String: any, sendResponse: any, timer?: any, yesText?: any, noT
         (this as any).style.boxShadow = "0 0 12px rgb(153, 153, 153)"
     };
     (div.children[1] as any).onclick = function () {
-        (this as any).innerHTML += "✔";
+        this.innerHTML += "✔";
         sendResponse(true);
         setTimeout(function () {
             div.remove();
@@ -224,7 +226,7 @@ function Confirm(String: any, sendResponse: any, timer?: any, yesText?: any, noT
         (previousFocusedElement as any).focus();
     };
     (div.children[2] as any).onclick = function () {
-        this.innerHTML += "✔";
+        div.children[2].innerHTML += "✔";
         sendResponse(false);
         setTimeout(function () {
             div.remove();
@@ -235,7 +237,8 @@ function Confirm(String: any, sendResponse: any, timer?: any, yesText?: any, noT
         div.style.pointerEvents = "none";
         (previousFocusedElement as any).focus();
     }
-    document.addEventListener("keydown", keydown);
+    let parent = document.fullscreenElement || document.body;
+    parent.addEventListener("keydown", keydown);
     div.tabIndex = 0;
     div.focus();
     div.style.outline = "none";
