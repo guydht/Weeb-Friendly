@@ -32,7 +32,7 @@ function createWindow() {
             nodeIntegration: true,
             devTools: isDev
         },
-        icon: path.join(__dirname, "icon.png"),
+        icon: path.join(__dirname, "icons/icon.png"),
         autoHideMenuBar: true
     });
 
