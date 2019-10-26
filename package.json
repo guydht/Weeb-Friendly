@@ -8,19 +8,18 @@
     "url": "https://github.com/guydht",
     "email": "guydht1@gmail.com"
   },
-  "icon": "./icon.png",
+  "icon": "./icons/icon.png",
   "description": "App for managing and downloading Animes from myanimelist/torrents respectively.",
   "eslintConfig": {
     "extends": "react-app"
   },
   "build": {
-    "asar": true,
     "linux": {
       "target": [
+        "AppImage",
         "deb"
       ],
-      "category": "Video",
-      "icon": "icons/icon.icns"
+      "category": "Video"
     }
   },
   "browserslist": {

@@ -1,7 +1,8 @@
 const electron = require('electron'),
     url = require("url"),
     path = require("path"),
-    isDev = require("electron-is-dev");
+    isDev = require("electron-is-dev"),
+    fs = require("fs");
 
 // Module to control application life.
 const app = electron.app;
@@ -31,11 +32,12 @@ function createWindow() {
         webPreferences: {
             webSecurity: false,
             nodeIntegration: true,
-            devTools: isDev
+            // devTools: isDev
         },
-        icon: path.join(__dirname, "icon.ico"),
+        icon: path.join(__dirname, "icon.png"),
         autoHideMenuBar: true
     });
+    mainWindow.removeMenu();
 
     mainWindowState.manage(mainWindow);
 
