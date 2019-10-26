@@ -100,19 +100,12 @@ export default class NavBar extends Component {
             }),
             method: "POST"
         }).then(r => {
-            if (r.ok && r.status === 200) {
-                Consts.setMALUser(new User());
-                Consts.setCsrfToken('');
-                this.setState({
-                    user: Consts.MAL_USER
-                });
-                (window as any).reloadPage();
-            }
-            else
-                (window as any).displayToast({
-                    title: "Couldn't log out!",
-                    body: "MyAnimeList returned error while trying to log out! Error code: " + r.status
-                });
+            Consts.setMALUser(new User());
+            Consts.setCsrfToken('');
+            this.setState({
+                user: Consts.MAL_USER
+            });
+            (window as any).reloadPage();
         });
     }
     showLogin() {
