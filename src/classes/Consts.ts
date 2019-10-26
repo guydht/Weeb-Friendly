@@ -86,7 +86,7 @@ export default class Consts {
     }
 
     static WATCH_PLAYER_SIZE_STORAGE_KEY = "player_size";
-    static WATCH_PLAYER_SIZE = storage.get(Consts.WATCH_PLAYER_SIZE_STORAGE_KEY) || {};
+    static WATCH_PLAYER_SIZE = storage.get(Consts.WATCH_PLAYER_SIZE_STORAGE_KEY) || { height: 200, width: 400, top: 0, left: 0 };
     static setWatchPlayerSize(size: object) {
         Consts.WATCH_PLAYER_SIZE = size;
         storage.set(Consts.WATCH_PLAYER_SIZE_STORAGE_KEY, size);

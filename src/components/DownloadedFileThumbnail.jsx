@@ -3,8 +3,8 @@ import { LazyLoadComponent } from "react-lazy-load-image-component";
 import { withRouter } from "react-router";
 import Consts from "../classes/Consts";
 import styles from "../css/pages/DownloadedAnime.module.css";
-import MALUtils from "../utils/MAL";
 import { Confirm, stringRelativeSimilarity } from "../utils/general";
+import MALUtils from "../utils/MAL";
 import VideoThumbnail from "./VideoThumbnail";
 
 export default withRouter(class DownloadedFileThumbnail extends Component {
