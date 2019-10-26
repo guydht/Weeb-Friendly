@@ -11,6 +11,13 @@ import ToastMessage from './pages/global/ToastMessages';
 import Watch from './pages/global/Watch';
 import routerConfig from "./routerConfig";
 
+window.addEventListener("keydown", disableAltKey);
+window.addEventListener("keyup", disableAltKey);
+function disableAltKey(e){
+  if(e.key === "Alt")
+    e.preventDefault();
+}
+
 export default class App extends Component {
 
   state = {

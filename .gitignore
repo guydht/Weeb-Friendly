@@ -61,7 +61,5 @@ typings/
 .next
 
 .thumbnail-image-storage
-build/*
-!build/electron.js
-!build/icon.png
+build/
 dist/

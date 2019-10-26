@@ -165,7 +165,7 @@ function groupBy<T>(arr: T[], propertyPath: string[]): T[][] {
 }
 
 function Confirm(String: any, sendResponse: any, timer?: any, yesText?: any, noText?: any) {
-    if (document.pointerLockElement)
+    if (document.pointerLockElement !== null)
         document.exitPointerLock();
     String = String.charAt(0).toUpperCase() + String.replace(/\s\w|^./g, (letter: any) => letter.toUpperCase()).slice(1);
     var div = document.createElement("div"),
@@ -207,6 +207,8 @@ function Confirm(String: any, sendResponse: any, timer?: any, yesText?: any, noT
         if (timer === true) loadConfirm = setInterval(loadingConfirm, 25);
     };
     (document.fullscreenElement || document.body).appendChild(div);
+    div.focus();
+    div.tabIndex = 1;
     (div.children[1] as any).onmouseover = (div.children[2] as any).onmouseover = function () {
         (this as any).style.boxShadow = "0 0 12px rgb(30, 30, 30)";
     };
@@ -244,11 +246,15 @@ function Confirm(String: any, sendResponse: any, timer?: any, yesText?: any, noT
     div.style.outline = "none";
 
     function keydown(e: any): any {
-        if (!(div as any).visible) return document.removeEventListener("keydown", keydown);
         e.stopPropagation();
+        e.stopImmediatePropagation();
         e.preventDefault();
-        if (["KeyY", "Enter"].includes(e.code)) (div.children[1] as any).click();
+        if (["KeyY", "Enter", "Space"].includes(e.code)) (div.children[1] as any).click();
         else if (["KeyN", "Escape"].includes(e.code)) (div.children[2] as any).click();
+        else {
+            return;
+        }
+        parent.removeEventListener("keydown", keydown);
     }
     setTimeout(function () {
         div.style.opacity = "0.8";
