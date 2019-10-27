@@ -124,7 +124,8 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
             return null;
         return (
             <MovableComponent
-                onResizeFinish={this.onResizeFinish.bind(this)}
+                onResizeFinish={this.onMoveFinish.bind(this)}
+                onDragFinish={this.onMoveFinish.bind(this)}
                 ref={this.movingElement}
                 style={styleObject}
                 resizable={true}>
@@ -150,7 +151,8 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
             </MovableComponent>
         )
     }
-    onResizeFinish(_: any, didMoveInGesture: boolean) {
+    onMoveFinish(_: any, didMoveInGesture: boolean) {
+        console.log({ ...this.movingElement });
         if (didMoveInGesture && this.movingElement.current && this.movingElement.current.element.current) {
             let rect = (this.movingElement.current.element.current.getBoundingClientRect() as DOMRect).toJSON();
             delete rect.bottom;
