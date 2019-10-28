@@ -23,7 +23,6 @@ export enum MALStatuses {
     Dropped = 4,
     "Plan To Watch" = 6
 };
-
 export default class MALUtils {
     static MAX_ANIMES_PER_PAGE = 300;
 
@@ -87,24 +86,24 @@ export default class MALUtils {
             if (e === "Response: 429")
                 return this.getUserAnimeList(user, listType, page);
         }));
-        if (!data) return user.animeList;
-        user.animeList[listType] = data.anime.reduce((map: any, result: any) => {
-            map[result.mal_id] = new AnimeEntry({
-                malId: result.mal_id,
-                totalEpisodes: result.total_episodes,
-                startDate: parseStupidAmericanDateString(result.start_date),
-                endDate: parseStupidAmericanDateString(result.end_date),
-                userStartDate: parseStupidAmericanDateString(result.watch_start_date),
-                userEndDate: parseStupidAmericanDateString(result.watch_end_date),
-                myMalRating: result.score as any,
-                myMalStatus: result.watching_status,
-                myWatchedEpisodes: result.watched_episodes,
-                imageURL: result.image_url,
-                malUrl: result.url,
-                name: result.title,
-            }).syncPut();
-            return map;
-        }, {});
+        if (!data || !data.anime) return user.animeList;
+        data.anime.forEach((anime: any) => {
+            user.animeList.loadAnime(new AnimeEntry({
+                malId: anime.mal_id,
+                totalEpisodes: anime.total_episodes,
+                startDate: parseStupidAmericanDateString(anime.start_date),
+                endDate: parseStupidAmericanDateString(anime.end_date),
+                userStartDate: parseStupidAmericanDateString(anime.watch_start_date),
+                userEndDate: parseStupidAmericanDateString(anime.watch_end_date),
+                myMalRating: anime.score as any,
+                myMalStatus: anime.watching_status,
+                myWatchedEpisodes: anime.watched_episodes,
+                imageURL: anime.image_url,
+                malUrl: anime.url,
+                name: anime.title,
+                sync: false
+            }).syncPut());
+        });
         if (data.anime.length === this.MAX_ANIMES_PER_PAGE)
             await this.getUserAnimeList(user, listType, page + 1);
         user.animeList.fetchedDate = new Date();
@@ -284,3 +283,4 @@ class ForumMessage {
         this.id = id;
     }
 }
+(window as any).MALUtils = MALUtils;
