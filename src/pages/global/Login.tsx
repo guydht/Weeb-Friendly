@@ -7,7 +7,7 @@ import MALUtils from "../../utils/MAL";
 
 
 export default class Login extends Component {
-    static Alert_SHOW_TIMEOUT = 4000;
+    static Alert_SHOW_TIMEOUT = 2000;
 
     state = {
         isLoggedIn: Consts.MAL_USER.isLoggedIn,
