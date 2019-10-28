@@ -17,29 +17,10 @@ export default class AnimeList {
     private _onhold: Record<number, AnimeEntry>;
     fetchedDate?: Date;
 
-    set all(value: Record<number, AnimeEntry>) {
-        let allKeys = Object.entries(value);
-        Object.values(allKeys).forEach(([strKey, value]) => {
-            let key = Number(strKey);
-            value.syncGet();
-            (this._all as any)[key] = value;
-            switch ((value as AnimeEntry).myMalStatus!) {
-                case MALStatuses.Watching:
-                    (this._watching as any)[key] = value;
-                    break
-                case MALStatuses.Completed:
-                    (this._completed as any)[key] = value;
-                    break;
-                case MALStatuses.Dropped:
-                    (this._dropped as any)[key] = value;
-                    break;
-                case MALStatuses["On-Hold"]:
-                    (this._onhold as any)[key] = value;
-                    break;
-                case MALStatuses["Plan To Watch"]:
-                    (this._plantowatch as any)[key] = value;
-            }
-        })
+    set all(_all: Record<number, AnimeEntry>) {
+        Object.values(_all).forEach(anime => {
+            this.loadAnime(anime);
+        });
     }
     get all(): Record<number, AnimeEntry> {
         return this._all;
@@ -104,8 +85,23 @@ export default class AnimeList {
         return { _all: Object.keys(this.all), fetchedDate: this.fetchedDate };
     }
     loadAnime(anime: AnimeEntry) {
-        this.all[anime.malId!] = anime;
-        this.loadFromAll(this.all);
+        this._all[anime.malId!] = anime;
+        switch (anime.myMalStatus!) {
+            case MALStatuses.Watching:
+                this._watching[anime.malId!] = anime;
+                break
+            case MALStatuses.Completed:
+                this._completed[anime.malId!] = anime;
+                break;
+            case MALStatuses.Dropped:
+                this._dropped[anime.malId!] = anime;
+                break;
+            case MALStatuses["On-Hold"]:
+                this._onhold[anime.malId!] = anime;
+                break;
+            case MALStatuses["Plan To Watch"]:
+                this._plantowatch[anime.malId!] = anime;
+        }
     }
     loadFromAll(all: Record<number, AnimeEntry>) {
         this._watching = {};
