@@ -48,7 +48,7 @@ let _storageKey = "anime-storage",
             current.synonyms.forEach(ele => anime.synonyms.add(ele));
         Object.keys(anime).forEach(key => {
             let value = anime[key as keyof AnimeEntry];
-            if (value && current![key as keyof AnimeEntry] !== value)
+            if ((value && typeof value !== "number" && !isNaN(value as any)) && current![key as keyof AnimeEntry] !== value)
                 (current as any)[key] = value;
         });
         _addToStorage(current as any);
