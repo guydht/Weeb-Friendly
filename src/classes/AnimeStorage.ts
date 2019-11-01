@@ -48,7 +48,7 @@ let _storageKey = "anime-storage",
             current.synonyms.forEach(ele => anime.synonyms.add(ele));
         Object.keys(anime).forEach(key => {
             let value = anime[key as keyof AnimeEntry];
-            if ((value && typeof value !== "number" && !isNaN(value as any)) && current![key as keyof AnimeEntry] !== value)
+            if (!(!value && typeof value !== "number") && current![key as keyof AnimeEntry] !== value)
                 (current as any)[key] = value;
         });
         _addToStorage(current as any);
@@ -81,8 +81,6 @@ let _storageKey = "anime-storage",
         needsUpdating = true;
     },
     _clearUpdatableData = (anime: AnimeEntry & { malId: number }) => {
-        delete anime.score;
-        delete anime.totalEpisodes;
         _ANIMES.set(anime.malId, [_TTL_DATE(STORAGE_TTL_IN_SECONDS), anime]);
     };
 (window as any).animeStorage = _ANIMES;
