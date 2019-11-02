@@ -136,6 +136,7 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                 </span>
                 <VideoPlayer
                     style={{ position: this.state.showAnimePage ? "fixed" : "initial", overflowY: this.state.preventScroll ? "hidden" : "auto" }}
+                    key={this.props.downloadedItem.absolutePath}
                     as={Jumbotron}
                     className={styles.container}
                     src={(this.props.downloadedItem as any).videoSrc || Consts.FILE_URL_PROTOCOL + this.props.downloadedItem.absolutePath}

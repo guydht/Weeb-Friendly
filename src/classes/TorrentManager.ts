@@ -50,9 +50,11 @@ export default class TorrentManager {
         return Array.from(Consts.SAVED_TORRENTS);
     }
     static remove(torrent: Torrent) {
-        let pathName = path.join(torrent.path, torrent.name);
+        torrent.files.forEach(file => {
+            let pathName = path.join(torrent.path, file.path);
+            fs.unlink(pathName);
+        });
         torrent.destroy();
-        fs.unlink(pathName);
         Consts.DOWNLOADED_ITEMS = walkDir(Consts.DOWNLOADS_FOLDER);
         Consts.removeFromSavedTorrents(torrent);
     }
