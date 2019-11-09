@@ -5,6 +5,7 @@ import TorrentManager from "../../classes/TorrentManager";
 import CloseButton from "../../components/CloseButton";
 import MovableComponent from "../../components/MovableComponent";
 import styles from "../../css/pages/DownloadManager.module.css";
+import Consts from "../../classes/Consts";
 
 export default class DownloadManager extends Component {
 
@@ -16,10 +17,14 @@ export default class DownloadManager extends Component {
     container = React.createRef<any>();
 
     componentDidMount() {
-        let updateTimeout: any;
+        let updatingFlag = false;
         const updateState = () => {
-            clearTimeout(updateTimeout);
-            updateTimeout = setTimeout(() => this.setState({ torrents: TorrentManager.getAll() }), 200);
+            if (updatingFlag) return;
+            updatingFlag = true;
+            setTimeout(() => {
+                this.setState({ torrents: TorrentManager.getAll() });
+                updatingFlag = false;
+            }, 1000);
         };
         TorrentManager.addEventListener(TorrentManager.Listener.addedTorrent, updateState);
         TorrentManager.addEventListener(TorrentManager.Listener.removedTorrent, updateState);
@@ -57,9 +62,9 @@ export default class DownloadManager extends Component {
                     <ListGroup className={styles.grid + " " + styles[`grid-template-${(Math.floor(this.state.torrents.length / 4) + 1)}`]}>
                         {
                             this.state.torrents.map(torrent => {
-                                if (!torrent.name) return null;
+                                if (!torrent.name || !torrent.magnetURI) return null;
                                 return (
-                                    <ListGroup.Item key={torrent.name}>
+                                    <ListGroup.Item key={torrent.magnetURI}>
                                         <OverlayTrigger trigger="hover" overlay={
                                             <Tooltip id="tooltip-auto" style={{ zIndex: 9999 }}>
                                                 Renamed to: "{(torrent as any).torrentName}"
@@ -120,16 +125,7 @@ export default class DownloadManager extends Component {
     currentServers = new Set();
     playTorrent(torrent: Torrent) {
         if (!torrent.files.length) return (window as any).displayToast({ title: "Couldn't start playnig torrent", body: "Can't find downloaded files!" })
-        let url = "";
-        if (torrent.paused)
-            url = torrent.files[0].path;
-        else {
-            let server = torrent.createServer();
-            server.listen(0);
-            let info = server.address(),
-                port = (info as any).port;
-            url = `http://localhost:${port}/0/${torrent.files[0].name}`;
-        }
+        let url = Consts.FILE_URL_PROTOCOL + torrent.path + "/" + torrent.files[0].path;
         (window as any).setAppState({
             showVideo: true,
             videoItem: {
