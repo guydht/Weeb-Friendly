@@ -225,6 +225,7 @@ function Confirm(String: any, sendResponse: any, timer?: any, yesText?: any, noT
         div.onmouseenter = function () { };
         div.style.opacity = "0";
         div.style.pointerEvents = "none";
+        parent.removeEventListener("keydown", keydown);
         (previousFocusedElement as any).focus();
     };
     (div.children[2] as any).onclick = function () {
@@ -237,6 +238,7 @@ function Confirm(String: any, sendResponse: any, timer?: any, yesText?: any, noT
         div.onmouseenter = function () { };
         div.style.opacity = "0";
         div.style.pointerEvents = "none";
+        parent.removeEventListener("keydown", keydown);
         (previousFocusedElement as any).focus();
     }
     let parent = document.fullscreenElement || document.body;
