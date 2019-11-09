@@ -446,10 +446,9 @@ function asd(AnimeName, container, videoURL) {
                 progressBarCircle.style.left = (video.currentTime / video.duration) * 100 + "%";
             });
         };
-        video.addEventListener("timeupdate", updateProgress);
+        video.addEventListener("timeupdate", () => updateProgress() & setTimer());
         video.onload = setTimer;
         video.onloadedmetadata = setTimer;
-        setInterval(setTimer, 250);
         var previousTime, mone = 0;
 
         function setTimer() {
