@@ -13,8 +13,8 @@ import routerConfig from "./routerConfig";
 
 window.addEventListener("keydown", disableAltKey);
 window.addEventListener("keyup", disableAltKey);
-function disableAltKey(e){
-  if(e.key === "Alt")
+function disableAltKey(e) {
+  if (e.key === "Alt")
     e.preventDefault();
 }
 
@@ -41,6 +41,8 @@ export default class App extends Component {
         this.forceUpdate();
         e.preventDefault();
       }
+      else if (e.ctrlKey && e.shiftKey && !e.altKey && e.code === "KeyR")
+        window.location.reload();
     });
 
   }
