@@ -28,3 +28,7 @@ input.guydhtNoSpinner[type=number]::-webkit-inner-spin-button, input.guydhtNoSpi
     -webkit-appearance: none;
     margin: 0;
 }
+
+*:focus {
+    outline: none;
+}
