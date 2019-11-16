@@ -298,27 +298,8 @@ function asd(AnimeName, container, videoURL) {
                 upperName.style.opacity = 0;
             }, video.paused === false ? 2000 : 3000);
         }
-        document.body.addEventListener("keydown", onkeydown);
-
-        function onkeydown(e) {
-            if (e.target.tagName.toLowerCase() !== "input" && e.code === "Backquote" && !document.webkitFullscreenElement && !document.pointerLockElement) {
-                if (wrapper === document.activeElement || wrapper.contains(document.activeElement)) {
-                    document.activeElement.blur();
-                    wrapper.onblur();
-                } else
-                    wrapper.focus();
-            }
-        }
-        wrapper.tabIndex = 0;
-        wrapper.onblur = function () {
-            setTimeout(() => {
-                if (!wrapper.contains(document.activeElement) && document.activeElement !== wrapper) {
-                    this.style.border = "";
-                    this.style.margin = "1px";
-                }
-            });
-        };
-        wrapper.onkeydown = function (e) {
+        container.tabIndex = container.tabIndex >= 0 ? container.tabIndex : 0;
+        container.onkeydown = function (e) {
             if (e.target.tagName === "INPUT") return;
             var multiplier = 0,
                 ctrlShiftAlt = !e.ctrlKey && !e.shiftKey && !e.altKey;
@@ -330,8 +311,7 @@ function asd(AnimeName, container, videoURL) {
                 checkInfoText(true);
             }, 10);
             if (e.code === "KeyF" && ctrlShiftAlt && !e.guydhtSentThis) {
-                if (container !== document.webkitFullscreenElement) enterFullscreenMode();
-                else exitFullscreenMode();
+                fullscreen.click();
             } else if (e.code === "Slash" && ctrlShiftAlt) {
                 if (!document.pointerLockElement) {
                     wrapper.requestPointerLock();
