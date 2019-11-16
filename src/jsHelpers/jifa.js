@@ -217,7 +217,7 @@ function asd(AnimeName, container, videoURL) {
         });
 
         function toggleFullscreen() {
-            if (document.webkitFullscreenElement === container) exitFullscreenMode();
+            if (document.webkitFullscreenElement === document.body) exitFullscreenMode();
             else enterFullscreenMode();
         }
         var previousPosition = {}, containerStyle = {}, fullScreenRect = {}, fullscreenWait, finishFullscreenExitTimeout;
@@ -233,7 +233,7 @@ function asd(AnimeName, container, videoURL) {
             wrapper.style.width = previousPosition.width + "px";
             wrapper.style.left = containerStyle.left + "px";
             wrapper.style.top = containerStyle.top + "px";
-            container.webkitRequestFullscreen();
+            document.body.webkitRequestFullscreen();
             fullscreenWait = waitFor(function () {
                 return document.webkitFullscreenElement != null;
             }, function () {
@@ -814,7 +814,7 @@ function asd(AnimeName, container, videoURL) {
             }, 1000);
         };
         fullscreen.onclick = function () {
-            if (container !== document.webkitFullscreenElement) {
+            if (document.body !== document.webkitFullscreenElement) {
                 enterFullscreenMode();
             } else {
                 exitFullscreenMode();
