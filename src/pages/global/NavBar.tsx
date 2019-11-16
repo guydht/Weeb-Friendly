@@ -59,7 +59,8 @@ export default class NavBar extends Component {
         return (
             <BootstrapNavbar bg="dark" fixed="top" variant="dark" expand="lg" style={{
                 transition: "transform .3s",
-                transform: this.state.visible ? "translateY(0)" : "translateY(-100%)"
+                transform: this.state.visible ? "translateY(0)" : "translateY(-100%)",
+                zIndex: 6
             }}>
                 <BootstrapNavbar.Brand to="/" as={Link}>Weeb Friendly</BootstrapNavbar.Brand>
                 <Link to="/settings" className="mr-3">

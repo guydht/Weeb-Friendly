@@ -31,6 +31,8 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
     movingElement = React.createRef<MovableComponent>();
 
     componentDidMount() {
+        window.addEventListener("webkitfullscreenchange", this.bindedFullScreenListener);
+        document.addEventListener("pointerlockchange", this.bindedPointerLockListener);
         if (!this.props.downloadedItem.animeEntry || !this.props.downloadedItem.animeEntry.malId ||
             (this.props.downloadedItem.animeEntry.myWatchedEpisodes || 0) >= this.props.downloadedItem.episodeData.episodeNumber) return;
         this.props.downloadedItem.animeEntry.syncGet();
@@ -66,8 +68,6 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                 }
             }
         }, 500);
-        window.addEventListener("webkitfullscreenchange", this.bindedFullScreenListener);
-        document.addEventListener("pointerlockchange", this.bindedPointerLockListener);
     }
 
     componentWillUnmount() {
@@ -117,7 +117,7 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                 });
             }, 500);
         };
-        let styleObject: any = { transition: "opacity .5s", opacity: this.state.videoOpacity, position: "fixed", zIndex: 2030 };
+        let styleObject: any = { transition: "opacity .5s", opacity: this.state.videoOpacity, position: "fixed", zIndex: 7 };
         for (let key in Consts.WATCH_PLAYER_SIZE)
             (styleObject as any)[key] = Consts.WATCH_PLAYER_SIZE[key];
         if (!this.state.showingVideo)
@@ -153,7 +153,6 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
         )
     }
     onMoveFinish(_: any, didMoveInGesture: boolean) {
-        console.log({ ...this.movingElement });
         if (didMoveInGesture && this.movingElement.current && this.movingElement.current.element.current) {
             let rect = (this.movingElement.current.element.current.getBoundingClientRect() as DOMRect).toJSON();
             delete rect.bottom;
