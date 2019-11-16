@@ -400,6 +400,8 @@ function asd(AnimeName, container, videoURL) {
             } else return;
             e.preventDefault();
             e.stopPropagation();
+            if(!video.paused)
+                video.scrollIntoView();
             if (slider.style.opacity === upperName.style.opacity && upperName.style.opacity === 0) displaySlider();
         };
 
