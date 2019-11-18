@@ -93,7 +93,7 @@ class CacheLocalStorage {
     cleanCache() {
         for (let key in this.storage)
             if (this.storage[key][0] < new Date())
-                delete this.stoarge[key];
+                delete this.storage[key];
         this.syncWithLocalStorage();
     }
     syncWithLocalStorage() {
