@@ -28,8 +28,7 @@ function asd(AnimeName, container, videoURL) {
     contentContainer.querySelector("video").src = videoURL;
     container.appendChild(contentContainer);
     contentContainer.style.background = "none";
-    asdf(AnimeName);
-    return container;
+    return asdf(AnimeName);
 
     async function asdf(AnimeName) {
         var video = container.querySelector("#guydhtVideoMyVideo"),
@@ -299,7 +298,8 @@ function asd(AnimeName, container, videoURL) {
             }, video.paused === false ? 2000 : 3000);
         }
         container.tabIndex = container.tabIndex >= 0 ? container.tabIndex : 0;
-        container.onkeydown = function (e) {
+        document.body.addEventListener("keydown", keydown);
+        function keydown(e) {
             if (e.target.tagName === "INPUT") return;
             var multiplier = 0,
                 ctrlShiftAlt = !e.ctrlKey && !e.shiftKey && !e.altKey;
@@ -901,6 +901,11 @@ function asd(AnimeName, container, videoURL) {
                 }
             }, video.paused === false ? 1000 : 2000);
         };
+        return {
+            destroy: () => {
+                document.body.removeEventListener("keydown", keydown);
+            }
+        }
     }
 }
 
