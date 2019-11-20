@@ -1,0 +1,9 @@
+.endScreenContainer{
+    background: black;
+    position: absolute;
+    top: 40px;
+    left: 0;
+    width: 100%;
+    overflow-y: hidden;
+    height: calc(100% - 80px);
+}

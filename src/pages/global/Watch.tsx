@@ -130,13 +130,14 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                 style={styleObject}
                 resizable={true}>
                 <span
-                    style={{ position: "absolute", zIndex: 1, right: 0, cursor: "pointer" }}
+                    style={{ position: "absolute", zIndex: 3, right: 0, cursor: "pointer" }}
                     className="mr-2 mt-1 p-1" onClick={hide}>
                     <span aria-hidden="true">×</span>
                 </span>
                 <VideoPlayer
                     style={{ position: this.state.showAnimePage ? "fixed" : "initial", overflowY: this.state.preventScroll ? "hidden" : "auto" }}
                     key={this.props.downloadedItem.absolutePath}
+                    downloadedItem={this.props.downloadedItem}
                     as={Jumbotron}
                     className={styles.container}
                     src={(this.props.downloadedItem as any).videoSrc || Consts.FILE_URL_PROTOCOL + this.props.downloadedItem.absolutePath}

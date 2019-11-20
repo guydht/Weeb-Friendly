@@ -5,7 +5,7 @@ import { asd } from "../jsHelpers/jifa";
 import { handleFile } from "../jsHelpers/subtitleParsers/mkvExtract";
 import { SubtitlesOctopus } from "../jsHelpers/subtitleParsers/Octopus";
 import { DisplayDownloadedAnime } from "../pages/home/DownloadedAnime";
-import { CacheLocalStorage, stringCompare } from "../utils/general";
+import { CacheLocalStorage, groupBy, stringRelativeSimilarity } from "../utils/general";
 
 
 export default class VideoPlayer extends Component {
@@ -88,16 +88,17 @@ export default class VideoPlayer extends Component {
     }
 
     getSimilarDownloadedItems() {
-        let path = window.require("path"),
-            similar = Consts.DOWNLOADED_ITEMS.sort((a, b) => {
-                let aVal = stringCompare(path.basename(a.absolutePath), this.props.src),
-                    bVal = stringCompare(path.basename(b.absolutePath), this.props.src);
-                return aVal === bVal ?
-                    (a.episodeData.episodeNumber - this.props.downloadedItem.episodeData.episodeNumber)
-                    - (b.episodeData.episodeNumber - this.props.downloadedItem.episodeData.episodeNumber)
-                    : aVal - bVal;
-            });
-        return similar.slice(0, 30);
+        let series = groupBy(Consts.DOWNLOADED_ITEMS, ["episodeData", "seriesName"]),
+            downloadedItem = this.props.downloadedItem;
+        let similar = series.sort((a, b) => {
+            return (b[0].episodeData.seriesName ? stringRelativeSimilarity(b[0].episodeData.seriesName, downloadedItem.episodeData.seriesName) : 0) -
+                (a[0].episodeData.seriesName ? stringRelativeSimilarity(a[0].episodeData.seriesName, downloadedItem.episodeData.seriesName) : 0)
+        }).flatMap(ele => ele.sort(sortByProximityOfEpisodeNumber));
+        return similar;
+        function sortByProximityOfEpisodeNumber(a, b) {
+            return Math.abs(a.episodeData.episodeNumber - downloadedItem.episodeData.episodeNumber) -
+                Math.abs(b.episodeData.episodeNumber - downloadedItem.episodeData.episodeNumber);
+        }
     }
 
     componentWillUnmount() {
@@ -110,7 +111,7 @@ export default class VideoPlayer extends Component {
             } catch (e) { }
         if (this.subsHandler)
             this.subsHandler.destroy();
-        if(this.videoHandler)
+        if (this.videoHandler)
             this.videoHandler.destroy();
         if (document.fullscreen)
             document.exitFullscreen();
@@ -119,18 +120,27 @@ export default class VideoPlayer extends Component {
     render() {
         let props = { ...this.props };
         props.ref = this.videoWrapper;
-        for (let prop of ["src", "name", "downloadedItem", "children"])
+        for (let prop of ["src", "name", "downloadedItem"])
             delete props[prop];
-        return (
-            <div {...props}>
-                {
-                    this.state.displayFinishScreenEntries.length &&
-                    <div className={styles.endScreenContainer + " p-4"}>
-                        <DisplayDownloadedAnime noDeleteButton={true} disableDoubleClick={true} downloadedItems={this.state.displayFinishScreenEntries} />
-                    </div>
-                }
-                {React.Children.toArray(this.props.children)}
-            </div>
-        );
+        props.children = React.Children.toArray(props.children);
+        if (this.state.displayFinishScreenEntries.length)
+            props.children.push((
+                <div className={styles.endScreenContainer} key={0}>
+                    <DisplayDownloadedAnime style={{ overflowY: "hidden" }} noDeleteButton={true} disableDoubleClick={true} downloadedItems={this.state.displayFinishScreenEntries} />
+                </div>
+            ));
+        let element = this.props.as ? React.createElement(this.props.as, { ...props }) : <div {...props} />;
+        return element;
+        // return (
+        //     <div {...props}>
+        //         {
+        //             this.state.displayFinishScreenEntries.length &&
+        //             <div className={styles.endScreenContainer + " p-4"}>
+        //                 <DisplayDownloadedAnime noDeleteButton={true} disableDoubleClick={true} downloadedItems={this.state.displayFinishScreenEntries} />
+        //             </div>
+        //         }
+        //         {React.Children.toArray(this.props.children)}
+        //     </div>
+        // );
     }
 }
