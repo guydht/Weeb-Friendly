@@ -3,6 +3,7 @@ import CustomMiddleClick from '../jsHelpers/CustomMiddleClick';
 import { waitFor } from '../jsHelpers/jifa';
 import { walkDir } from '../utils/general';
 import { Sources } from '../utils/torrents';
+import DownloadedItem from './DownloadedItem';
 import TorrentManager from './TorrentManager';
 import User from './User';
 
@@ -60,7 +61,7 @@ export default class Consts {
     static setDownloadsFolder(val: string) {
         Consts.DOWNLOADS_FOLDER = val;
         storage.set(Consts.DOWNLOADS_FOLDER_STORAGE_KEY, val);
-        Consts.DOWNLOADED_ITEMS = walkDir(val);
+        Consts.DOWNLOADED_ITEMS = walkDir(val).filter(ele => ele.absolutePath.endsWith(".mkv") || ele.absolutePath.endsWith(".mp4"));
     }
 
     static QUALITY_PREFERENCE_STORAGE_KEY = "quality-storage";
@@ -112,7 +113,7 @@ export default class Consts {
         storage.set(Consts.MIDDLE_CLICK_STORAGE_KEY, activated);
     }
 
-    static DOWNLOADED_ITEMS = walkDir(Consts.DOWNLOADS_FOLDER);
+    static DOWNLOADED_ITEMS: DownloadedItem[] = walkDir(Consts.DOWNLOADS_FOLDER).filter(ele => ele.absolutePath.endsWith(".mkv") || ele.absolutePath.endsWith(".mp4"));
 
     static removeFromSavedTorrents(torrent: Torrent) {
         Consts.SAVED_TORRENTS.delete(torrent);
