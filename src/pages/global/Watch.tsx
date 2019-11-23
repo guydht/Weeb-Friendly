@@ -59,7 +59,7 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                                     body: `Successfully updated ${this.props.downloadedItem.fileName} in MAL!`
                                 }) : (window as any).displayToast({
                                     title: "Failed updating Anime",
-                                    body: `Failed updating ${this.props.downloadedItem.fileName} in MAL!`
+                                    body: `Failed updating ${this.props.downloadedItem.fileName} in MAL! Try logging in again!`
                                 });
                                 (window as any).reloadPage();
                             })
@@ -130,13 +130,12 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                 style={styleObject}
                 resizable={true}>
                 <span
-                    style={{ position: "absolute", zIndex: 3, right: 0, cursor: "pointer" }}
+                    style={{ position: "absolute", zIndex: 2, right: 0, cursor: "pointer" }}
                     className="mr-2 mt-1 p-1" onClick={hide}>
                     <span aria-hidden="true">×</span>
                 </span>
                 <VideoPlayer
                     style={{ position: this.state.showAnimePage ? "fixed" : "initial", overflowY: this.state.preventScroll ? "hidden" : "auto" }}
-                    key={this.props.downloadedItem.absolutePath}
                     downloadedItem={this.props.downloadedItem}
                     as={Jumbotron}
                     className={styles.container}
@@ -146,6 +145,7 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                         this.props.downloadedItem.animeEntry && this.props.downloadedItem.animeEntry.malId && (
                             <AnimeInfo
                                 className={(this.state.showAnimePage ? styles.animeInfo : "d-none") + " mx-5 px-5 mt-5"}
+                                key={this.props.downloadedItem.absolutePath}
                                 anime={this.props.downloadedItem.animeEntry} />
                         )
                     }

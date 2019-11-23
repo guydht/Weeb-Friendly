@@ -88,16 +88,18 @@ export default class VideoPlayer extends Component {
     }
 
     getSimilarDownloadedItems() {
-        let series = groupBy(Consts.DOWNLOADED_ITEMS, ["episodeData", "seriesName"]),
-            downloadedItem = this.props.downloadedItem;
+        let downloadedItem = this.props.downloadedItem,
+            seriesName = downloadedItem.episodeData.seriesName || downloadedItem.fileName,
+            series = groupBy(Consts.DOWNLOADED_ITEMS.filter(ele => ele.absolutePath !== downloadedItem.absolutePath), ["episodeData", "seriesName"]),
+            thisSeries = series.find(ele => ele[0].episodeData.seriesName === downloadedItem.episodeData.seriesName) || [];
         let similar = series.sort((a, b) => {
-            return (b[0].episodeData.seriesName ? stringRelativeSimilarity(b[0].episodeData.seriesName, downloadedItem.episodeData.seriesName) : 0) -
-                (a[0].episodeData.seriesName ? stringRelativeSimilarity(a[0].episodeData.seriesName, downloadedItem.episodeData.seriesName) : 0)
-        }).flatMap(ele => ele.sort(sortByProximityOfEpisodeNumber));
-        return similar;
-        function sortByProximityOfEpisodeNumber(a, b) {
+            return (b[0].episodeData.seriesName ? stringRelativeSimilarity(b[0].episodeData.seriesName, seriesName) : 0) -
+                (a[0].episodeData.seriesName ? stringRelativeSimilarity(a[0].episodeData.seriesName, seriesName) : 0)
+        }).slice(1).map(ele => ele.sort().slice(0, 2)).flat();
+        return thisSeries.sort(sortByEpisodeProximity).flat().slice(0, 2).concat(similar);
+        function sortByEpisodeProximity(a, b) {
             return Math.abs(a.episodeData.episodeNumber - downloadedItem.episodeData.episodeNumber) -
-                Math.abs(b.episodeData.episodeNumber - downloadedItem.episodeData.episodeNumber);
+                Math.abs(b.episodeData.episodeNumber - downloadedItem.episodeData.episodeNumber)
         }
     }
 
@@ -115,6 +117,19 @@ export default class VideoPlayer extends Component {
             this.videoHandler.destroy();
         if (document.fullscreen)
             document.exitFullscreen();
+    }
+
+    componentDidUpdate() {
+        if (this.props.src !== this.videoHandler.currentSrc) {
+            let video = this.videoWrapper.current.querySelector("video");
+            new CacheLocalStorage("videoLastTime").setItem(this.props.name, { currentTime: video.currentTime, progress: video.currentTime / video.duration });
+            if (this.subsHandler)
+                this.subsHandler.destroy();
+            if (this.videoHandler)
+                this.videoHandler.destroy();
+            this.setupVideo();
+            this.setState({ displayFinishScreenEntries: [] });
+        }
     }
 
     render() {
