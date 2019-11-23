@@ -898,6 +898,7 @@ function asd(AnimeName, container, videoURL) {
                 document.body.removeEventListener("keydown", keydown);
                 document.removeEventListener("pointerlockchange", removedPointerLockElement);
                 contentContainer.remove();
+                subtitleTracks = [];
             },
             currentSrc: videoURL
         }

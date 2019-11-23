@@ -5,7 +5,7 @@ import { asd } from "../jsHelpers/jifa";
 import { handleFile } from "../jsHelpers/subtitleParsers/mkvExtract";
 import { SubtitlesOctopus } from "../jsHelpers/subtitleParsers/Octopus";
 import { DisplayDownloadedAnime } from "../pages/home/DownloadedAnime";
-import { CacheLocalStorage, groupBy, stringRelativeSimilarity } from "../utils/general";
+import { CacheLocalStorage, groupBy } from "../utils/general";
 
 
 export default class VideoPlayer extends Component {
@@ -25,7 +25,6 @@ export default class VideoPlayer extends Component {
     setupVideo() {
         let container = this.videoWrapper.current;
         this.videoHandler = asd(this.props.name, container, this.props.src);
-        console.log(this.videoHandler);
         let handleSubs = async subFiles => {
             const subtitles = [],
                 subtitleNames = [],
@@ -71,33 +70,33 @@ export default class VideoPlayer extends Component {
         }
         let video = container.querySelector("video");
         if (this.props.src.startsWith("file://")) {
-            let subsHandler = handleFile(this.props.src.substring(7), handleSubs);
-            this.subsHandler = subsHandler;
+            this.subsHandler = handleFile(this.props.src.substring(7), handleSubs);
             video.addEventListener("seeked", () => {
                 let fraction = video.currentTime / video.duration;
-                subsHandler.startAt(fraction);
+                this.subsHandler.startAt(fraction);
             });
             video.addEventListener("ended", () => {
                 if (video.currentTime === video.duration)
                     this.setState({ displayFinishScreenEntries: this.getSimilarDownloadedItems() });
             });
-            video.addEventListener("playing", () => {
+            let removeFinishScreen = () => {
                 if (video.currentTime !== video.duration)
                     this.setState({ displayFinishScreenEntries: [] });
-            });
+            };
+            video.addEventListener("playing", removeFinishScreen);
+            video.addEventListener("seeked", removeFinishScreen);
         }
     }
 
     getSimilarDownloadedItems() {
         let downloadedItem = this.props.downloadedItem,
-            seriesName = downloadedItem.episodeData.seriesName || downloadedItem.fileName,
             series = groupBy(Consts.DOWNLOADED_ITEMS.filter(ele => ele.absolutePath !== downloadedItem.absolutePath), ["episodeData", "seriesName"]),
             thisSeries = series.find(ele => ele[0].episodeData.seriesName === downloadedItem.episodeData.seriesName) || [];
         let similar = series.sort((a, b) => {
-            return (b[0].episodeData.seriesName ? stringRelativeSimilarity(b[0].episodeData.seriesName, seriesName) : 0) -
-                (a[0].episodeData.seriesName ? stringRelativeSimilarity(a[0].episodeData.seriesName, seriesName) : 0)
-        }).slice(1).map(ele => ele.sort().slice(0, 2)).flat();
-        return thisSeries.sort(sortByEpisodeProximity).flat().slice(0, 2).concat(similar);
+            return Math.max(...b.map(ele => ele.lastUpdated)) -
+                Math.max(...a.map(ele => ele.lastUpdated))
+        }).map(ele => ele.sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { numeric: true }))[0]);
+        return thisSeries.sort(sortByEpisodeProximity).slice(0, 2).concat(similar);
         function sortByEpisodeProximity(a, b) {
             return Math.abs(a.episodeData.episodeNumber - downloadedItem.episodeData.episodeNumber) -
                 Math.abs(b.episodeData.episodeNumber - downloadedItem.episodeData.episodeNumber)
@@ -131,7 +130,8 @@ export default class VideoPlayer extends Component {
                 try {
                     clearInterval(this.subtitlesOctopus.resizeInterval);
                     this.subtitlesOctopus.dispose();
-                } catch (e) { }
+                } catch (e) {
+                }
                 finally {
                     delete this.subtitlesOctopus;
                 }
@@ -139,6 +139,8 @@ export default class VideoPlayer extends Component {
                 this.subsHandler.destroy();
             if (this.videoHandler)
                 this.videoHandler.destroy();
+            delete this.videoHandler;
+            delete this.subsHandler;
             this.setupVideo();
             this.setState({ displayFinishScreenEntries: [] });
         }
