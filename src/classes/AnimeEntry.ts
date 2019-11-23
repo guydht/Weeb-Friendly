@@ -90,8 +90,10 @@ export default class AnimeEntry {
             let imageRequest = request(this._imageURL),
                 writeStream = fs.createWriteStream(ThumbnailManager.SAVED_THUMBNAILS_PATH + this.malId);
             imageRequest.pipe(writeStream);
-            ThumbnailManager.SAVED_THUMBNAILS.add(this.malId);
-            ThumbnailManager.setThumbnailStorage();
+            writeStream.on("finish", () => {
+                ThumbnailManager.SAVED_THUMBNAILS.add(this.malId!);
+                ThumbnailManager.setThumbnailStorage();
+            });
         }
         return ThumbnailManager.SAVED_THUMBNAILS_STATE && this.malId && ThumbnailManager.SAVED_THUMBNAILS.has(this.malId) ?
             "file://" + ThumbnailManager.SAVED_THUMBNAILS_PATH + this.malId : this._imageURL;
