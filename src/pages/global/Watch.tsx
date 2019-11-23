@@ -145,7 +145,7 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                         this.props.downloadedItem.animeEntry && this.props.downloadedItem.animeEntry.malId && (
                             <AnimeInfo
                                 className={(this.state.showAnimePage ? styles.animeInfo : "d-none") + " mx-5 px-5 mt-5"}
-                                key={this.props.downloadedItem.absolutePath}
+                                key={this.props.downloadedItem.animeEntry.malId}
                                 anime={this.props.downloadedItem.animeEntry} />
                         )
                     }
