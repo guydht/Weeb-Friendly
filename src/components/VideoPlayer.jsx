@@ -25,6 +25,7 @@ export default class VideoPlayer extends Component {
     setupVideo() {
         let container = this.videoWrapper.current;
         this.videoHandler = asd(this.props.name, container, this.props.src);
+        console.log(this.videoHandler);
         let handleSubs = async subFiles => {
             const subtitles = [],
                 subtitleNames = [],
@@ -52,7 +53,7 @@ export default class VideoPlayer extends Component {
                     this.subtitlesOctopus.setTrack(subtitles[index]);
                 }
             });
-            if (!this.subtitlesOctopus || this.subtitlesOctopus.destroyed) {
+            if (!this.subtitlesOctopus) {
                 this.subtitlesOctopus = new SubtitlesOctopus(options);
                 this.subtitlesOctopus.resizeInterval = setInterval(() => {
                     let currentVideoSize = video.getBoundingClientRect().toJSON();
@@ -111,6 +112,9 @@ export default class VideoPlayer extends Component {
                 clearInterval(this.subtitlesOctopus.resizeInterval);
                 this.subtitlesOctopus.dispose();
             } catch (e) { }
+            finally {
+                delete this.subtitlesOctopus;
+            }
         if (this.subsHandler)
             this.subsHandler.destroy();
         if (this.videoHandler)
@@ -123,6 +127,14 @@ export default class VideoPlayer extends Component {
         if (this.props.src !== this.videoHandler.currentSrc) {
             let video = this.videoWrapper.current.querySelector("video");
             new CacheLocalStorage("videoLastTime").setItem(this.props.name, { currentTime: video.currentTime, progress: video.currentTime / video.duration });
+            if (this.subtitlesOctopus)
+                try {
+                    clearInterval(this.subtitlesOctopus.resizeInterval);
+                    this.subtitlesOctopus.dispose();
+                } catch (e) { }
+                finally {
+                    delete this.subtitlesOctopus;
+                }
             if (this.subsHandler)
                 this.subsHandler.destroy();
             if (this.videoHandler)
