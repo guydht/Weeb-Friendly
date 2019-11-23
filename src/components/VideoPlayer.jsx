@@ -92,7 +92,7 @@ export default class VideoPlayer extends Component {
         let downloadedItem = this.props.downloadedItem,
             series = groupBy(Consts.DOWNLOADED_ITEMS.filter(ele => ele.absolutePath !== downloadedItem.absolutePath), ["episodeData", "seriesName"]),
             thisSeries = series.find(ele => ele[0].episodeData.seriesName === downloadedItem.episodeData.seriesName) || [];
-        let similar = series.sort((a, b) => {
+        let similar = series.filter(ele => ele[0].episodeData.seriesName !== downloadedItem.episodeData.seriesName).sort((a, b) => {
             return Math.max(...b.map(ele => ele.lastUpdated)) -
                 Math.max(...a.map(ele => ele.lastUpdated))
         }).map(ele => ele.sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { numeric: true }))[0]);
