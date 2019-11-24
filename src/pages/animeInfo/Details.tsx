@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import AnimeEntry from "../../classes/AnimeEntry";
 import Consts from "../../classes/Consts";
 import ChangableText from "../../components/ChangableText";
+import DownloadedFileThumbnail from "../../components/DownloadedFileThumbnail";
 import styles from "../../css/pages/Details.module.css";
 import { hasInternet } from "../../utils/general";
 import MALUtils, { MALStatuses } from "../../utils/MAL";
@@ -16,7 +17,7 @@ export default class Details extends Component<AnimeInfoProps> {
     episodElement = React.createRef() as RefObject<any>;
 
     render() {
-        console.log({ ...this.props.anime });
+        let sameSeries = Consts.DOWNLOADED_ITEMS.filter(ele => this.props.anime.synonyms.has(ele.episodeData.seriesName));
         return (
             <div className={styles.container}>
                 {
@@ -180,6 +181,27 @@ export default class Details extends Component<AnimeInfoProps> {
                         </Modal.Dialog>
                     </Row>
                 }
+                {
+                    sameSeries.length > 0 && (
+                        <Row>
+                            <Modal.Dialog className={styles.modal}>
+                                <Modal.Header>
+                                    <Modal.Title>Downloaded Episodes</Modal.Title>
+                                </Modal.Header>
+                                <Modal.Body style={{
+                                    display: "flex",
+                                    justifyContent: "space-evenly"
+                                }}>
+                                    {
+                                        sameSeries.map(ele =>
+                                            <DownloadedFileThumbnail downloadedItem={ele} />
+                                        )
+                                    }
+                                </Modal.Body>
+                            </Modal.Dialog>
+                        </Row>
+                    )
+                }
             </div >
         )
     }
@@ -207,7 +229,7 @@ export default class Details extends Component<AnimeInfoProps> {
                 if (ok)
                     (window as any).displayToast({ title: 'Successfully updated!', body: `Succesfully update ${this.props.anime.name}!` });
                 else
-                    (window as any).displayToast({ title: 'Something Went Wrong!', body: `MyanimeList sent error code :(` });
+                    (window as any).displayToast({ title: 'Something Went Wrong!', body: `MyanimeList sent error code :(\nTry logging in again!` });
                 (window as any).reloadPage();
             });
         }, Details.UPDATE_TIMEOUT_MS);
