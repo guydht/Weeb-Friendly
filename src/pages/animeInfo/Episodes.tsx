@@ -197,7 +197,7 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
     }
     confirmDownloadEpisodes([episodeStart, episodeEnd]: number[]) {
         let episodes = DisplayEpisodes.groupByQuality(this.state.episodes);
-        episodes.slice(episodeStart - 1, episodeEnd).forEach(episode => {
+        episodes.slice(episodes.length - episodeEnd, episodes.length - episodeStart + 1).forEach(episode => {
             let qualityOfBiggestPriority = episode.episodeData.qualities.sort((a: number, b: number) => {
                 a = Consts.QUALITY_PREFERENCE.indexOf([...Consts.QUALITY_PREFERENCE].sort((q1, q2) => Math.abs(q1 - a) - Math.abs(q2 - a))[0]);
                 b = Consts.QUALITY_PREFERENCE.indexOf([...Consts.QUALITY_PREFERENCE].sort((q1, q2) => Math.abs(q1 - b) - Math.abs(q2 - b))[0]);
