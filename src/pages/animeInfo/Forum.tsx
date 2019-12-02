@@ -17,7 +17,7 @@ export default class Forum extends Component<AnimeInfoProps> {
         errorMessage?: string, currentPageNumber: number, totalPages: number
     } = {
             loading: true,
-            currentPageNumber: 1,
+            currentPageNumber: 0,
             totalPages: 0
         }
 
@@ -25,10 +25,11 @@ export default class Forum extends Component<AnimeInfoProps> {
     savedPages: Map<number, ForumTopic[]> = new Map();
 
     componentDidMount() {
-        this.loadPageNumber(1);
+        this.loadPageNumber(0);
     }
 
     loadPageNumber(pageNumber: number) {
+        if(pageNumber < 0) return;
         if (this.savedPages.has(pageNumber))
             return this.setState({ topics: this.savedPages.get(pageNumber), loading: false, currentPageNumber: pageNumber });;
         this.setState({ loading: true })
@@ -37,7 +38,7 @@ export default class Forum extends Component<AnimeInfoProps> {
                 this.savedPages.set(pageNumber, topics);
                 this.setState({ topics, loading: false, totalPages: numOfPages, currentPageNumber: pageNumber });
             }
-            else throw new Error("Something went wrong!");
+            else throw new Error("MyAnimeList didn't respond as expected!");
         }).catch((e) => { this.setState({ loading: false, errorFetching: true, errorMessage: e.toString() }); });
     }
 
@@ -54,8 +55,8 @@ export default class Forum extends Component<AnimeInfoProps> {
                                     return (
                                         <Pagination.Item
                                             key={i}
-                                            onClick={() => this.loadPageNumber(i + 1)}
-                                            active={this.state.currentPageNumber === i + 1}>
+                                            onClick={() => this.loadPageNumber(i)}
+                                            active={this.state.currentPageNumber === i}>
                                             {i + 1}
                                         </Pagination.Item>
                                     )
