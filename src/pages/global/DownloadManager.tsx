@@ -1,11 +1,11 @@
 import React, { Component } from "react";
 import { Button, ButtonGroup, Col, Container, ListGroup, OverlayTrigger, ProgressBar, Row, Tooltip } from "react-bootstrap";
 import { Torrent } from "webtorrent";
+import Consts from "../../classes/Consts";
 import TorrentManager from "../../classes/TorrentManager";
 import CloseButton from "../../components/CloseButton";
 import MovableComponent from "../../components/MovableComponent";
 import styles from "../../css/pages/DownloadManager.module.css";
-import Consts from "../../classes/Consts";
 
 export default class DownloadManager extends Component {
 
@@ -51,7 +51,7 @@ export default class DownloadManager extends Component {
                 style={{ position: "fixed", top: 0, left: 10, height: this.state.hideFlag ? 0 : "auto", zIndex: 2029 }}>
                 <span
                     onPointerEnter={show}
-                    style={{ position: "absolute" }}>
+                    style={{ position: "absolute", display: document.elementsFromPoint(10, 0).some(ele => ele.tagName === "VIDEO") ? "none" : "" }}>
                     View Current Downloads
                 </span>
                 <Container
