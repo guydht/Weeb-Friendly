@@ -43,29 +43,25 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                 return relevant[1].progress;
             return 0;
         }
-        let lastLocalStorageValue = progressFromLocalStorage();
         setInterval(() => {
             if (!this.state.wantsToUpdateInMAL) return;
             let current = progressFromLocalStorage();
-            if (current !== lastLocalStorageValue) {
-                lastLocalStorageValue = current;
-                if (current > Watch.UPDATE_ANIME_PROGRESS_THRESHOLD) {
-                    this.setState({ wantsToUpdateInMAL: false });
-                    Confirm(`Do you want to update ${this.props.downloadedItem.fileName} in MAL?`, (ok: boolean) => {
-                        if (ok) {
-                            MALUtils.UpdateWatchedEpisode(this.props.downloadedItem).then(ok => {
-                                ok ? (window as any).displayToast({
-                                    title: "Anime Updated Successfully",
-                                    body: `Successfully updated ${this.props.downloadedItem.fileName} in MAL!`
-                                }) : (window as any).displayToast({
-                                    title: "Failed updating Anime",
-                                    body: `Failed updating ${this.props.downloadedItem.fileName} in MAL! Try logging in again!`
-                                });
-                                (window as any).reloadPage();
-                            })
-                        }
-                    })
-                }
+            if (current > Watch.UPDATE_ANIME_PROGRESS_THRESHOLD) {
+                this.setState({ wantsToUpdateInMAL: false });
+                Confirm(`Do you want to update ${this.props.downloadedItem.fileName} in MAL?`, (ok: boolean) => {
+                    if (ok) {
+                        MALUtils.UpdateWatchedEpisode(this.props.downloadedItem).then(ok => {
+                            ok ? (window as any).displayToast({
+                                title: "Anime Updated Successfully",
+                                body: `Successfully updated ${this.props.downloadedItem.fileName} in MAL!`
+                            }) : (window as any).displayToast({
+                                title: "Failed updating Anime",
+                                body: `Failed updating ${this.props.downloadedItem.fileName} in MAL! Try logging in again!`
+                            });
+                            (window as any).reloadPage();
+                        })
+                    }
+                })
             }
         }, 500);
     }
@@ -99,9 +95,8 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                 showingVideo: true
             });
         }
-        if (prevProps.downloadedItem.fileName !== this.props.downloadedItem.fileName) {
+        if (prevProps.downloadedItem.fileName !== this.props.downloadedItem.fileName)
             this.setState({ wantsToUpdateInMAL: true });
-        }
     };
     render() {
         const hide = (e: React.MouseEvent) => {
