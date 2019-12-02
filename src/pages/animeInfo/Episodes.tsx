@@ -48,7 +48,7 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
     searchDownloadedFromSeries() {
         this.downloadedFromSeries = Consts.DOWNLOADED_ITEMS.filter(item => {
             return item.animeEntry.malId === this.props.anime.malId ||
-                (item.animeEntry.name.match(/[a-zA-Z0-9\s]*/g) || []).join("") === (this.props.anime.name!.match(/[a-zA-Z0-9\s]*/g) || []).join("")
+                (item.animeEntry.name!.match(/[a-zA-Z0-9\s]*/g) || []).join("") === (this.props.anime.name!.match(/[a-zA-Z0-9\s]*/g) || []).join("")
         });
     }
 

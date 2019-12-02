@@ -39,7 +39,7 @@ function stringRelativeSimilarity(str1: string, str2: string) {
     return (longerLength - levenshteinDistance(longer, shorter)) / longerLength;
 }
 
-function stringCompare(givenString: string, toCompare: string) {
+function stringCompare(givenString: string, toCompare: string): number {
     let givenSplit = (givenString || "").split(" "),
         compareSplit = (toCompare || "").split(" ");
     let minDistances = givenSplit.map(givenWord => {
@@ -104,7 +104,7 @@ class CacheLocalStorage {
         this.storage[key] = [ttl_date(this.cacheTTLDays), item];
         this.syncWithLocalStorage();
     }
-    getItem(key: string | number) {
+    getItem(key: string | number): any {
         this.cleanCache();
         return (this.storage[key] || [])[1];
     }
@@ -118,12 +118,14 @@ function ttl_date(days: number) {
 
 let fs = window.require("fs"),
     path = window.require("path"),
-    walkDir = function (dir: string) {
+    walkDir = function (dir: string): DownloadedItem[] {
         try {
             let results: any[] = [];
             let list = fs.readdirSync(dir);
             list.forEach(function (filename: string) {
                 let file = path.join(dir, filename);
+                if (!fs.existsSync(file))
+                    return;
                 let stat = fs.statSync(file);
                 if (stat.isDirectory())
                     results = results.concat(walkDir(file));

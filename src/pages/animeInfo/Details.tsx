@@ -193,8 +193,8 @@ export default class Details extends Component<AnimeInfoProps> {
                                     justifyContent: "space-evenly"
                                 }}>
                                     {
-                                        sameSeries.map(ele =>
-                                            <DownloadedFileThumbnail downloadedItem={ele} />
+                                        sameSeries.map((ele, i) =>
+                                            <DownloadedFileThumbnail key={i} downloadedItem={ele} />
                                         )
                                     }
                                 </Modal.Body>

@@ -190,6 +190,7 @@ function pantsuResultToSearchResult(source: Sources, pantsuResult: any) {
     });
     return result;
 }
+(window as any).torrentUtils = TorrentUtils;
 
 export class SearchResult {
     category!: {

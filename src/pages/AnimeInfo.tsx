@@ -15,6 +15,7 @@ import News from "./animeInfo/News";
 import Pictures from "./animeInfo/Pictures";
 import Reviews from "./animeInfo/Reviews";
 import Stats from "./animeInfo/Stats";
+const qwantApi = window.require("qwant-api");
 
 export interface AnimeInfoProps {
     info: AnimeById;
@@ -118,28 +119,33 @@ export default class AnimeInfo extends Component<{ anime?: AnimeEntry } & React.
                         }
                     </h2>
                 </Row>
-                <Row style={{ flexWrap: "nowrap" }}>
+                <Row>
                     <Col md="auto">
-                        <ImageZoom image={{
-                            src: this.state.anime.imageURL || "",
-                            alt: this.state.anime.name
-                        }} zoomImage={{
-                            src: this.state.highResPhoto || this.state.info ? (this.state.info as any).image_url : this.state.anime.imageURL || "",
-                            alt: this.state.anime.name
-                        }} defaultStyles={{
-                            overlay: {
-                                background: "rgba(0, 0, 0, 0.8)"
-                            },
-                            image: {
-                                cursor: "pointer"
-                            },
-                            zoomImage: {
-                                cursor: "pointer"
-                            }
-                        }} onZoom={() => (hasInternet() && this.state.info && this.searchHighResPhoto((this.state.info as any).image_url)) as object} />
+                        <ImageZoom
+                            image={{
+                                src: this.state.anime.imageURL || "",
+                                alt: this.state.anime.name
+                            }}
+                            zoomImage={{
+                                src: this.state.highResPhoto || this.state.anime.imageURL || "",
+                                alt: this.state.anime.name
+                            }}
+                            shouldReplaceImage={false}
+                            defaultStyles={{
+                                overlay: {
+                                    background: "rgba(0, 0, 0, 0.8)"
+                                },
+                                image: {
+                                    cursor: "pointer"
+                                },
+                                zoomImage: {
+                                    cursor: "pointer"
+                                }
+                            }}
+                            onZoom={() => (hasInternet() && !this.state.highResPhoto && this.searchHighResPhoto(this.state.anime)) as object} />
                     </Col>
                     <Col md="auto" style={{ flex: 1 }}>
-                        <Tabs id="mal-links" defaultActiveKey={"Details"} className="justify-content-center">
+                        <Tabs id="mal-links" defaultActiveKey={"Details"} className="justify-content-start">
                             {
                                 Object.entries(this.PAGE_LINKS).map(([name, MyComponent], i) => {
                                     return (
@@ -159,16 +165,17 @@ export default class AnimeInfo extends Component<{ anime?: AnimeEntry } & React.
             </div>
         );
     }
-    async searchHighResPhoto(image: string) {
-        let data = await fetch("https://www.google.com/searchbyimage?site=search&image_url=" + image).then(r => r.text()),
-            html = document.createElement("html");
-        html.innerHTML = data;
-        let link = html.querySelector("a[title=\"All sizes\"") as HTMLAnchorElement;
-        if (!link) return;
-        data = await fetch(link.href.replace(window.location.origin, "https://www.google.com")).then(r => r.text());
-        html.innerHTML = data;
-        let highResPhoto = (html.querySelector("#search img") as HTMLImageElement).src.replace(window.location.origin, "https://www.google.com");
-        if (highResPhoto)
-            this.setState({ highResPhoto });
+    async searchHighResPhoto(anime: AnimeEntry) {
+        qwantApi.search("images", {
+            query: anime.name + " Cover",
+            count: 10
+        }, (err: any, data: any) => {
+            if (!err && data.data) {
+                console.log(data);
+                let highResPhoto = data.data.result.items[0].media;
+                if (highResPhoto)
+                    this.setState({ highResPhoto });
+            }
+        });
     }
 }

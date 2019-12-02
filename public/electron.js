@@ -30,7 +30,7 @@ function createWindow() {
         webPreferences: {
             webSecurity: false,
             nodeIntegration: true,
-            devTools: isDev
+            // devTools: isDev
         },
         icon: path.join(__dirname, "icons/icon.png"),
         autoHideMenuBar: true

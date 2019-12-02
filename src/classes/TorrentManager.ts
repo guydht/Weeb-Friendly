@@ -29,7 +29,12 @@ export default class TorrentManager {
                 let files = [...torrent.files];
                 torrent.destroy(() => {
                     files.forEach((file: any) => {
-                        let absolutePath = path.join(torrent.path, file.path),
+                        // let withoutExtension = file.path.replace(path.extname(file.path), ""),
+                        //     downloadedItem = new DownloadedItem(
+                        //         file.path,
+                        //         withoutExtension, new Date()
+                        //     );
+                        const absolutePath = path.join(torrent.path, file.path),
                             extension = path.extname(file.path),
                             newAbsolutePath = path.join(Consts.DOWNLOADS_FOLDER, name + extension);
                         fs.rename(absolutePath, newAbsolutePath);

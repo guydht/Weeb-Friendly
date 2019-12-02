@@ -8,6 +8,24 @@ import styles from "../../css/pages/DownloadedAnime.module.css";
 import { waitFor } from "../../jsHelpers/jifa";
 import MALUtils from "../../utils/MAL";
 
+export class DisplayDownloadedAnime extends Component {
+    render() {
+        let props = { ...this.props };
+        delete  props.style;
+        return (
+            <div className={styles.grid} style={this.props.style || {}} >
+                {
+                    this.props.downloadedItems.map(downloadedItem => {
+                        return (
+                            <DownloadedFileThumbnail {...props} key={downloadedItem.absolutePath} downloadedItem={downloadedItem} className="m-1" />
+                        )
+                    })
+                }
+            </div>
+        )
+    }
+}
+
 export default withRouter(class DownloadedAnime extends Component {
 
     filterElement = React.createRef();
@@ -66,15 +84,7 @@ export default withRouter(class DownloadedAnime extends Component {
                         </InputGroup>
                     </Row>
                     <Row>
-                        <div className={styles.grid + " mx-5"}>
-                            {
-                                this.sortedItems.map(downloadedItem => {
-                                    return (
-                                        <DownloadedFileThumbnail key={downloadedItem.absolutePath} downloadedItem={downloadedItem} className="m-1" />
-                                    )
-                                })
-                            }
-                        </div>
+                        <DisplayDownloadedAnime downloadedItems={this.sortedItems} />
                     </Row>
                 </Container>
             </div>

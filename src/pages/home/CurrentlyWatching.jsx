@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import Consts from "../../classes/Consts";
 import MALUtils from "../../utils/MAL";
 import styles from "../../css/pages/SeasonalCarousel.module.css";
+import SeasonalCarousel from "./SeasonalCarousel";
 
 function chunkArray(myArray, chunk_size) {
     var results = [],
@@ -17,8 +18,6 @@ function chunkArray(myArray, chunk_size) {
 }
 
 export default class CurrentlyWatching extends Component {
-    static GRID_SIZE_X = 5;
-    static GRID_SIZE_Y = 2;
 
     state = {
         animeList: Consts.MAL_USER.animeList
@@ -46,14 +45,14 @@ export default class CurrentlyWatching extends Component {
                 <Carousel interval={null} className="px-5 mx-5 mt-5">
                     {
                         chunkArray(Object.values(this.state.animeList.watching).sort(
-                            (a, b) => b.startDate - a.startDate), CurrentlyWatching.GRID_SIZE_X * CurrentlyWatching.GRID_SIZE_Y)
+                            (a, b) => b.startDate - a.startDate), SeasonalCarousel.GRID_SIZE_X * SeasonalCarousel.GRID_SIZE_Y)
                             .map((arrayChunk, i) => {
                                 return (
                                     <Carousel.Item key={arrayChunk[0].name} className={styles.carousel}>
                                         <Table responsive={false} className={styles.table}>
                                             <tbody>
                                                 {
-                                                    chunkArray(arrayChunk, CurrentlyWatching.GRID_SIZE_X).map((chunk, i) => {
+                                                    chunkArray(arrayChunk, SeasonalCarousel.GRID_SIZE_X).map((chunk, i) => {
                                                         return (
                                                             <tr key={i}>
                                                                 {

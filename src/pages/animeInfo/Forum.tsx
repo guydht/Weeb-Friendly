@@ -1,35 +1,70 @@
-import { Forum as ForumType } from "jikants/dist/src/interfaces/anime/Forum";
 import React, { Component } from "react";
-import { Accordion, Col, Container, Jumbotron, Modal, OverlayTrigger, Row, Spinner, Tooltip } from "react-bootstrap";
+import { Accordion, Col, Container, Jumbotron, Modal, OverlayTrigger, Pagination, Row, Spinner, Toast, Tooltip } from "react-bootstrap";
 //@ts-ignore
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import PageTransition from "../../components/PageTransition";
 import styles from "../../css/pages/Forum.module.css";
 import { hasInternet } from "../../utils/general";
-import MALUtils, { ForumEntry } from "../../utils/MAL";
+import MALUtils, { ForumEntry, ForumTopic } from "../../utils/MAL";
 import { AnimeInfoProps } from "../AnimeInfo";
 import Home from "../Home";
 
 
 export default class Forum extends Component<AnimeInfoProps> {
 
-    state: { topics?: ForumType["topics"], forumEntry?: ForumEntry, loading: boolean } = {
-        loading: true
-    }
+    state: {
+        topics?: ForumTopic[], forumEntry?: ForumEntry, loading: boolean, errorFetching?: boolean,
+        errorMessage?: string, currentPageNumber: number, totalPages: number
+    } = {
+            loading: true,
+            currentPageNumber: 1,
+            totalPages: 0
+        }
 
     transitionController = React.createRef<PageTransition>();
+    savedPages: Map<number, ForumTopic[]> = new Map();
 
     componentDidMount() {
-        MALUtils.animeForum(this.props.anime as any).then(topics => {
-            if (topics && topics.length)
-                this.setState({ topics, loading: false });
-        }).catch(() => { this.setState({ loading: false }); this.componentDidMount() });
+        this.loadPageNumber(1);
+    }
+
+    loadPageNumber(pageNumber: number) {
+        if (this.savedPages.has(pageNumber))
+            return this.setState({ topics: this.savedPages.get(pageNumber), loading: false, currentPageNumber: pageNumber });;
+        this.setState({ loading: true })
+        MALUtils.animeForum(this.props.anime as any, pageNumber).then(([topics, numOfPages]) => {
+            if (topics && topics.length) {
+                this.savedPages.set(pageNumber, topics);
+                this.setState({ topics, loading: false, totalPages: numOfPages, currentPageNumber: pageNumber });
+            }
+            else throw new Error("Something went wrong!");
+        }).catch((e) => { this.setState({ loading: false, errorFetching: true, errorMessage: e.toString() }); });
     }
 
     render() {
         return (
             <PageTransition style={{ overflow: "visible" }} ref={this.transitionController} className="mt-5" >
                 <Container>
+                    {this.state.totalPages !== 0 &&
+                        <Pagination >
+                            <Pagination.First onClick={() => this.loadPageNumber(1)} />
+                            <Pagination.Prev onClick={() => this.loadPageNumber(this.state.currentPageNumber - 1)} />
+                            {
+                                Array.from(new Array(this.state.totalPages)).map((_, i) => {
+                                    return (
+                                        <Pagination.Item
+                                            key={i}
+                                            onClick={() => this.loadPageNumber(i + 1)}
+                                            active={this.state.currentPageNumber === i + 1}>
+                                            {i + 1}
+                                        </Pagination.Item>
+                                    )
+                                })
+                            }
+                            <Pagination.Next onClick={() => this.loadPageNumber(this.state.currentPageNumber + 1)} />
+                            <Pagination.Last onClick={() => this.loadPageNumber(this.state.totalPages)} />
+                        </Pagination>
+                    }
                     {
                         this.state.topics && this.state.topics.map((topic, i) => {
                             return (
@@ -42,8 +77,8 @@ export default class Forum extends Component<AnimeInfoProps> {
                                         <Modal.Body className={styles.modalBody}>
                                             <Row>
                                                 <Col>Replies: {topic.replies}</Col>
-                                                <Col>Author: {topic.author_name}</Col>
-                                                <Col>Posted: {topic.date_posted}</Col>
+                                                <Col>Author: {topic.author}</Col>
+                                                <Col>Posted: {topic.posted}</Col>
                                             </Row>
                                         </Modal.Body>
                                     </div>
@@ -63,7 +98,17 @@ export default class Forum extends Component<AnimeInfoProps> {
                                     </Modal.Body>
                                 </Modal.Dialog>
                             </div>
-                        ) : !hasInternet() ? Home.noInternetComponent("Forums") : null
+                        ) : !hasInternet() ? Home.noInternetComponent("Forums") : this.state.errorFetching && (
+                            <Toast className="mx-auto mt-5">
+                                <Toast.Header closeButton={false}>
+                                    <span>Couldn't load forum topics from MyAnimeList. Something went wrong!</span>
+                                </Toast.Header>
+                                <Toast.Body>
+                                    Error Message:
+                                    {this.state.errorMessage}
+                                </Toast.Body>
+                            </Toast>
+                        )
                     }
                 </Container>
                 <Container>
@@ -111,8 +156,8 @@ export default class Forum extends Component<AnimeInfoProps> {
             </PageTransition >
         )
     }
-    forumEntries: Map<ForumType["topics"][0], ForumEntry> = new Map();
-    loadForum(topic: ForumType["topics"][0]) {
+    forumEntries: Map<ForumTopic, ForumEntry> = new Map();
+    loadForum(topic: ForumTopic) {
         if (this.forumEntries.has(topic)) {
             this.setState({
                 forumEntry: this.forumEntries.get(topic),

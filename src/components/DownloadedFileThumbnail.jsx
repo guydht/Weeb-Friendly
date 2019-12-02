@@ -11,12 +11,12 @@ export default withRouter(class DownloadedFileThumbnail extends Component {
     render() {
         let downloadedItem = this.props.downloadedItem,
             props = { ...this.props };
-        for (let prop of ['downloadedItem', 'history', 'location', 'match', 'staticContext'])
+        for (let prop of ['downloadedItem', 'history', 'location', 'match', 'staticContext', 'disableDoubleClick', 'downloadedItems', 'noDeleteButton'])
             delete props[prop];
         return (
             <div {...props}
                 className={styles.gridElement + " " + this.props.className || ""}
-                onDoubleClick={e => this.showAnime(downloadedItem) && e.stopPropagation()}
+                onDoubleClick={e => this.props.disableDoubleClick !== false && this.showAnime(downloadedItem) && e.stopPropagation()}
                 onClick={() => this.showVideo(downloadedItem)}>
                 <LazyLoadComponent>
                     <VideoThumbnail
@@ -26,11 +26,14 @@ export default withRouter(class DownloadedFileThumbnail extends Component {
                     />
                 </LazyLoadComponent>
                 <div className={styles.cover}>
-                    <span
-                        style={{ position: "absolute", zIndex: 4, right: 0, top: 0, cursor: "pointer" }}
-                        className="mr-2 mt-1 p-1" onClick={e => this.confirmDeletion() && e.stopPropagation()}>
-                        <span aria-hidden="true">×</span>
-                    </span>
+                    {
+                    this.props.noDeleteButton !== true &&
+                        <span
+                            style={{ position: "absolute", zIndex: 4, right: 0, top: 0, cursor: "pointer" }}
+                            className="mr-2 mt-1 p-1" onClick={e => this.confirmDeletion() && e.stopPropagation()}>
+                            <span aria-hidden="true">×</span>
+                        </span>
+                    }
                 </div>
                 <span className={styles.title}>{downloadedItem.fileName}</span>
             </div>

@@ -1,5 +1,4 @@
 import { AnimeById } from "jikants/dist/src/interfaces/anime/ById";
-import { Forum } from "jikants/dist/src/interfaces/anime/Forum";
 import { Reviews } from "jikants/dist/src/interfaces/anime/Reviews";
 import { Seasons } from "jikants/dist/src/interfaces/season/Season";
 import { AnimeListTypes } from "jikants/dist/src/interfaces/user/AnimeList";
@@ -155,7 +154,8 @@ export default class MALUtils {
             method: "POST",
             body: JSON.stringify(body)
         });
-        if (request.ok) {
+        let isOk = request.ok && request.url === this.UPDATE_ANIME_URL;
+        if (isOk) {
             anime.syncGet();
             anime.myWatchedEpisodes = episodes;
             anime.myMalStatus = status;
@@ -165,7 +165,7 @@ export default class MALUtils {
             anime.syncPut();
             Consts.MAL_USER.animeList.loadAnime(anime);
         }
-        return request.ok;
+        return isOk;
     }
     static async addAnime(anime: AnimeEntry & HasMalId) {
         let request = await fetch(this.ADD_ANIME_URL, {
@@ -178,7 +178,7 @@ export default class MALUtils {
                 csrf_token: Consts.CSRF_TOKEN
             })
         });
-        let ok = request.ok || (await request.json()).errors[0].message === "The anime is already in your list.";
+        let ok = (request.ok || (await request.json()).errors[0].message === "The anime is already in your list.") && request.url === this.ADD_ANIME_URL;
         if (ok) {
             anime.syncGet();
             anime.myMalStatus = MALStatuses.Watching;
@@ -203,11 +203,33 @@ export default class MALUtils {
         Consts.setMALUser(Consts.MAL_USER);
         return ok;
     }
-    static async animeForum(anime: AnimeEntry & HasMalId): Promise<Forum["topics"] | undefined> {
-        let data = await mal.findAnime(anime.malId, "forum");
-        return data ? data.topics : [];
+    static async animeForum(anime: AnimeEntry & HasMalId, page: number = 0): Promise<[ForumTopic[], number]> {
+        const response = await fetch(`https://myanimelist.net/forum/?animeid=${anime.malId}&show=${page * 50}`).then(r => r.text()),
+            html = document.createElement("html");
+        html.innerHTML = response;
+        const rows = [...html.querySelectorAll("tbody tr:not(.forum-table-header)")];
+        const data = rows.map(row => {
+            const author = row.querySelector("a[href*='/profile/']"),
+                title: HTMLAnchorElement | null = row.querySelector("a[href*='/forum/']:not([title=\"Go to Newest Post\"])"),
+                posted = row.querySelector("td:last-child"),
+                replies = posted ? posted.previousElementSibling : posted;
+            return {
+                author: author ? author.textContent || "" : "",
+                title: title ? title.textContent || "" : "",
+                url: title ? title.href.replace(window.location.origin, "https://myanimelist.net") : "",
+                posted: posted && posted.lastChild ? posted.lastChild.textContent || "" : "",
+                replies: replies ? Number(replies.textContent) || 0 : 0
+            };
+        }),
+            numOfPages = html.querySelector("#content .borderClass .di-ib");
+        data.sort((a, b) => {
+            const aDiscussion = a.title.includes("Discussion"),
+                bDiscussion = b.title.includes("Discussion");
+            return aDiscussion && bDiscussion ? b.title.localeCompare(a.title, "en-us", { numeric: true }) : bDiscussion ? 1 : -1;
+        });
+        return [data, numOfPages && numOfPages.firstChild ? Number((numOfPages.firstChild.textContent || "").match(/(?<=Pages \()\d(?=\))/g)) - 1 : 0];
     }
-    static async forumEntry(topic: Forum["topics"][0]): Promise<ForumEntry> {
+    static async forumEntry(topic: ForumTopic): Promise<ForumEntry> {
         let response = await fetch(topic.url).then(r => r.text());
         let html = document.createElement("html");
         html.innerHTML = response;
@@ -237,6 +259,14 @@ export default class MALUtils {
         let data = await mal.findAnime(anime.malId, "reviews");
         return data;
     }
+}
+
+export interface ForumTopic {
+    posted: string;
+    author: string;
+    url: string;
+    title: string;
+    replies: number;
 }
 
 export class ForumEntry {

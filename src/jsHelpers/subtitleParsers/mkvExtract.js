@@ -1,45 +1,33 @@
-
-
 // Adapted from https://github.com/qgustavor/mkv-extract/ licensed under MIT
 const fs = window.require("fs"),
   matroska = window.require("matroska-subtitles"),
-  request = window.require("request"),
   pipeline = window.require("stream").pipeline;
 function handleFile(file, atData) {
-  createDecoderFromStream(fs.createReadStream(file), atData);
+  if (!fs.existsSync(file))
+    return;
+  let fileLength = fs.statSync(file).size,
+    fileStream = fs.createReadStream(file),
+    decoder = createDecoderFromStream(fileStream, atData);
+  return {
+    startAt(fraction) {
+      return; //not working at the minute :(
+      console.log('starting at', fraction, Math.round(fileLength * fraction), fileLength, decoder);
+      fileStream = fs.createReadStream(null, { fs: fileStream.fs, start: Math.round(fileLength * fraction) });
+      decoder.decoder = new matroska(decoder.decoder);
+      fileStream.pipe(decoder.decoder)
+    },
+    destroy: () => fileStream.destroy()
+  }
 }
 
-function handleURL(url, atData) {
-  createDecoderFromStream(request(url), atData);
-  return new Promise(async resolve => {
-    let stream = request({
-      url,
-      forever: true
-    }),
-      dataTimeout,
-      onComplete = () => {
-        clearTimeout(dataTimeout);
-      },
-      onData = () => {
-        clearTimeout(dataTimeout);
-        dataTimeout = setTimeout(async () => {
-          stream.destroy();
-          stream = request({ url, forever: true });
-          stream.on("data", onData);
-          stream.on("complete", onComplete);
-          resolve(await createDecoderFromStream(stream, atData));
-        }, 2000);
-      };
-    stream.on("complete", onComplete);
-    stream.on("data", onData);
-    resolve(await createDecoderFromStream(stream, atData));
-  })
-}
-
-function createDecoderFromStream(stream, atData) {
-  const matroskaDecoder = new matroska(),
-    tracks = {};
-  matroskaDecoder.once("tracks", subTracks => subTracks.forEach(track => tracks[track.number] = track));
+function createDecoderFromStream(stream, atData, alreadyLoaded = {}, prevDecoder) {
+  const matroskaDecoder = new matroska(prevDecoder),
+    tracks = alreadyLoaded;
+  window.tracks = tracks;
+  matroskaDecoder.once("tracks", subTracks => subTracks.forEach(track => {
+    if (!(track.number in tracks))
+      tracks[track.number] = track;
+  }));
   let emitTimeout,
     emitTimeoutStop = false,
     emitTimeoutMiliseconds = 5000,
@@ -48,7 +36,8 @@ function createDecoderFromStream(stream, atData) {
     let track = tracks[trackNumber];
     if (!track.subtitles)
       track.subtitles = [];
-    track.subtitles.push(subtitle);
+    if (!track.subtitles.some(ele => JSON.stringify(ele) === JSON.stringify(subtitle)))
+      track.subtitles.push(subtitle);
     thereIsAnEmitWaiting = true;
     if (emitTimeoutStop) return;
     thereIsAnEmitWaiting = false;
@@ -61,17 +50,23 @@ function createDecoderFromStream(stream, atData) {
     }, emitTimeoutMiliseconds);
     emitData();
   });
+  let onError = () => { };
   pipeline(
     stream,
     matroskaDecoder,
-    console.log
+    err => onError(err)
   );
-  return new Promise(resolve => {
-    matroskaDecoder.on("finish", () => { emitData(); resolve(tracks); });
-  });
+  return {
+    destroy: () => stream.destroy(),
+    decoder: matroskaDecoder,
+    onError: (callback) => { onError = callback; },
+    promise: new Promise(resolve => {
+      matroskaDecoder.on("finish", () => { emitData(); resolve(tracks); });
+    }),
+    tracks
+  };
   function emitData() {
     let files = [];
-    window.tracks = tracks;
     Object.values(tracks).forEach(track => {
       const heading = track.header;
       const isASS = heading.includes("Format:");
@@ -81,7 +76,7 @@ function createDecoderFromStream(stream, atData) {
         : [""];
       const headingParts = isASS ? heading.split(eventMatches[0]) : ["", ""];
       const fixedLines = [];
-      if(track.subtitles)
+      if (track.subtitles)
         track.subtitles.forEach((subtitle, i) => {
           let startTimeStamp = formatFn(subtitle.time),
             endTimeStamp = formatFn(subtitle.time + subtitle.duration),
@@ -101,7 +96,8 @@ function createDecoderFromStream(stream, atData) {
       files.push({
         name: track.language ? track.language + extName : "Subtitle " + track.number + extName,
         data,
-        title: track.header.split("\n")[1].substring(7)
+        title: track.header.split("\n")[1].substring(7),
+        tracks
       });
     });
     atData(files);
@@ -133,5 +129,5 @@ function formatTimestampSRT(timestamp) {
   return `${hh}:${mm}:${ss}`;
 }
 
-export { handleFile, handleURL };
+export { handleFile };
 

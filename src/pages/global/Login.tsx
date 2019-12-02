@@ -106,10 +106,10 @@ export default class Login extends Component {
         if (e.keyCode === 13)
             this.tryLogin()
     }
-    setPassword(event: React.ChangeEvent) {
+    setPassword(event: React.FormEvent) {
         this.password = (event.target as HTMLInputElement).value;
     }
-    setUsername(event: React.ChangeEvent) {
+    setUsername(event: React.FormEvent) {
         this.username = (event.target as HTMLInputElement).value;
     }
     checkInput() {
