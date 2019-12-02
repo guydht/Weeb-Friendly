@@ -200,7 +200,7 @@ function asd(AnimeName, container, videoURL) {
             value = value >= 0 ? value : 0;
             if (value <= 1) video.volume = value;
             else video.volume = 1;
-            setVideoVolumeTimeout = setImmediate(function () {
+            setImmediate(function () {
                 volumeSlider.children[0].style.transition = "";
             });
             if (video.volume <= 0) volumeSlider.children[0].style.left = "6px";
@@ -266,7 +266,7 @@ function asd(AnimeName, container, videoURL) {
             info.style.display = "none";
             wrapper.classList.remove("fullscreened");
             if (document.webkitFullscreenElement != null) document.webkitExitFullscreen();
-            setimmediate(function () {
+            setImmediate(function () {
                 wrapper.style.transition = "all 0.5s";
                 for (var i in previousPosition)
                     wrapper.style[i] = previousPosition[i] + "px";
