@@ -91,13 +91,16 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
 
     bindedPointerLockListener = this.pointerLockListener.bind(this);
 
-    componentDidUpdate() {
+    componentDidUpdate(prevProps: any) {
         if (this.removingVideo)
             return this.removingVideo = false;
         if (!this.state.showingVideo && !this.removingVideo) {
             this.setState({
                 showingVideo: true
             });
+        }
+        if (prevProps.downloadedItem.fileName !== this.props.downloadedItem.fileName) {
+            this.setState({ wantsToUpdateInMAL: true });
         }
     };
     render() {
