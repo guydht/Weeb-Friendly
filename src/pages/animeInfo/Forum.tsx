@@ -46,7 +46,7 @@ export default class Forum extends Component<AnimeInfoProps> {
         return (
             <PageTransition style={{ overflow: "visible" }} ref={this.transitionController} className="mt-5" >
                 <Container>
-                    {this.state.totalPages !== 0 &&
+                    {this.state.totalPages > 1 &&
                         <Pagination >
                             <Pagination.First onClick={() => this.loadPageNumber(1)} />
                             <Pagination.Prev onClick={() => this.loadPageNumber(this.state.currentPageNumber - 1)} />
