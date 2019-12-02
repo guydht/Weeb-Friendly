@@ -122,7 +122,7 @@ function asd(AnimeName, container, videoURL) {
             settingsButton.style.transform = "rotate(60deg)";
         };
         settings.onblur = function () {
-            setTimeout(function () {
+            setImmediate(function () {
                 if (!settings.contains(document.activeElement)) {
                     settingsWindow.style.opacity = 0;
                     settingsWindow.style.pointerEvents = "none";
@@ -192,19 +192,17 @@ function asd(AnimeName, container, videoURL) {
             setVideoVolume(e);
             setStartFunction(setVideoVolume, e);
         };
-        var setVideoVolumeTimeout;
 
         function setVideoVolume(e) {
-            clearTimeout(setVideoVolumeTimeout);
             volumeSlider.children[0].style.transition = "all 0s";
             var sliderStyle = volumeSlider.getBoundingClientRect(),
                 value = ((e.clientX - sliderStyle.left) - 6) / (volumeSlider.clientWidth - volumeSlider.children[0].clientWidth);
             value = value >= 0 ? value : 0;
             if (value <= 1) video.volume = value;
             else video.volume = 1;
-            setVideoVolumeTimeout = setTimeout(function () {
+            setVideoVolumeTimeout = setImmediate(function () {
                 volumeSlider.children[0].style.transition = "";
-            }, 10);
+            });
             if (video.volume <= 0) volumeSlider.children[0].style.left = "6px";
             else volumeSlider.children[0].style.left = (video.volume * (volumeSlider.clientWidth - volumeSlider.children[0].clientWidth) + 6) + "px";
             if (video.volume === 0) muted();
@@ -268,7 +266,7 @@ function asd(AnimeName, container, videoURL) {
             info.style.display = "none";
             wrapper.classList.remove("fullscreened");
             if (document.webkitFullscreenElement != null) document.webkitExitFullscreen();
-            setTimeout(function () {
+            setimmediate(function () {
                 wrapper.style.transition = "all 0.5s";
                 for (var i in previousPosition)
                     wrapper.style[i] = previousPosition[i] + "px";
@@ -313,9 +311,7 @@ function asd(AnimeName, container, videoURL) {
             if (e.altKey) multiplier += 2.5;
             if (e.shiftKey) multiplier += 0.5;
             multiplier = multiplier !== 0 ? multiplier : 1;
-            setTimeout(function () {
-                checkInfoText(true);
-            }, 10);
+            checkInfoText(true);
             if (e.code === "KeyF" && ctrlShiftAlt && !e.guydhtSentThis) {
                 fullscreen.click();
             } else if (e.code === "Slash" && ctrlShiftAlt) {
@@ -362,13 +358,15 @@ function asd(AnimeName, container, videoURL) {
                 displayMiddleTooltip("volumeRaise");
                 displayVolumeText();
             } else if (e.key === "ArrowRight") {
+                displayMiddleTooltip(4 * multiplier);
                 displayTimerText();
                 video.currentTime += 4 * multiplier;
-                displayMiddleTooltip(4 * multiplier);
-            } else if (e.key === "ArrowLeft") {
+                displaySlider();
+            } else if (e.key === "ArrowLeft") { 
                 displayTimerText();
                 video.currentTime += -4 * multiplier;
                 displayMiddleTooltip(-4 * multiplier);
+                displaySlider();
             } else if (e.code === "KeyS" && ctrlShiftAlt) {
                 if (video.volume - 0.05 > 0) {
                     displayMiddleTooltip("volumeLower");
@@ -416,7 +414,7 @@ function asd(AnimeName, container, videoURL) {
             }
         };
         let updateProgress = () => {
-            setTimeout(function () {
+            setImmediate(function () {
                 progressBar.style.transform = "scaleX(" + (video.currentTime / video.duration) + ")";
                 progressBarCircle.style.left = (video.currentTime / video.duration) * 100 + "%";
             });
@@ -673,7 +671,6 @@ function asd(AnimeName, container, videoURL) {
         });
 
         function displayVolumeText(e) {
-            displaySlider();
             clearTimeout(volumeTimeout);
             volume.style.opacity = 1;
             info.style.opacity = 1;
