@@ -12,23 +12,23 @@ import AnimeInfo from "../AnimeInfo";
 export default class Watch extends Component<{ downloadedItem: DownloadedItem }> {
 
     static UPDATE_ANIME_PROGRESS_THRESHOLD = 0.9;
+    wantsToUpdateInMAL = true;
 
     state: {
         showingVideo: boolean,
         videoOpacity: number,
-        wantsToUpdateInMAL: boolean,
         showAnimePage: boolean,
         preventScroll: boolean
     } = {
             showingVideo: true,
             videoOpacity: 1,
-            wantsToUpdateInMAL: true,
             showAnimePage: false,
             preventScroll: false
         };
 
     removingVideo = false;
     movingElement = React.createRef<MovableComponent>();
+    checkForProgressInterval = 0;
 
     componentDidMount() {
         window.addEventListener("webkitfullscreenchange", this.bindedFullScreenListener);
@@ -43,11 +43,12 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                 return relevant[1].progress;
             return 0;
         }
-        setInterval(() => {
-            if (!this.state.wantsToUpdateInMAL) return;
+        this.checkForProgressInterval = setInterval(() => {
             let current = progressFromLocalStorage();
-            if (current > Watch.UPDATE_ANIME_PROGRESS_THRESHOLD) {
-                this.setState({ wantsToUpdateInMAL: false });
+            if (current <= Watch.UPDATE_ANIME_PROGRESS_THRESHOLD)
+                this.wantsToUpdateInMAL = true;
+            if (this.wantsToUpdateInMAL && current > Watch.UPDATE_ANIME_PROGRESS_THRESHOLD) {
+                this.wantsToUpdateInMAL = false;
                 Confirm(`Do you want to update ${this.props.downloadedItem.fileName} in MAL?`, (ok: boolean) => {
                     if (ok) {
                         MALUtils.UpdateWatchedEpisode(this.props.downloadedItem).then(ok => {
@@ -63,12 +64,13 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                     }
                 })
             }
-        }, 500);
+        }, 500) as unknown as number;
     }
 
     componentWillUnmount() {
         window.removeEventListener("webkitfullscreenchange", this.bindedFullScreenListener);
         document.removeEventListener("pointerlockchange", this.bindedPointerLockListener);
+        clearInterval(this.checkForProgressInterval);
     }
 
     fullScreenListener() {
@@ -95,8 +97,10 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                 showingVideo: true
             });
         }
-        if (prevProps.downloadedItem.fileName !== this.props.downloadedItem.fileName)
-            this.setState({ wantsToUpdateInMAL: true });
+        if (prevProps.downloadedItem.fileName !== this.props.downloadedItem.fileName){
+            this.wantsToUpdateInMAL = true;
+            console.log("changed video from", prevProps.downloadedItem, "to", this.props.downloadedItem)
+        }
     };
     render() {
         const hide = (e: React.MouseEvent) => {
