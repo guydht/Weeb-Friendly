@@ -100,3 +100,11 @@
     border-top-color: #666;
     margin-top: 1px;
 }
+
+.seenEpisode {
+    color: rgb(80, 245, 80) !important;
+}
+
+.notSeenEpisode {
+    color: rgb(255, 120, 120) !important;
+}

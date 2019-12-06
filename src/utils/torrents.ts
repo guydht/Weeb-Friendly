@@ -209,7 +209,10 @@ export class SearchResult {
     seeders!: number;
     timestamp!: Date;
     episodeData!: EpisodeData;
-    animeEntry!: AnimeEntry
+    animeEntry!: AnimeEntry;
+    seenThisEpisode() {
+        return this.animeEntry && !isNaN(this.episodeData.episodeNumber) && this.animeEntry.seenEpisode(this.episodeData.episodeNumber);
+    }
 }
 
 export class EpisodeData {

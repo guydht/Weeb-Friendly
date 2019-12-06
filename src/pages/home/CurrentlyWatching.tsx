@@ -1,29 +1,23 @@
 import React, { Component } from "react";
 import { Carousel, Table } from "react-bootstrap";
+//@ts-ignore
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { Link } from "react-router-dom";
+import AnimeList from "../../classes/AnimeList";
 import Consts from "../../classes/Consts";
-import MALUtils from "../../utils/MAL";
 import styles from "../../css/pages/SeasonalCarousel.module.css";
+import { chunkArray } from "../../utils/general";
+import MALUtils from "../../utils/MAL";
 import SeasonalCarousel from "./SeasonalCarousel";
-
-function chunkArray(myArray, chunk_size) {
-    var results = [],
-        arrayCopy = [...myArray];
-
-    while (arrayCopy.length)
-        results.push(arrayCopy.splice(0, chunk_size));
-
-    return results;
-}
 
 export default class CurrentlyWatching extends Component {
 
-    state = {
+    state: { animeList: AnimeList } = {
         animeList: Consts.MAL_USER.animeList
     }
 
     componentDidMount() {
+        console.log("componentDidMount")
         if (!Object.keys(Consts.MAL_USER.animeList.all).length)
             MALUtils.getUserAnimeList(Consts.MAL_USER, 'all').then(() => {
                 Consts.setMALUser(Consts.MAL_USER);
@@ -37,6 +31,7 @@ export default class CurrentlyWatching extends Component {
     }
 
     render() {
+        console.log('render');
         return (
             <div>
                 <h1>
@@ -45,19 +40,19 @@ export default class CurrentlyWatching extends Component {
                 <Carousel interval={null} className="px-5 mx-5 mt-5">
                     {
                         chunkArray(Object.values(this.state.animeList.watching).sort(
-                            (a, b) => b.startDate - a.startDate), SeasonalCarousel.GRID_SIZE_X * SeasonalCarousel.GRID_SIZE_Y)
+                            (a, b) => b.startDate!.getTime() - a.startDate!.getTime()), SeasonalCarousel.GRID_SIZE_X * SeasonalCarousel.GRID_SIZE_Y)
                             .map((arrayChunk, i) => {
                                 return (
-                                    <Carousel.Item key={arrayChunk[0].name} className={styles.carousel}>
+                                    <Carousel.Item key={i} className={styles.carousel}>
                                         <Table responsive={false} className={styles.table}>
                                             <tbody>
                                                 {
-                                                    chunkArray(arrayChunk, SeasonalCarousel.GRID_SIZE_X).map((chunk, i) => {
+                                                    chunkArray(arrayChunk, SeasonalCarousel.GRID_SIZE_X).map(chunk => {
                                                         return (
-                                                            <tr key={i}>
+                                                            <tr key={chunk[0].name}>
                                                                 {
-                                                                    chunk.map((seasonalAnime, i) => {
-                                                                        return <td key={i} className={styles.td}>
+                                                                    chunk.map(seasonalAnime => {
+                                                                        return <td key={seasonalAnime.name} className={styles.td}>
                                                                             <Link to={{
                                                                                 pathname: "/anime/" + seasonalAnime.malId,
                                                                                 state: {

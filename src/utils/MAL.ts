@@ -8,6 +8,7 @@ import Consts from "../classes/Consts";
 import DownloadedItem from "../classes/DownloadedItem";
 import User from "../classes/User";
 import { getCurrentSeason, parseStupidAmericanDateString } from "./general";
+import { MALStatuses } from "../classes/MalStatuses";
 
 let mal = window.require("jikan-node");
 mal = new mal();
@@ -15,15 +16,9 @@ mal = new mal();
 type HasMalId = {
     malId: Number
 }
-export enum MALStatuses {
-    Watching = 1,
-    Completed = 2,
-    "On-Hold" = 3,
-    Dropped = 4,
-    "Plan To Watch" = 6
-};
 export default class MALUtils {
-    static MAX_ANIMES_PER_PAGE = 300;
+    static readonly MAX_ANIMES_PER_PAGE = 300;
+    static readonly MINIMUM_ANIMENAME_SIMILARITY = 0.8;
 
     static async searchAnime(anime: AnimeEntry, searchString: string = ""): Promise<AnimeEntry[]> {
         searchString = searchString || anime.name!;

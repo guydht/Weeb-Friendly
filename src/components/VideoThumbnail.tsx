@@ -93,7 +93,7 @@ function renderVideo(renderParams: RenderParams): Promise<HTMLCanvasElement> {
     });
 }
 
-export default class VideoThumbnail extends Component<RenderParams> {
+export default class VideoThumbnail extends Component<RenderParams & React.DetailedHTMLProps<React.CanvasHTMLAttributes<HTMLCanvasElement>, HTMLCanvasElement>> {
 
     canvas = React.createRef<HTMLCanvasElement>();
 

@@ -2,10 +2,10 @@ import React, { Component } from "react";
 import { Jumbotron, Toast } from "react-bootstrap";
 import Consts from "../classes/Consts";
 import { hasInternet } from "../utils/general";
-import CurrentlyWatching from "./home/CurrentlyWatching";
-import DownloadedAnime from "./home/DownloadedAnime";
 import LatestTorrents from "./home/LatestTorrents";
 import SeasonalCarousel from "./home/SeasonalCarousel";
+import CurrentlyWatching from "./home/CurrentlyWatching";
+import DownloadedAnime from "./home/DownloadedAnime";
 
 
 export default class Home extends Component {
@@ -33,6 +33,7 @@ export default class Home extends Component {
                 {
                     Consts.MAL_USER.isLoggedIn && hasInternet() ?
                         <CurrentlyWatching /> : Consts.MAL_USER.isLoggedIn && Home.noInternetComponent("Currently Watching")
+                        // null: null
                 }
                 {
                     hasInternet() && (

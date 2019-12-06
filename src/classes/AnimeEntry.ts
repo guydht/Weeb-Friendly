@@ -1,6 +1,5 @@
-import { MALStatuses } from "../utils/MAL";
+import { MALStatuses } from "./MalStatuses";
 import { get, sync, ThumbnailManager } from "./AnimeStorage";
-
 const fs = window.require("fs"),
     request = window.require("request");
 
@@ -135,5 +134,17 @@ export default class AnimeEntry {
                     (this as any)[key] = value;
             });
         return this;
+    }
+
+    seenEpisode(episodeNumber: number) {
+        return this.myWatchedEpisodes !== undefined && this.myWatchedEpisodes >= episodeNumber;
+    }
+
+    isUserInterested() {
+        return this.myMalStatus !== undefined && (
+            this.myMalStatus === MALStatuses.Completed ||
+            this.myMalStatus === MALStatuses.Watching ||
+            this.myMalStatus === MALStatuses["Plan To Watch"]
+        );
     }
 }

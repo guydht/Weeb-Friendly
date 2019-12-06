@@ -171,7 +171,6 @@ export default class AnimeInfo extends Component<{ anime?: AnimeEntry } & React.
             count: 10
         }, (err: any, data: any) => {
             if (!err && data.data) {
-                console.log(data);
                 let highResPhoto = data.data.result.items[0].media;
                 if (highResPhoto)
                     this.setState({ highResPhoto });

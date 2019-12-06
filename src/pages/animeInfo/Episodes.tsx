@@ -10,6 +10,7 @@ import ChooseSource from '../../components/ChooseSource';
 import DownloadedFileThumbnail from "../../components/DownloadedFileThumbnail";
 import SearchBar from "../../components/SearchBar";
 import changableTextStyles from "../../css/components/ChangableText.module.css";
+import animeStyles from "../../css/pages/DownloadedAnime.module.css";
 import styles from "../../css/pages/Episodes.module.css";
 import { ReactComponent as DownloadIcon } from "../../icons/download.svg";
 import { groupBy } from "../../utils/general";
@@ -88,7 +89,9 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
                         return (
                             <Card key={i} className="m-1">
                                 <Card.Header>
-                                    <Card.Title>
+                                    <Card.Title className={episode.animeEntry.isUserInterested() ? (
+                                        episode.seenThisEpisode() ? animeStyles.seenEpisode : animeStyles.notSeenEpisode
+                                    ) : ""}>
                                         Episode {episode.episodeData.episodeNumber}
                                     </Card.Title>
                                     <Card.Subtitle>
@@ -175,7 +178,10 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
             magnet: string
         }[]
     }> {
-        return groupBy(episodes.map(ele => { return { ...ele, asd: ele.episodeData.seriesName + ele.episodeData.episodeNumber } }), ['asd']).map(episodes => {
+        return groupBy(episodes.map(ele => {
+            (ele as any).asd = ele.episodeData.seriesName + ele.episodeData.episodeNumber;
+            return ele;
+        }), ['asd']).map(episodes => {
             let result: any = episodes[0];
             delete result.asd;
             episodes = episodes.sort((a, b) => b.episodeData.quality - a.episodeData.quality);
