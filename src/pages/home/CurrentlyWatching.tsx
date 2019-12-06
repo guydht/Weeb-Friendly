@@ -17,7 +17,6 @@ export default class CurrentlyWatching extends Component {
     }
 
     componentDidMount() {
-        console.log("componentDidMount")
         if (!Object.keys(Consts.MAL_USER.animeList.all).length)
             MALUtils.getUserAnimeList(Consts.MAL_USER, 'all').then(() => {
                 Consts.setMALUser(Consts.MAL_USER);
@@ -31,7 +30,6 @@ export default class CurrentlyWatching extends Component {
     }
 
     render() {
-        console.log('render');
         return (
             <div>
                 <h1>
