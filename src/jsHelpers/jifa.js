@@ -425,6 +425,7 @@ function asd(AnimeName, container, videoURL) {
         var previousTime, mone = 0;
 
         function setTimer() {
+            new CacheLocalStorage("videoLastTime").setItem(AnimeName, { currentTime: video.currentTime, progress: video.currentTime / video.duration });
             var currentTime = video.currentTime,
                 totalTime = video.duration;
             var buffered = video.buffered,
@@ -465,7 +466,6 @@ function asd(AnimeName, container, videoURL) {
                 anotherTimer = container.querySelector("#guydhtVideoAnotherTimer");
             if (anotherTimer.innerHTML !== text)
                 anotherTimer.innerHTML = text;
-            new CacheLocalStorage("videoLastTime").setItem(AnimeName, { currentTime: video.currentTime, progress: video.currentTime / video.duration });
         }
         progressContainer.onmousedown = function (e) {
             if (e.button !== 0) return;
@@ -897,7 +897,8 @@ function asd(AnimeName, container, videoURL) {
                 contentContainer.remove();
                 subtitleTracks = [];
             },
-            currentSrc: videoURL
+            currentSrc: videoURL,
+            currentName: AnimeName
         }
     }
 }

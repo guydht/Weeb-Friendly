@@ -125,7 +125,7 @@ export default class VideoPlayer extends Component {
     componentDidUpdate() {
         if (this.props.src !== this.videoHandler.currentSrc) {
             let video = this.videoWrapper.current.querySelector("video");
-            new CacheLocalStorage("videoLastTime").setItem(this.props.name, { currentTime: video.currentTime, progress: video.currentTime / video.duration });
+            new CacheLocalStorage("videoLastTime").setItem(this.videoHandler.currentName, { currentTime: video.currentTime, progress: video.currentTime / video.duration });
             if (this.subtitlesOctopus)
                 try {
                     clearInterval(this.subtitlesOctopus.resizeInterval);
