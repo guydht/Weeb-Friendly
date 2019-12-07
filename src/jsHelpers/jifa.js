@@ -210,11 +210,11 @@ function asd(AnimeName, container, videoURL) {
         };
         document.addEventListener("pointerlockchange", removedPointerLockElement);
         function removedPointerLockElement() {
-            if (!document.pointerLockElement) return displayMiddleTooltip("lock");;
+            if (!document.pointerLockElement) return displayMiddleTooltip("unlock");;
             slider.style.display = "";
             upperName.style.display = "";
             info.style.display = "none";
-            displayMiddleTooltip("unlock");
+            displayMiddleTooltip("lock");
         };
 
 
