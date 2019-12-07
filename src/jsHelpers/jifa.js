@@ -209,11 +209,12 @@ function asd(AnimeName, container, videoURL) {
             else notMuted();
         };
         document.addEventListener("pointerlockchange", removedPointerLockElement);
-        function removedPointerLockElement(e) {
-            if (!document.pointerLockElement) return;
+        function removedPointerLockElement() {
+            if (!document.pointerLockElement) return displayMiddleTooltip("lock");;
             slider.style.display = "";
             upperName.style.display = "";
             info.style.display = "none";
+            displayMiddleTooltip("unlock");
         };
 
 
@@ -315,13 +316,10 @@ function asd(AnimeName, container, videoURL) {
             if (e.code === "KeyF" && ctrlShiftAlt && !e.guydhtSentThis) {
                 fullscreen.click();
             } else if (e.code === "Slash" && ctrlShiftAlt) {
-                if (!document.pointerLockElement) {
+                if (!document.pointerLockElement)
                     wrapper.requestPointerLock();
-                    displayMiddleTooltip("lock");
-                } else {
+                else
                     document.exitPointerLock();
-                    displayMiddleTooltip("unlock");
-                }
             } else if (e.code === "KeyM" && ctrlShiftAlt) {
                 if (!video.muted) muteVideo();
                 else unmuteVideo();
@@ -362,7 +360,7 @@ function asd(AnimeName, container, videoURL) {
                 displayTimerText();
                 video.currentTime += 4 * multiplier;
                 displaySlider();
-            } else if (e.key === "ArrowLeft") { 
+            } else if (e.key === "ArrowLeft") {
                 displayTimerText();
                 video.currentTime += -4 * multiplier;
                 displayMiddleTooltip(-4 * multiplier);
