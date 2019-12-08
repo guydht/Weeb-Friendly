@@ -6,8 +6,8 @@ import { Link } from "react-router-dom";
 import AnimeEntry from "../../classes/AnimeEntry";
 import TorrentManager from "../../classes/TorrentManager";
 import ChooseSource from "../../components/ChooseSource";
+import HasSeen from "../../components/HasSeen";
 import SearchBar from "../../components/SearchBar";
-import animeStyles from "../../css/pages/DownloadedAnime.module.css";
 import styles from "../../css/pages/SeasonalCarousel.module.css";
 import { chunkArray, Confirm } from "../../utils/general";
 import TorrentUtils, { SearchResult, Sources } from "../../utils/torrents";
@@ -68,11 +68,8 @@ class DisplayLatestTorrents extends Component<{ source?: Sources }>{
                                                                     chunk.map((searchResult, i) => {
                                                                         if (searchResult.animeEntry.malId)
                                                                             return <td key={i} className={styles.td}>
-                                                                                <span onClick={() => this.downloadNow(searchResult)} className={styles.upperTitle + " " + (
-                                                                                    searchResult.animeEntry.isUserInterested() ? (
-                                                                                        searchResult.seenThisEpisode() ? animeStyles.seenEpisode : animeStyles.notSeenEpisode
-                                                                                    ) : ""
-                                                                                )}>
+                                                                                <HasSeen hasSeen={searchResult.seenThisEpisode()} />
+                                                                                <span onClick={() => this.downloadNow(searchResult)} className={styles.upperTitle}>
                                                                                     Episode {searchResult.episodeData.episodeNumber}
                                                                                 </span>
                                                                                 <Link to={{

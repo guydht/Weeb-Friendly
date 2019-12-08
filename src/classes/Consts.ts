@@ -114,6 +114,24 @@ export default class Consts {
     }
 
     static DOWNLOADED_ITEMS: DownloadedItem[] = walkDir(Consts.DOWNLOADS_FOLDER).filter(ele => ele.absolutePath.endsWith(".mkv") || ele.absolutePath.endsWith(".mp4"));
+    static DOWNLOADED_ITEMS_FILTER: string = localStorage.getItem("downloadedItemsFilter") || "";
+    static setDownloadedItemsFilter(filter: string) {
+        this.DOWNLOADED_ITEMS_FILTER = filter;
+        localStorage.setItem("downloadedItemsFilter", filter);
+    }
+    static get FILTERED_DOWNLOADED_ITEMS() {
+        let filterString = this.DOWNLOADED_ITEMS_FILTER.toLowerCase(),
+            reverseSearch = filterString[0] === "!";
+        if (reverseSearch)
+            filterString = filterString.slice(1);
+        if (reverseSearch)
+            return this.DOWNLOADED_ITEMS.filter(ele => {
+                return !ele.absolutePath.toLowerCase().includes(filterString);
+            });
+        return this.DOWNLOADED_ITEMS.filter(ele => {
+            return ele.absolutePath.toLowerCase().includes(filterString);
+        });
+    }
 
     static removeFromSavedTorrents(torrent: Torrent) {
         Consts.SAVED_TORRENTS.delete(torrent);

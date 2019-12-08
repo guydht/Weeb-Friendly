@@ -90,7 +90,7 @@ export default class VideoPlayer extends Component {
 
     getSimilarDownloadedItems() {
         let downloadedItem = this.props.downloadedItem,
-            series = groupBy(Consts.DOWNLOADED_ITEMS.filter(ele => ele.absolutePath !== downloadedItem.absolutePath), ["episodeData", "seriesName"]).filter(ele => ele[0].episodeData.seriesName),
+            series = groupBy(Consts.FILTERED_DOWNLOADED_ITEMS.filter(ele => ele.absolutePath !== downloadedItem.absolutePath), ["episodeData", "seriesName"]).filter(ele => ele[0].episodeData.seriesName),
             thisSeries = series.find(ele => ele[0].episodeData.seriesName === downloadedItem.episodeData.seriesName) || [];
         let similar = series.filter(ele => ele[0].episodeData.seriesName !== downloadedItem.episodeData.seriesName).sort((a, b) => {
             return Math.max(...b.map(ele => ele.lastUpdated)) -

@@ -11,7 +11,7 @@ import MALUtils from "../../utils/MAL";
 export class DisplayDownloadedAnime extends Component {
     render() {
         let props = { ...this.props };
-        delete  props.style;
+        delete props.style;
         return (
             <div className={styles.grid} style={this.props.style || {}} >
                 {
@@ -78,6 +78,7 @@ export default withRouter(class DownloadedAnime extends Component {
                                 <FormControl
                                     placeholder="Filter"
                                     ref={this.filterElement}
+                                    defaultValue={Consts.DOWNLOADED_ITEMS_FILTER}
                                     onChange={() => this.setState({})}
                                     type="text" />
                             </Form>
@@ -107,17 +108,14 @@ export default withRouter(class DownloadedAnime extends Component {
         })
     }
     get sortedItems() {
-        let current = this.currentOption,
-            items = [...Consts.DOWNLOADED_ITEMS];
+        const current = this.currentOption;
         if (this.filterElement.current) {
             let filterValue = this.filterElement.current.value.toLowerCase();
-            if (filterValue)
-                items = items.filter(ele => filterValue.startsWith("!") && filterValue.length > 1 ?
-                    !ele.absolutePath.toLowerCase().includes(filterValue.slice(1)) : ele.absolutePath.toLowerCase().includes(filterValue));
+            Consts.setDownloadedItemsFilter(filterValue);
         }
-        let sorted = items.sort(current.sortFunction);
+        const sorted = Consts.FILTERED_DOWNLOADED_ITEMS.sort(current.sortFunction);
         if (current.reverse)
-            sorted.reverse()
+            sorted.reverse();
         return sorted;
     }
     get currentOption() {

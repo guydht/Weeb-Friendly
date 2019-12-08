@@ -8,6 +8,7 @@ import DownloadedItem from "../classes/DownloadedItem";
 import styles from "../css/pages/DownloadedAnime.module.css";
 import { Confirm, stringRelativeSimilarity } from "../utils/general";
 import MALUtils from "../utils/MAL";
+import HasSeen from "./HasSeen";
 import VideoThumbnail from "./VideoThumbnail";
 
 interface DownloadedFileThumbnailProps {
@@ -28,6 +29,7 @@ export default withRouter(class DownloadedFileThumbnail extends Component<Downlo
                 onDoubleClick={e => this.props.disableDoubleClick !== false && this.showAnime(downloadedItem) && e.stopPropagation()}
                 onClick={() => this.showVideo(downloadedItem)}>
                 <LazyLoadComponent>
+                    <HasSeen hasSeen={downloadedItem.seenThisEpisode()} />
                     <VideoThumbnail
                         videoUrl={Consts.FILE_URL_PROTOCOL + downloadedItem.absolutePath}
                         className={styles.thumbnail}
@@ -43,11 +45,7 @@ export default withRouter(class DownloadedFileThumbnail extends Component<Downlo
                         </span>
                     }
                 </div>
-                <span className={styles.title + " " + (
-                            downloadedItem.animeEntry.syncGet().isUserInterested() ? (
-                                downloadedItem.seenThisEpisode() ? styles.seenEpisode : styles.notSeenEpisode
-                            ) : ""
-                        )}>{downloadedItem.fileName}</span>
+                <span className={styles.title}>{downloadedItem.fileName}</span>
             </div>
         )
     }

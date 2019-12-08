@@ -208,6 +208,7 @@ function asd(AnimeName, container, videoURL) {
             if (video.volume === 0) muted();
             else notMuted();
         };
+
         document.addEventListener("pointerlockchange", removedPointerLockElement);
         function removedPointerLockElement() {
             if (!document.pointerLockElement) return displayMiddleTooltip("unlock");;
@@ -401,7 +402,7 @@ function asd(AnimeName, container, videoURL) {
             e.preventDefault();
             e.stopPropagation();
             if (!video.paused)
-                video.scrollIntoView();
+                wrapper.scrollIntoView();
             if (slider.style.opacity === upperName.style.opacity && upperName.style.opacity === 0) displaySlider();
         };
 
