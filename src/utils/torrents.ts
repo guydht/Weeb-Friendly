@@ -213,6 +213,10 @@ export class SearchResult {
     seenThisEpisode() {
         return this.animeEntry && !isNaN(this.episodeData.episodeNumber) && this.animeEntry.seenEpisode(this.episodeData.episodeNumber);
     }
+    alreadyDownloaded() {
+        return !isNaN(this.episodeData.episodeNumber) && this.episodeData.seriesName.length &&
+            Consts.DOWNLOADED_ITEMS.some(ele => ele.episodeData.seriesName === this.episodeData.seriesName && ele.episodeData.episodeNumber === this.episodeData.episodeNumber);
+    }
 }
 
 export class EpisodeData {
