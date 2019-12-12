@@ -25,7 +25,7 @@ class DisplayTorrentEntry extends Component<{ searchResult: SearchResult; }> {
                         this.props.searchResult.seenThisEpisode() ? <HasSeen className={styles.downloadIcon} hasSeen={true} />
                             : this.props.searchResult.alreadyDownloaded() ?
                                 <OverlayTrigger overlay={<Tooltip id={this.props.searchResult.animeEntry.malId}>Already Downloaded</Tooltip>} placement="auto">
-                                    <DownloadIcon className={styles.downloadIcon} style={{ cursor: "not-allowed", opacity: 0.3 }} />
+                                    <DownloadIcon className={styles.downloadIcon} style={{ cursor: "not-allowed", opacity: 0.4 }} />
                                 </OverlayTrigger>
                                 : <OverlayTrigger overlay={<Tooltip id={this.props.searchResult.animeEntry.malId}>Download Episode</Tooltip>}>
                                     <DownloadIcon className={styles.downloadIcon} onClick={() => this.downloadNow(this.props.searchResult)} />

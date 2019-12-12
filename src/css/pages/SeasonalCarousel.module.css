@@ -24,7 +24,7 @@
 
 .downloadIcon {
     position: absolute;
-    width: 2.5rem;
+    max-width: 2.5rem;
     left: 9%;
     top: 10%;
     z-index: 5;
