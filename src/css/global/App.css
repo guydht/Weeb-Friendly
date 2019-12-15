@@ -32,3 +32,6 @@ input.guydhtNoSpinner[type=number]::-webkit-inner-spin-button, input.guydhtNoSpi
 *:focus {
     outline: none;
 }
+.carousel-indicators{
+    z-index: 7 !important;
+}

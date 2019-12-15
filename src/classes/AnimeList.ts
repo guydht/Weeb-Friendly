@@ -1,5 +1,5 @@
-import { MALStatuses } from "./MalStatuses";
 import AnimeEntry from "./AnimeEntry";
+import { MALStatuses } from "./MalStatuses";
 export default class AnimeList {
     constructor({ _watching = {}, _completed = {}, _dropped = {}, _all = {}, _plantowatch = {}, _onhold = {} }) {
         this._all = _all;
@@ -86,6 +86,11 @@ export default class AnimeList {
     }
     loadAnime(anime: AnimeEntry) {
         this._all[anime.malId!] = anime;
+        delete this._watching[anime.malId!];
+        delete this._completed[anime.malId!];
+        delete this._dropped[anime.malId!];
+        delete this._onhold[anime.malId!];
+        delete this._plantowatch[anime.malId!];
         switch (anime.myMalStatus!) {
             case MALStatuses.Watching:
                 this._watching[anime.malId!] = anime;
