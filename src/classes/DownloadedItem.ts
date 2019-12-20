@@ -1,5 +1,5 @@
+import { EpisodeData } from "../utils/torrents";
 import AnimeEntry from "./AnimeEntry";
-import { EpisodeData } from "./HorribleSubsUtils";
 
 export default class DownloadedItem {
     constructor(absolutePath: string, fileName: string, lastUpdated: Date, animeEntry = new AnimeEntry({})) {
@@ -8,7 +8,7 @@ export default class DownloadedItem {
         this.lastUpdated = lastUpdated;
         this.animeEntry = animeEntry;
         this.episodeData = {
-            episodeNumber: Number((this.fileName.match(/(?<=Episode\s)[0-9]+/g) || [])[0]),
+            episodeNumber: Number((this.fileName.match(/(?<=Episode\s)[0-9]+(\.[0-9]+)?/g) || [])[0]),
             seriesName: (this.fileName.match(/.+(?=\sEpisode\s)/g) || [])[0]
         }
     }
@@ -16,5 +16,8 @@ export default class DownloadedItem {
     fileName: string;
     lastUpdated: Date;
     animeEntry: AnimeEntry;
-    episodeData: Omit<EpisodeData, 'quality'>
+    episodeData: Omit<EpisodeData, 'quality'>;
+    seenThisEpisode() {
+        return !isNaN(this.episodeData.episodeNumber) && this.animeEntry.seenEpisode(this.episodeData.episodeNumber);
+    }
 }

@@ -1,4 +1,5 @@
 import { Torrent } from "webtorrent";
+import { walkDir } from "../utils/general";
 import Consts from "./Consts";
 
 const path = window.require("path"),
@@ -28,11 +29,17 @@ export default class TorrentManager {
                 let files = [...torrent.files];
                 torrent.destroy(() => {
                     files.forEach((file: any) => {
-                        let absolutePath = path.join(torrent.path, file.path),
+                        // let withoutExtension = file.path.replace(path.extname(file.path), ""),
+                        //     downloadedItem = new DownloadedItem(
+                        //         file.path,
+                        //         withoutExtension, new Date()
+                        //     );
+                        const absolutePath = path.join(torrent.path, file.path),
                             extension = path.extname(file.path),
-                            newAbsolutePath = path.join(Consts.DOWNLOADS_FOLDER, path.posix.parse(name).name + extension);
+                            newAbsolutePath = path.join(Consts.DOWNLOADS_FOLDER, name + extension);
                         fs.rename(absolutePath, newAbsolutePath);
                         Consts.removeFromSavedTorrents(returnedTorrent);
+                        Consts.DOWNLOADED_ITEMS = walkDir(Consts.DOWNLOADS_FOLDER);
                         (window as any).reloadPage();
                     });
                 });
@@ -48,9 +55,12 @@ export default class TorrentManager {
         return Array.from(Consts.SAVED_TORRENTS);
     }
     static remove(torrent: Torrent) {
-        let pathName = path.join(torrent.path, torrent.name);
+        torrent.files.forEach(file => {
+            let pathName = path.join(torrent.path, file.path);
+            fs.unlink(pathName);
+        });
         torrent.destroy();
-        fs.unlink(pathName);
+        Consts.DOWNLOADED_ITEMS = walkDir(Consts.DOWNLOADS_FOLDER);
         Consts.removeFromSavedTorrents(torrent);
     }
     static pause(torrent: Torrent) {

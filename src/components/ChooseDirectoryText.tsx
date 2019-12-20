@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button, Dropdown, Form, FormControl } from "react-bootstrap";
+import { Button, Dropdown, FormControl } from "react-bootstrap";
 import Consts from "../classes/Consts";
 
 const fs = window.require("fs"),
@@ -44,14 +44,14 @@ export default class ChooseDirectoryText extends Component {
                             displayEntries: false
                         });
                         this.setDownloadsFolder(this.textInput.current.value);
-                        if(this.textInput.current && this.textInput.current.value !== Consts.DOWNLOADS_FOLDER)
-                            window.location.reload();
+                        if (this.textInput.current && this.textInput.current.value !== Consts.DOWNLOADS_FOLDER)
+                            (window as any).reloadPage();
                     }
                 });
             };
         if (this.state.changeFolder)
             return (
-                <Form onFocus={onFocus} onBlur={onBlur}>
+                <div onFocus={onFocus} onBlur={onBlur}>
                     <FormControl
                         type="text" placeholder="Search" className="mr-sm-2"
                         onChangeCapture={(e: any) => this.searchDirectory(e.target.value)}
@@ -70,7 +70,7 @@ export default class ChooseDirectoryText extends Component {
                                         this.state.entries.map((entry: string, i: number) => {
                                             return (
                                                 <Dropdown.Item
-                                                    onClick={(e: any) => this.selectDirectory(entry)}
+                                                    onClick={() => this.selectDirectory(entry)}
                                                     onKeyDown={(e: any) => e.key === "Enter" && this.selectDirectory(entry)}
                                                     key={i} eventKey={String(i)}>
                                                     {entry}
@@ -81,7 +81,7 @@ export default class ChooseDirectoryText extends Component {
                                 </Dropdown.Menu> : ""
                         }
                     </Dropdown>
-                </Form >
+                </div >
             )
         return (
             <Button onClick={() => this.setState({ changeFolder: true })}>
@@ -90,8 +90,8 @@ export default class ChooseDirectoryText extends Component {
         )
     }
     searchDirectory(val: string) {
-        let parentDir = path.posix.dirname(val),
-            basename = path.posix.basename(val);
+        let parentDir = path.dirname(val),
+            basename = path.basename(val);
 
         const handleReadDir = (_: any, files: string[]) => {
             if (files)
@@ -102,7 +102,7 @@ export default class ChooseDirectoryText extends Component {
                 entries: files || []
             });
         }
-        let maybeLegal = path.posix.resolve(val);
+        let maybeLegal = path.resolve(val);
         fs.stat(maybeLegal, (_: any, stats: any) => {
             if (stats && stats.isDirectory()) {
                 basename = "";
@@ -113,12 +113,12 @@ export default class ChooseDirectoryText extends Component {
         });
     }
     async selectDirectory(directory: string) {
-        let basename = path.posix.dirname(this.textInput.current.value),
-            maybeLegal = path.posix.resolve(this.textInput.current.value);
+        let basename = path.dirname(this.textInput.current.value),
+            maybeLegal = path.resolve(this.textInput.current.value);
         fs.stat(maybeLegal, (_: any, stats: any) => {
             if (stats && stats.isDirectory())
                 basename = maybeLegal;
-            this.textInput.current.value = path.posix.resolve(basename, directory) + "/";
+            this.textInput.current.value = path.resolve(basename, directory) + "/";
             this.searchDirectory(this.textInput.current.value);
         });
     }

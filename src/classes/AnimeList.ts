@@ -1,5 +1,5 @@
 import AnimeEntry from "./AnimeEntry";
-import { MALStatuses } from "./MALStatuses";
+import { MALStatuses } from "./MalStatuses";
 export default class AnimeList {
     constructor({ _watching = {}, _completed = {}, _dropped = {}, _all = {}, _plantowatch = {}, _onhold = {} }) {
         this._all = _all;
@@ -17,29 +17,10 @@ export default class AnimeList {
     private _onhold: Record<number, AnimeEntry>;
     fetchedDate?: Date;
 
-    set all(value: Record<number, AnimeEntry>) {
-        let allKeys = Object.entries(value);
-        Object.values(allKeys).forEach(([strKey, value]) => {
-            let key = Number(strKey);
-            value.sync();
-            (this._all as any)[key] = value;
-            switch ((MALStatuses as any)[(value as AnimeEntry).myMalStatus!]) {
-                case MALStatuses.Watching:
-                    (this._watching as any)[key] = value;
-                    break
-                case MALStatuses.Completed:
-                    (this._completed as any)[key] = value;
-                    break;
-                case MALStatuses.Dropped:
-                    (this._dropped as any)[key] = value;
-                    break;
-                case MALStatuses["On-Hold"]:
-                    (this._onhold as any)[key] = value;
-                    break;
-                case MALStatuses["Plan To Watch"]:
-                    (this._plantowatch as any)[key] = value;
-            }
-        })
+    set all(_all: Record<number, AnimeEntry>) {
+        Object.values(_all).forEach(anime => {
+            this.loadAnime(anime);
+        });
     }
     get all(): Record<number, AnimeEntry> {
         return this._all;
@@ -90,21 +71,42 @@ export default class AnimeList {
     get ptw(): Record<number, AnimeEntry> {
         return this._plantowatch;
     }
-    static fromJson({ _all: data = [] }: { _all: number[] }): AnimeList {
+    static fromJson({ _all: data = [], fetchedDate }: { _all: number[], fetchedDate: Date }): AnimeList {
         let list = new AnimeList({});
         let obj: Record<number, AnimeEntry> = {};
         data.forEach(id => {
             obj[Number(id)] = new AnimeEntry({ malId: Number(id) });
-        })
+        });
         list.all = obj;
+        list.fetchedDate = fetchedDate;
         return list;
     }
     readyForJson() {
-        return { _all: Object.keys(this.all) };
+        return { _all: Object.keys(this.all), fetchedDate: this.fetchedDate };
     }
     loadAnime(anime: AnimeEntry) {
-        this.all[anime.malId!] = anime;
-        this.loadFromAll(this.all);
+        this._all[anime.malId!] = anime;
+        delete this._watching[anime.malId!];
+        delete this._completed[anime.malId!];
+        delete this._dropped[anime.malId!];
+        delete this._onhold[anime.malId!];
+        delete this._plantowatch[anime.malId!];
+        switch (anime.myMalStatus!) {
+            case MALStatuses.Watching:
+                this._watching[anime.malId!] = anime;
+                break
+            case MALStatuses.Completed:
+                this._completed[anime.malId!] = anime;
+                break;
+            case MALStatuses.Dropped:
+                this._dropped[anime.malId!] = anime;
+                break;
+            case MALStatuses["On-Hold"]:
+                this._onhold[anime.malId!] = anime;
+                break;
+            case MALStatuses["Plan To Watch"]:
+                this._plantowatch[anime.malId!] = anime;
+        }
     }
     loadFromAll(all: Record<number, AnimeEntry>) {
         this._watching = {};

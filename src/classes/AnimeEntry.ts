@@ -1,5 +1,7 @@
-import { sync } from "./AnimeStorage";
-import { MALStatuses } from "./MALStatuses";
+import { MALStatuses } from "./MalStatuses";
+import { get, sync, ThumbnailManager } from "./AnimeStorage";
+const fs = window.require("fs"),
+    request = window.require("request");
 
 export default class AnimeEntry {
     static SCORES = ["Appaling", "Horrible", "Very Bad", "Bad", "Average", "Fine", "Good", "Very Good", "Great", "Masterpiece"];
@@ -20,6 +22,7 @@ export default class AnimeEntry {
         myMalRating = undefined,
         myRewatchAmount = undefined,
         imageURL = undefined,
+        _imageURL = undefined,
         name = undefined,
         _name = undefined,
         sync = true
@@ -40,6 +43,7 @@ export default class AnimeEntry {
         myMalRating?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10,
         myRewatchAmount?: number,
         imageURL?: string,
+        _imageURL?: string,
         name?: string,
         _name?: string,
         sync?: boolean
@@ -48,21 +52,21 @@ export default class AnimeEntry {
         this.malId = malId;
         this.malUrl = malUrl;
         this.genres = new Set(genres);
-        this.synonyms = new Set(synonyms);
+        this.synonyms = new Set(Array.from(synonyms || []).sort());
         this.synopsis = synopsis;
         this.totalEpisodes = totalEpisodes;
-        this.startDate = new Date(startDate!);
-        this.endDate = new Date(endDate!);
-        this.userStartDate = new Date(userStartDate!);
-        this.userEndDate = new Date(userEndDate!);
+        this.startDate = startDate ? new Date(startDate) : startDate;
+        this.endDate = endDate ? new Date(endDate) : endDate;
+        this.userStartDate = userStartDate ? new Date(userStartDate) : userStartDate;
+        this.userEndDate = userEndDate ? new Date(userEndDate) : userEndDate;
         this.myWatchedEpisodes = myWatchedEpisodes;
         this.myMalStatus = myMalStatus;
         this.myMalRating = myMalRating;
         this.myRewatchAmount = myRewatchAmount;
-        this.imageURL = imageURL;
+        this.imageURL = imageURL || _imageURL;
         this.name = name || _name;
         if (sync && (malId || name))
-            this.sync();
+            this.syncGet();
     }
     synonyms: Set<string>;
     malId?: number;
@@ -79,7 +83,32 @@ export default class AnimeEntry {
     myMalStatus?: MALStatuses;
     myMalRating?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
     myRewatchAmount?: number;
-    imageURL?: string;
+    private _imageURL?: string;
+    get imageURL() {
+        if (ThumbnailManager.SAVED_THUMBNAILS_STATE && this.malId && !ThumbnailManager.SAVED_THUMBNAILS.has(this.malId) && this._imageURL) {
+            let imageRequest = request(this._imageURL),
+                writeStream = fs.createWriteStream(ThumbnailManager.SAVED_THUMBNAILS_PATH + this.malId);
+            imageRequest.pipe(writeStream);
+            writeStream.on("finish", () => {
+                ThumbnailManager.SAVED_THUMBNAILS.add(this.malId!);
+                ThumbnailManager.setThumbnailStorage();
+            });
+        }
+        return ThumbnailManager.SAVED_THUMBNAILS_STATE && this.malId && ThumbnailManager.SAVED_THUMBNAILS.has(this.malId) ?
+            "file://" + ThumbnailManager.SAVED_THUMBNAILS_PATH + this.malId : this._imageURL;
+    }
+    set imageURL(value) {
+        this._imageURL = value;
+        if (ThumbnailManager.SAVED_THUMBNAILS_STATE && this.malId && !ThumbnailManager.SAVED_THUMBNAILS.has(this.malId) && this._imageURL) {
+            let imageRequest = request(this._imageURL),
+                writeStream = fs.createWriteStream(ThumbnailManager.SAVED_THUMBNAILS_PATH + this.malId);
+            imageRequest.pipe(writeStream);
+            writeStream.on("finish", () => {
+                ThumbnailManager.SAVED_THUMBNAILS.add(this.malId!);
+                ThumbnailManager.setThumbnailStorage();
+            });
+        }
+    }
     private _name?: string;
     set name(val: string | undefined) {
         if (val)
@@ -89,11 +118,8 @@ export default class AnimeEntry {
     get name(): string | undefined {
         return this._name;
     }
-    sync() {
-        Object.entries(sync(this)).forEach(([key, value]) => {
-            if (value)
-                (this as any)[key] = value;
-        });
+    syncPut(forceSynonyms: boolean = false) {
+        sync(this, forceSynonyms);
         return this;
     }
     readyForJSON() {
@@ -101,5 +127,32 @@ export default class AnimeEntry {
         copy.synonyms = [...this.synonyms];
         copy.genres = [...(this.genres || [])];
         return copy;
+    }
+    syncGet() {
+        let inStorage = get(this);
+        if (inStorage)
+            Object.entries(inStorage).forEach(([key, value]) => {
+                if (value !== this[key as keyof AnimeEntry])
+                    (this as any)[key] = value;
+            });
+        return this;
+    }
+
+    seenEpisode(episodeNumber: number) {
+        return this.myWatchedEpisodes !== undefined && this.myWatchedEpisodes >= episodeNumber;
+    }
+
+    isUserInterested() {
+        return this.myMalStatus !== undefined && (
+            this.myMalStatus === MALStatuses.Completed ||
+            this.myMalStatus === MALStatuses.Watching ||
+            this.myMalStatus === MALStatuses["Plan To Watch"]
+        );
+    }
+    clearUserData(){
+        delete this.myMalRating;
+        delete this.myMalStatus;
+        delete this.myRewatchAmount;
+        delete this.myWatchedEpisodes;
     }
 }
