@@ -2,13 +2,14 @@ import { AnimeById } from "jikants/dist/src/interfaces/anime/ById";
 import { Reviews } from "jikants/dist/src/interfaces/anime/Reviews";
 import { Seasons } from "jikants/dist/src/interfaces/season/Season";
 import { AnimeListTypes } from "jikants/dist/src/interfaces/user/AnimeList";
+import App from "../App";
 import AnimeEntry from "../classes/AnimeEntry";
 import AnimeList from "../classes/AnimeList";
 import Consts from "../classes/Consts";
 import DownloadedItem from "../classes/DownloadedItem";
+import { MALStatuses } from "../classes/MalStatuses";
 import User from "../classes/User";
 import { getCurrentSeason, parseStupidAmericanDateString } from "./general";
-import { MALStatuses } from "../classes/MalStatuses";
 
 let mal = window.require("jikan-node");
 mal = new mal();
@@ -124,7 +125,8 @@ export default class MALUtils {
     }
     static UPDATE_ANIME_URL = "https://myanimelist.net/ownlist/anime/edit.json";
     static ADD_ANIME_URL = "https://myanimelist.net/ownlist/anime/add.json";
-    static async updateAnime(anime: AnimeEntry & HasMalId, { episodes, status, score }: { episodes?: number, status?: MALStatuses, score?: number }): Promise<boolean> {
+    static MAL_LOGIN_URL = "https://myanimelist.net/login.php";
+    static async updateAnime(anime: AnimeEntry & HasMalId, { episodes, status, score }: { episodes?: number, status?: MALStatuses, score?: number }, reloginWhenFailure = false): Promise<boolean> {
         let rightNow = new Date(),
             body: any = {
                 anime_id: anime.malId,
@@ -160,7 +162,37 @@ export default class MALUtils {
             anime.syncPut();
             Consts.MAL_USER.animeList.loadAnime(anime);
         }
+        else if (reloginWhenFailure) {
+            let password = Consts.MAL_USER.password,
+                username = Consts.MAL_USER.username;
+            await Consts.MAL_USER.logOut();
+            const response = await this.login(username, password);
+            if (response.url === this.MAL_LOGIN_URL){
+                App.loadLoginModal(username, password);
+                (window as any).displayToast({title: "Please login to MAL again", body: "For some reason MAL needs users to sign in every once in a while..... So please do"})
+            }
+            else {
+                Consts.setMALUser(new User(username, password, undefined, true));
+                await MALUtils.getUserAnimeList(Consts.MAL_USER);
+                Consts.setMALUser(Consts.MAL_USER);
+                return this.updateAnime(anime, { episodes, status, score }, reloginWhenFailure);
+            }
+        }
         return isOk;
+    }
+    static async login(username: string, password: string) {
+        let formData = new FormData();
+        formData.append('user_name', username);
+        formData.append('password', password);
+        formData.append('csrf_token', Consts.CSRF_TOKEN)
+        formData.append('cookie', "1");
+        formData.append('sublogin', 'Login');
+        formData.append('submit', "1");
+        let response = await fetch(this.MAL_LOGIN_URL, {
+            method: "POST",
+            body: formData
+        });
+        return response;
     }
     static async addAnime(anime: AnimeEntry & HasMalId) {
         let request = await fetch(this.ADD_ANIME_URL, {

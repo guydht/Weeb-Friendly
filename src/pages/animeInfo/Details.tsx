@@ -190,8 +190,9 @@ export default class Details extends Component<AnimeInfoProps> {
                                     <Modal.Title>Downloaded Episodes</Modal.Title>
                                 </Modal.Header>
                                 <Modal.Body style={{
-                                    display: "flex",
-                                    justifyContent: "space-evenly"
+                                    display: "grid",
+                                    gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr 1fr",
+                                    gridGap: ".5rem"
                                 }}>
                                     {
                                         sameSeries.map((ele, i) =>

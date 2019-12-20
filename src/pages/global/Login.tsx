@@ -6,7 +6,7 @@ import MALUtils from "../../utils/MAL";
 
 
 
-export default class Login extends Component {
+export default class Login extends Component<{ username?: string, password?: string }> {
     static Alert_SHOW_TIMEOUT = 2000;
 
     state = {
@@ -24,6 +24,7 @@ export default class Login extends Component {
         if (this.userInput.current)
             this.userInput.current.focus()
     }
+
     componentDidUpdate() {
         // eslint-disable-next-line
         this.state.isLoggedIn = Consts.MAL_USER.isLoggedIn;
@@ -63,6 +64,7 @@ export default class Login extends Component {
                         </InputGroup.Prepend>
                         <FormControl placeholder="User"
                             ref={this.userInput}
+                            defaultValue={this.props.username || ""}
                             onKeyDown={(e: React.KeyboardEvent) => this.listenToEnter(e)}
                             onChange={this.setUsername.bind(this)} />
                     </InputGroup>
@@ -73,6 +75,7 @@ export default class Login extends Component {
                         </InputGroup.Text>
                         </InputGroup.Prepend>
                         <FormControl placeholder="Password" type="password"
+                            defaultValue={this.props.password || ""}
                             onKeyDown={(e: React.KeyboardEvent) => this.listenToEnter(e)}
                             onChange={this.setPassword.bind(this)} />
                     </InputGroup>
@@ -131,60 +134,49 @@ export default class Login extends Component {
         if (this.state.loading)
             return this.errorMessage("Still Loading!");
         this.setState({ loading: true });
-        let formData = new FormData();
-        formData.append('user_name', this.username);
-        formData.append('password', this.password);
-        formData.append('csrf_token', Consts.CSRF_TOKEN)
-        formData.append('cookie', "1");
-        formData.append('sublogin', 'Login');
-        formData.append('submit', "1");
-        fetch(Consts.MAL_LOGIN_URL, {
-            method: "POST",
-            body: formData
-        }).then(async response => {
-            if (response.status !== 200) return this.errorMessage("Something went wrong while trying to log in..... Check MAL's status!");
-            let responseText = await response.text();
-            if (responseText.includes("Your username or password is incorrect.") || responseText.includes("Recover your account")) {
-                this.setState({
-                    errorMessage: "Couldn't sign in with the given credentials!",
-                    loading: false
-                });
+        const response = await MALUtils.login(this.username, this.password);
+        if (response.status !== 200) return this.errorMessage("Something went wrong while trying to log in..... Check MAL's status!");
+        let responseText = await response.text();
+        if (responseText.includes("Your username or password is incorrect.") || responseText.includes("Recover your account")) {
+            this.setState({
+                errorMessage: "Couldn't sign in with the given credentials!",
+                loading: false
+            });
 
-                setTimeout(() => {
-                    this.setState({
-                        errorMessage: null
-                    });
-                }, Login.Alert_SHOW_TIMEOUT);
-            }
-            else if (responseText.includes("Too many failed login attempts. Please try to login again after several hours., or restart your router (change your ip)")) {
+            setTimeout(() => {
                 this.setState({
-                    errorMessage: "Too many failed login attempts..... Try again after several hours",
-                    loading: false
+                    errorMessage: null
                 });
+            }, Login.Alert_SHOW_TIMEOUT);
+        }
+        else if (responseText.includes("Too many failed login attempts. Please try to login again after several hours., or restart your router (change your ip)")) {
+            this.setState({
+                errorMessage: "Too many failed login attempts..... Try again after several hours",
+                loading: false
+            });
 
-                setTimeout(() => {
-                    this.setState({
-                        errorMessage: null
-                    });
-                }, Login.Alert_SHOW_TIMEOUT);
-            }
-            else {
+            setTimeout(() => {
                 this.setState({
-                    successMessage: "Login Successful!",
-                    loading: false
+                    errorMessage: null
                 });
-                Consts.setMALUser(new User(this.username, this.password, undefined, true));
-                MALUtils.getUserAnimeList(Consts.MAL_USER).then(() => {
-                    Consts.setMALUser(Consts.MAL_USER);
+            }, Login.Alert_SHOW_TIMEOUT);
+        }
+        else {
+            this.setState({
+                successMessage: "Login Successful! Now fetching your Anime List......",
+                loading: true
+            });
+            Consts.setMALUser(new User(this.username, this.password, undefined, true));
+            MALUtils.getUserAnimeList(Consts.MAL_USER).then(() => {
+                this.setState({
+                    loading: false,
+                    successMessage: "Fetched List Successfully!"
+                });
+                Consts.setMALUser(Consts.MAL_USER);
+                setTimeout(() => {
                     (window as any).reloadPage();
-                });
-                setTimeout(() => {
-                    this.setState({
-                        errorMessage: null,
-                        successMessage: null
-                    });
-                }, Login.Alert_SHOW_TIMEOUT);
-            }
-        }).catch(e => this.unknownError(e));
+                }, Login.Alert_SHOW_TIMEOUT / 2);
+            });
+        }
     }
 }

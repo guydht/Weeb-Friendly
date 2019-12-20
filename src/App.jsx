@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { MemoryRouter, Route, Switch } from "react-router-dom";
 import "./classes/AnimeStorage";
 import "./classes/Consts";
+import Consts from './classes/Consts';
 import "./css/global/App.css";
 import "./css/global/Forum.css";
 import DownloadManager from './pages/global/DownloadManager';
@@ -22,7 +23,9 @@ export default class App extends Component {
 
   state = {
     showVideo: false,
-    videoItem: null
+    videoItem: null,
+    username: "",
+    password: ""
   }
 
   router = React.createRef();
@@ -46,6 +49,15 @@ export default class App extends Component {
     });
 
   }
+
+  static loadLoginModal(username, password) {
+    Consts.setWantsToLogin(true);
+    window.setAppState({
+      username,
+      password
+    })
+  }
+
   render() {
     // eslint-disable-next-line
     if (!this.state.showVideo) this.state.videoItem = null;
@@ -68,7 +80,7 @@ export default class App extends Component {
             this.state.showVideo &&
             <Watch downloadedItem={this.state.videoItem} />
           }
-          <Login />
+          <Login username={this.state.username} password={this.state.password} />
           <DownloadManager />
           <ToastMessage />
         </MemoryRouter>

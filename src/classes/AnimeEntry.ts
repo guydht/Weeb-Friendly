@@ -149,4 +149,10 @@ export default class AnimeEntry {
             this.myMalStatus === MALStatuses["Plan To Watch"]
         );
     }
+    clearUserData(){
+        delete this.myMalRating;
+        delete this.myMalStatus;
+        delete this.myRewatchAmount;
+        delete this.myWatchedEpisodes;
+    }
 }

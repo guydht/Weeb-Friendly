@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import { Button, Navbar as BootstrapNavbar, NavDropdown, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import Consts from "../../classes/Consts";
-import User from "../../classes/User";
 import ChooseDirectoryText from "../../components/ChooseDirectoryText";
 import SearchBar from "../../components/SearchBar";
 import { ReactComponent as SettingsIcon } from "../../icons/settings.svg";
@@ -95,19 +94,7 @@ export default class NavBar extends Component {
         )
     }
     logout() {
-        fetch("https://myanimelist.net/logout.php", {
-            body: JSON.stringify({
-                csrf_token: Consts.CSRF_TOKEN
-            }),
-            method: "POST"
-        }).then(() => {
-            Consts.setMALUser(new User());
-            Consts.setCsrfToken('');
-            this.setState({
-                user: Consts.MAL_USER
-            });
-            (window as any).reloadPage();
-        });
+        Consts.MAL_USER.logOut()
     }
     showLogin() {
         Consts.setWantsToLogin(true);

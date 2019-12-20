@@ -36,8 +36,6 @@ export default class Consts {
         storage.set(this.CSRF_TOKEN_STORAGE_KEY, val);
     }
 
-    static MAL_LOGIN_URL = "https://myanimelist.net/login.php";
-
     static DEFAULT_THEME = "Dark";
     static THEMES = [
         "Dark",
