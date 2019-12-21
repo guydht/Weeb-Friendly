@@ -20,4 +20,10 @@ export default class DownloadedItem {
     seenThisEpisode() {
         return !isNaN(this.episodeData.episodeNumber) && this.animeEntry.seenEpisode(this.episodeData.episodeNumber);
     }
+    startPlaying() {
+        (window as any).setAppState({
+            showVideo: true,
+            videoItem: this
+        });
+    }
 }

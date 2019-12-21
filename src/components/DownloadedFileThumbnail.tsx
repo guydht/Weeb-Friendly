@@ -87,10 +87,7 @@ export default withRouter(class DownloadedFileThumbnail extends Component<Downlo
         clearTimeout(this.doubleClickTimeout);
         this.doubleClickTimeout = setTimeout(() => {
             if (!this.waitingForDeletionConfirmation)
-                (window as any).setAppState({
-                    showVideo: true,
-                    videoItem
-                });
+                videoItem.startPlaying();
         }, this.doubleClickTimeoutMiliseconds) as unknown as number;
     }
     confirmDeletion() {

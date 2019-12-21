@@ -42,7 +42,6 @@ class DisplayTorrentEntry extends Component<{ searchResult: SearchResult; }> {
                     }}
                         className={styles.link}>
                         <LazyLoadImage src={this.props.searchResult.animeEntry.imageURL}
-                            alt={this.props.searchResult.animeEntry.name}
                             className={styles.image} />
                         <div className={styles.cover}></div>
                         <span className={styles.title}>{this.props.searchResult.animeEntry.name}</span>

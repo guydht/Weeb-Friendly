@@ -810,9 +810,6 @@ function asd(AnimeName, container, videoURL) {
                 container.querySelector("#guydhtVideoFullscreen").innerHTML = temp;
             }
         };
-        slider.onmousedown = slider.onmouseup = slider.onclick = function (e) {
-            e.stopPropagation();
-        };
         container.onmousemove = function (e) {
             if (!targetIsNotThis(e, slider)) return;
             wrapper.style.cursor = "";

@@ -61,7 +61,6 @@ export default class SeasonalCarousel extends Component {
                                                                             }}
                                                                                 className={styles.link}>
                                                                                 <LazyLoadImage src={seasonalAnime.imageURL}
-                                                                                    alt={seasonalAnime.name}
                                                                                     className={styles.image} />
                                                                                 <div className={styles.cover}></div>
                                                                                 <span className={styles.title}>{seasonalAnime.name}</span>

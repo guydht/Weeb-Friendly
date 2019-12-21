@@ -37,7 +37,7 @@ const rendererVideo = document.createElement("video"),
         tryLoadingNextInQueue();
     };
 (window as any).queue = queue;
-function renderVideo(renderParams: RenderParams): Promise<HTMLCanvasElement> {
+export function renderVideo(renderParams: RenderParams): Promise<HTMLCanvasElement> {
     let localRendererVideo = rendererVideo.cloneNode(true) as HTMLVideoElement;
     return new Promise(resolve => {
         const DEFAULT_SNAPSHOT_TIME = 0.4,

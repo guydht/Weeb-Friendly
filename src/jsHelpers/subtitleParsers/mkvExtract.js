@@ -14,7 +14,7 @@ function handleFile(file, atData) {
       console.log('starting at', fraction, Math.round(fileLength * fraction), fileLength, decoder);
       fileStream = fs.createReadStream(null, { fs: fileStream.fs, start: Math.round(fileLength * fraction) });
       decoder.decoder = new matroska(decoder.decoder);
-      fileStream.pipe(decoder.decoder)
+      fileStream.pipe(decoder.decoder);
     },
     destroy: () => fileStream.destroy()
   }

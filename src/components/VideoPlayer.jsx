@@ -1,12 +1,81 @@
 import React, { Component } from "react";
+import ReactDom from "react-dom";
+import { ReactComponent as NextEpisodeIcon } from "../assets/NextIcon.svg";
 import Consts from "../classes/Consts";
 import styles from "../css/components/VideoPlayer.module.css";
-import { asd } from "../jsHelpers/jifa";
+import { asd, waitFor } from "../jsHelpers/jifa";
 import { handleFile } from "../jsHelpers/subtitleParsers/mkvExtract";
 import { SubtitlesOctopus } from "../jsHelpers/subtitleParsers/Octopus";
 import { DisplayDownloadedAnime } from "../pages/home/DownloadedAnime";
 import { CacheLocalStorage, groupBy } from "../utils/general";
+import { renderVideo } from "./VideoThumbnail";
 
+class AdjacentEpisodeButton extends Component {
+
+    static SIZE_PERCENTAGE_OF_CONTAINER = .5;
+
+    thumbnailCanvas = React.createRef();
+    isPrev = null;
+
+    state = {
+        showThumbnail: false
+    }
+
+    componentDidMount() {
+        renderVideo({
+            videoUrl: this.props.src
+        }).then(canvasWithData => {
+            waitFor(() => this.thumbnailCanvas.current, () => {
+                const canvasToDrawTo = this.thumbnailCanvas.current;
+                canvasToDrawTo.getContext("2d").drawImage(canvasWithData, 0, 0);
+            });
+        });
+    }
+
+    iconRef = React.createRef();
+
+    render() {
+        const hideThumbnail = () => this.setState({ showThumbnail: false }),
+            showThumbnail = () => this.setState({ showThumbnail: true }),
+            props = { ...this.props };
+        delete props.src;
+        delete props.videoContainer;
+        delete props.title;
+        delete props.thumbnailMarginLeft;
+        delete props.children;
+        return (
+            <div className={styles.nextEpisodeIcon} {...props}>
+                <NextEpisodeIcon style={{ transform: this.isPrev ? "rotate(180deg)" : "" }}
+                    onMouseEnter={showThumbnail} onMouseLeave={hideThumbnail} ref={this.iconRef} />
+                <div className={styles.thumbnailCanvasContainer + (this.state.showThumbnail ? "" : ` ${styles.hidden}`)} style={{
+                    height: this.props.videoContainer.clientHeight * (NextEpisodeButton.SIZE_PERCENTAGE_OF_CONTAINER / 2),
+                    width: this.props.videoContainer.clientWidth * NextEpisodeButton.SIZE_PERCENTAGE_OF_CONTAINER,
+                    marginLeft: this.props.thumbnailMarginLeft
+                }}
+                    onMouseEnter={showThumbnail} onMouseLeave={hideThumbnail}>
+                    <canvas ref={this.thumbnailCanvas} className={styles.thumbnailCanvas} />
+                    <div className={styles.thumbnailCanvasTitle}>
+                        <strong>
+                            {this.isPrev ? "Prev (Shift + B)" : "Next (Shift + N)"}
+                        </strong>
+                        <span>
+                            {this.props.title}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+}
+
+class NextEpisodeButton extends AdjacentEpisodeButton {
+    isPrev = false
+}
+
+class PrevEpisodeButton extends AdjacentEpisodeButton {
+    isPrev = true
+}
 
 export default class VideoPlayer extends Component {
 
@@ -23,8 +92,27 @@ export default class VideoPlayer extends Component {
     }
 
     setupVideo() {
-        let container = this.videoWrapper.current;
+        const container = this.videoWrapper.current,
+            [prevEpisode, nextEpisode] = this.getAdjacentDownloadedItems(),
+            handleKeyDown = e => {
+                if (e.shiftKey && !e.ctrlKey && !e.altKey && e.code === "KeyN" && nextEpisode) 
+                    nextEpisode.startPlaying();
+                else if (e.shiftKey && !e.ctrlKey && !e.altKey && e.code === "KeyB" && prevEpisode) 
+                    prevEpisode.startPlaying();
+            };
+        document.body.addEventListener("keydown", handleKeyDown);
         this.videoHandler = asd(this.props.name, container, this.props.src);
+        this.videoHandler.handleKeyDown = handleKeyDown;
+        if (nextEpisode)
+            ReactDom.render(<NextEpisodeButton thumbnailMarginLeft={prevEpisode ? -60 : -25}
+                onClick={() => nextEpisode.startPlaying()}
+                videoContainer={container} title={nextEpisode.fileName} src={Consts.FILE_URL_PROTOCOL + nextEpisode.absolutePath} />,
+                container.querySelector("#guydhtNextEpisodeButton"));
+        if (prevEpisode)
+            ReactDom.render(<PrevEpisodeButton thumbnailMarginLeft={10}
+                onClick={() => prevEpisode.startPlaying()}
+                videoContainer={container} title={prevEpisode.fileName} src={Consts.FILE_URL_PROTOCOL + prevEpisode.absolutePath} />,
+                container.querySelector("#guydhtPrevEpisodeButton"));
         let handleSubs = async subFiles => {
             const subtitles = [],
                 subtitleNames = [],
@@ -71,7 +159,7 @@ export default class VideoPlayer extends Component {
         let video = container.querySelector("video");
         if (this.props.src.startsWith("file://")) {
             this.subsHandler = handleFile(this.props.src.substring(7), handleSubs);
-            video.addEventListener("seeked", () => {
+            video.addEventListener("seeking", () => {
                 let fraction = video.currentTime / video.duration;
                 this.subsHandler.startAt(fraction);
             });
@@ -84,15 +172,15 @@ export default class VideoPlayer extends Component {
                     this.setState({ displayFinishScreenEntries: [] });
             };
             video.addEventListener("playing", removeFinishScreen);
-            video.addEventListener("seeked", removeFinishScreen);
+            video.addEventListener("seeking", removeFinishScreen);
         }
     }
 
     getSimilarDownloadedItems() {
-        let downloadedItem = this.props.downloadedItem,
+        const downloadedItem = this.props.downloadedItem,
             series = groupBy(Consts.FILTERED_DOWNLOADED_ITEMS.filter(ele => ele.absolutePath !== downloadedItem.absolutePath), ["episodeData", "seriesName"]).filter(ele => ele[0].episodeData.seriesName),
             thisSeries = series.find(ele => ele[0].episodeData.seriesName === downloadedItem.episodeData.seriesName) || [];
-        let similar = series.filter(ele => ele[0].episodeData.seriesName !== downloadedItem.episodeData.seriesName).sort((a, b) => {
+        const similar = series.filter(ele => ele[0].episodeData.seriesName !== downloadedItem.episodeData.seriesName).sort((a, b) => {
             return Math.max(...b.map(ele => ele.lastUpdated)) -
                 Math.max(...a.map(ele => ele.lastUpdated))
         }).map(ele => ele.sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { numeric: true }))[0]);
@@ -101,6 +189,15 @@ export default class VideoPlayer extends Component {
             return Math.abs(a.episodeData.episodeNumber - downloadedItem.episodeData.episodeNumber) -
                 Math.abs(b.episodeData.episodeNumber - downloadedItem.episodeData.episodeNumber)
         }
+    }
+
+    getAdjacentDownloadedItems() {
+        const downloadedItem = this.props.downloadedItem;
+        if (isNaN(downloadedItem.episodeData.episodeNumber)) return [];
+        const thisSeries = Consts.FILTERED_DOWNLOADED_ITEMS.filter(ele => ele.episodeData.seriesName === downloadedItem.episodeData.seriesName) || [],
+            epiNumber = downloadedItem.episodeData.episodeNumber;
+        return [thisSeries.find(ele => ele.episodeData.episodeNumber === epiNumber - 1),
+        thisSeries.find(ele => ele.episodeData.episodeNumber === epiNumber + 1)]
     }
 
     componentWillUnmount() {
@@ -116,9 +213,11 @@ export default class VideoPlayer extends Component {
             }
         if (this.subsHandler)
             this.subsHandler.destroy();
-        if (this.videoHandler)
+        if (this.videoHandler) {
+            document.body.removeEventListener("keydown", this.videoHandler.handleKeyDown);
             this.videoHandler.destroy();
-        if (document.fullscreen)
+        }
+        if (document.fullscreenElement)
             document.exitFullscreen();
     }
 
@@ -137,8 +236,10 @@ export default class VideoPlayer extends Component {
                 }
             if (this.subsHandler)
                 this.subsHandler.destroy();
-            if (this.videoHandler)
+            if (this.videoHandler) {
+                document.body.removeEventListener("keydown", this.videoHandler.handleKeyDown);
                 this.videoHandler.destroy();
+            }
             delete this.videoHandler;
             delete this.subsHandler;
             this.setupVideo();
