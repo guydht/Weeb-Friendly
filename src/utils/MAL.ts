@@ -135,18 +135,18 @@ export default class MALUtils {
                 num_watched_episodes: episodes,
                 csrf_token: Consts.CSRF_TOKEN
             };
-        if (episodes === 1 && !(anime.startDate && !isNaN(anime.startDate.getDate())))
+        if (episodes === 1 && !(anime.userStartDate && !isNaN(anime.userStartDate.getDate())))
             body['start_date'] = {
                 month: rightNow.getMonth(),
                 day: rightNow.getDate(),
                 year: rightNow.getFullYear()
             }
-        if (status === MALStatuses.Completed)
+        if (status === MALStatuses.Completed && !anime.userEndDate)
             body['finish_date'] = {
                 month: rightNow.getMonth(),
                 day: rightNow.getDate(),
                 year: rightNow.getFullYear()
-            }
+            };
         let request = await fetch(this.UPDATE_ANIME_URL, {
             method: "POST",
             body: JSON.stringify(body)
@@ -157,8 +157,10 @@ export default class MALUtils {
             anime.myWatchedEpisodes = episodes;
             anime.myMalStatus = status;
             anime.myMalRating = score as any;
-            if (episodes === 1 && !(anime.startDate && !isNaN(anime.startDate.getDate())))
-                anime.startDate = rightNow;
+            if (body['start_date'])
+                anime.userStartDate = rightNow;
+            if (body['finish_date'])
+                anime.userEndDate = rightNow;
             anime.syncPut();
             Consts.MAL_USER.animeList.loadAnime(anime);
         }
@@ -167,9 +169,9 @@ export default class MALUtils {
                 username = Consts.MAL_USER.username;
             await Consts.MAL_USER.logOut();
             const response = await this.login(username, password);
-            if (response.url === this.MAL_LOGIN_URL){
+            if (response.url === this.MAL_LOGIN_URL) {
                 App.loadLoginModal(username, password);
-                (window as any).displayToast({title: "Please login to MAL again", body: "For some reason MAL needs users to sign in every once in a while..... So please do"})
+                (window as any).displayToast({ title: "Please login to MAL again", body: "For some reason MAL needs users to sign in every once in a while..... So please do" })
             }
             else {
                 Consts.setMALUser(new User(username, password, undefined, true));
@@ -340,4 +342,3 @@ class ForumMessage {
         this.id = id;
     }
 }
-(window as any).MALUtils = MALUtils;

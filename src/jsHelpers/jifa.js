@@ -795,21 +795,6 @@ function asd(AnimeName, container, videoURL) {
                 setTimeout(checkInfoText, 1500);
             }
         }
-        var temp = container.querySelector("#guydhtVideoFullscreen").innerHTML;
-        window.onresize = function () {
-            setTimeout(function () {
-                checkInfoText(true);
-            }, 10);
-            displayTimerText();
-            if (!!document.webkitFullscreenElement) {
-                slider.className = "guydhtVideoFullscreened";
-                container.querySelector("#guydhtVideoFullscreen").innerHTML = '<svg height="100%"width="100%"><path d="m 14,14 -4,0 0,2 6,0 0,-6 -2,0 0,4 0,0 z"></path><path d="m 22,14 0,-4 -2,0 0,6 6,0 0,-2 -4,0 0,0 z"></path><path d="m 20,26 2,0 0,-4 4,0 0,-2 -6,0 0,6 0,0 z"></path><path d="m 10,22 4,0 0,4 2,0 0,-6 -6,0 0,2 0,0 z" ></path></svg>';
-            } else {
-                if (wrapper.style.height === "100%") exitFullscreenMode();
-                slider.className = "";
-                container.querySelector("#guydhtVideoFullscreen").innerHTML = temp;
-            }
-        };
         container.onmousemove = function (e) {
             if (!targetIsNotThis(e, slider)) return;
             wrapper.style.cursor = "";
