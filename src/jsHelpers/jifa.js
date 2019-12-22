@@ -282,20 +282,6 @@ function asd(AnimeName, container, videoURL) {
                 container.style.zIndex = "";
             }, 500);
         }
-        var timerTimeout;
-
-        function displayTimerText() {
-            checkInfoText(true);
-            clearTimeout(timerTimeout);
-            Timer.style.opacity = 1;
-            info.style.opacity = 1;
-            timerTimeout = setTimeout(function () {
-                Timer.style.opacity = 0;
-                timerTimeout = setTimeout(function () {
-                    Timer.innerHTML = "";
-                }, 500);
-            }, 1500);
-        }
         var sliderTimeout;
 
         function displaySlider(select) {

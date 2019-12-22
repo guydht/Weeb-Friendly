@@ -1,15 +1,15 @@
-import React, { Component, RefObject } from "react";
+import React, { Component, RefObject, SyntheticEvent } from "react";
 import { Badge, Button, Col, FormControl, Modal, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import AnimeEntry from "../../classes/AnimeEntry";
 import Consts from "../../classes/Consts";
+import { MALStatuses } from "../../classes/MalStatuses";
 import ChangableText from "../../components/ChangableText";
 import DownloadedFileThumbnail from "../../components/DownloadedFileThumbnail";
 import styles from "../../css/pages/Details.module.css";
 import { hasInternet } from "../../utils/general";
 import MALUtils from "../../utils/MAL";
 import { AnimeInfoProps } from "../AnimeInfo";
-import { MALStatuses } from "../../classes/MalStatuses";
 
 export default class Details extends Component<AnimeInfoProps> {
 
@@ -212,15 +212,29 @@ export default class Details extends Component<AnimeInfoProps> {
     addAnime(anime: AnimeEntry) {
         MALUtils.addAnime(anime as any).then(ok => ok && this.setState({}));
     }
-    updateAnime() {
+    updateAnime(e: SyntheticEvent) {
         if (!this.statusElement.current || !this.episodElement.current || !this.scoreElement.current) return;
         clearTimeout(this.updateTimeout);
-        if (Number(this.episodElement.current.value) === this.props.anime.totalEpisodes)
-            this.statusElement.current.value = MALStatuses.Completed;
-        else if (Number(this.episodElement.current.value) === 1)
-            this.statusElement.current.value = MALStatuses.Watching;
-        if (Number(this.statusElement.current.value) === MALStatuses.Completed)
-            this.episodElement.current.value = this.props.anime.totalEpisodes;
+        switch (e.currentTarget) {
+            case this.episodElement.current:
+                switch (Number(this.episodElement.current.value)) {
+                    case this.props.anime.totalEpisodes:
+                        this.statusElement.current.value = MALStatuses.Completed;
+                        break;
+                    case 0:
+                        this.statusElement.current.value = MALStatuses["Plan To Watch"];
+                        break;
+                };
+                break;
+            case this.statusElement.current:
+                switch (Number(this.statusElement.current.value)) {
+                    case MALStatuses.Completed:
+                        this.episodElement.current.value = this.props.anime.totalEpisodes;
+                        break;
+                    case MALStatuses["Plan To Watch"]:
+                        this.episodElement.current.value = 0;
+                };
+        };
         this.updateTimeout = window.setTimeout(() => {
             if (!this.statusElement.current || !this.episodElement.current || !this.scoreElement.current) return;
             MALUtils.updateAnime(this.props.anime as any, {

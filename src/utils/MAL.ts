@@ -141,7 +141,7 @@ export default class MALUtils {
                 day: rightNow.getDate(),
                 year: rightNow.getFullYear()
             }
-        if (status === MALStatuses.Completed && !anime.userEndDate)
+        if (status === MALStatuses.Completed && !(anime.userEndDate && !isNaN(anime.userEndDate.getDate())))
             body['finish_date'] = {
                 month: rightNow.getMonth(),
                 day: rightNow.getDate(),
