@@ -244,7 +244,7 @@ export default class Details extends Component<AnimeInfoProps> {
             }).then(ok => {
                 if (ok)
                     (window as any).displayToast({ title: 'Successfully updated!', body: `Succesfully update ${this.props.anime.name}!` });
-                else
+                else if (hasInternet())
                     (window as any).displayToast({ title: 'Something Went Wrong!', body: `MyanimeList sent error code :(\nTry logging in again!` });
                 (window as any).reloadPage();
             });

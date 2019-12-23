@@ -5,11 +5,12 @@ import { AnimeListTypes } from "jikants/dist/src/interfaces/user/AnimeList";
 import App from "../App";
 import AnimeEntry from "../classes/AnimeEntry";
 import AnimeList from "../classes/AnimeList";
+import { updateInMalWhenHasInternet } from "../classes/AnimeStorage";
 import Consts from "../classes/Consts";
 import DownloadedItem from "../classes/DownloadedItem";
 import { MALStatuses } from "../classes/MalStatuses";
 import User from "../classes/User";
-import { getCurrentSeason, parseStupidAmericanDateString } from "./general";
+import { Confirm, getCurrentSeason, hasInternet, parseStupidAmericanDateString } from "./general";
 
 let mal = window.require("jikan-node");
 mal = new mal();
@@ -127,6 +128,26 @@ export default class MALUtils {
     static ADD_ANIME_URL = "https://myanimelist.net/ownlist/anime/add.json";
     static MAL_LOGIN_URL = "https://myanimelist.net/login.php";
     static async updateAnime(anime: AnimeEntry & HasMalId, { episodes, status, score }: { episodes?: number, status?: MALStatuses, score?: number }, reloginWhenFailure = false): Promise<boolean> {
+        if (!hasInternet()) {
+            return await new Promise(resolve => Confirm(`Do you want to update ${anime.name} in MAL? ` +
+                `You don't have internet connection, but I can update it when you do have internet.`, (ok: boolean) => {
+                    if (ok) {
+                        updateInMalWhenHasInternet(
+                            anime, {
+                            episodes,
+                            status
+                        });
+                        anime.myMalStatus = status;
+                        anime.myWatchedEpisodes = episodes;
+                        anime.syncPut();
+                        (window as any).displayToast({
+                            title: "Success",
+                            body: `Will update ${anime.name} in MAL when you have internet connectivity again!`
+                        });
+                    }
+                    resolve(ok);
+                }));
+        }
         let rightNow = new Date(),
             body: any = {
                 anime_id: anime.malId,

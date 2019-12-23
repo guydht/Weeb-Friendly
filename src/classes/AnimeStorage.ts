@@ -82,8 +82,22 @@ let _storageKey = "anime-storage",
     },
     _clearUpdatableData = (anime: AnimeEntry & { malId: number }) => {
         _ANIMES.set(anime.malId, [_TTL_DATE(STORAGE_TTL_IN_SECONDS), anime]);
-    };
+    },
+    _whenHasInternetStorageKey = "laterWhenIHaveInternet",
+    updateInMalWhenHasInternet = (anime: AnimeEntry, updateParams: object) => {
+        if (anime.malId) {
+            const currentThingsToUpdate: Record<string, object> = storageObject.get(_whenHasInternetStorageKey) || {},
+                updateObj: any = currentThingsToUpdate[anime.malId.toString()] || {};
+            Object.entries(updateParams).forEach(([key, value]) => {
+                updateObj[key] = value;
+            });
+            currentThingsToUpdate[anime.malId.toString()] = updateObj;
+            storageObject.set(_whenHasInternetStorageKey, currentThingsToUpdate);
+        }
+    },
+    lastHasInternetState = false;
 (window as any).animeStorage = _ANIMES;
+(window as any).storage = storageObject;
 setInterval(() => {
     if (needsUpdating) {
         let copy: { [key: number]: [Date, AnimeEntry] } = {};
@@ -93,11 +107,32 @@ setInterval(() => {
         storageObject.set(_storageKey, Object.values(copy));
         needsUpdating = false;
     }
+    if (lastHasInternetState === false && navigator.onLine) {
+        let argsToUpdate: Record<string, object> = storageObject.get(_whenHasInternetStorageKey) || {},
+            MALUtils = require("../utils/MAL").default;
+        Promise.all(Object.entries(argsToUpdate).map(
+            ([animeId, updateObj]: any) => MALUtils.updateAnime(new AnimeEntry({ malId: Number(animeId) }), updateObj)
+        )).then(ok => {
+            if (ok.every(ok => ok)) {
+                storageObject.set(_whenHasInternetStorageKey, {});
+                if (ok.length)
+                    (window as any).displayToast({
+                        title: "Yay! You have your internet back!",
+                        body: "Finished updating all your offline progress with MAL :)"
+                    });
+            }
+            else
+                setTimeout(() => {
+                    lastHasInternetState = false;
+                }, 10000);
+        });
+    }
+    lastHasInternetState = navigator.onLine;
 }, 1000);
 ((storageObject.get(_storageKey) || []) as any[]).forEach(([date, anime]) => {
     (anime as any).sync = false;
     _ANIMES.set(Number(anime.malId), [new Date(date), new AnimeEntry(anime as any)]);
 });
 
-export { sync, get, size, ThumbnailManager };
+export { sync, get, size, ThumbnailManager, updateInMalWhenHasInternet };
 
