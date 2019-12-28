@@ -307,6 +307,9 @@ export default class MALUtils {
     }
     static async animeReviews(anime: AnimeEntry & HasMalId): Promise<Reviews | undefined> {
         let data = await mal.findAnime(anime.malId, "reviews");
+        data.reviews.forEach((review: any) => {
+            review.date = new Date(review.date);
+        });
         return data;
     }
 }
