@@ -23,21 +23,18 @@ class Listener {
 
 export default class TorrentManager {
     private static client = new webtorrent();
-    static add({ magnetURL, name }: { magnetURL: string; name: string; }) {
-        let returnedTorrent = this.client.add(magnetURL, (torrent: Torrent) => {
+    static add({ magnetURL }: { magnetURL: string; }) {
+        let returnedTorrent = this.client.add(magnetURL, {
+            path: Consts.DOWNLOADS_FOLDER
+        }, (torrent: Torrent) => {
             torrent.on('done', () => {
                 let files = [...torrent.files];
                 torrent.destroy(() => {
                     files.forEach((file: any) => {
-                        // let withoutExtension = file.path.replace(path.extname(file.path), ""),
-                        //     downloadedItem = new DownloadedItem(
-                        //         file.path,
-                        //         withoutExtension, new Date()
-                        //     );
                         const absolutePath = path.join(torrent.path, file.path),
-                            extension = path.extname(file.path),
-                            newAbsolutePath = path.join(Consts.DOWNLOADS_FOLDER, name + extension);
-                        fs.rename(absolutePath, newAbsolutePath);
+                            newAbsolutePath = path.join(Consts.DOWNLOADS_FOLDER, file.path);
+                        if (newAbsolutePath !== absolutePath)
+                            fs.rename(absolutePath, newAbsolutePath);
                         Consts.removeFromSavedTorrents(returnedTorrent);
                         Consts.DOWNLOADED_ITEMS = walkDir(Consts.DOWNLOADS_FOLDER);
                         (window as any).reloadPage();
@@ -46,7 +43,6 @@ export default class TorrentManager {
             });
             (window as any).reloadPage();
         });
-        (returnedTorrent as any).torrentName = name;
         if (Consts.SAVED_TORRENTS)
             Consts.addToSavedTorrents(returnedTorrent);
         return returnedTorrent;
@@ -69,7 +65,7 @@ export default class TorrentManager {
     }
     static resume(torrent: Torrent) {
         Consts.removeFromSavedTorrents(torrent);
-        this.add({ magnetURL: torrent.magnetURI, name: (torrent as any).torrentName });
+        this.add({ magnetURL: torrent.magnetURI });
     }
 
     private static listeners: Listener[] = [];
