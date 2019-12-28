@@ -48,8 +48,8 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
 
     searchDownloadedFromSeries() {
         this.downloadedFromSeries = Consts.DOWNLOADED_ITEMS.filter(item => {
-            return item.animeEntry.malId === this.props.anime.malId ||
-                (item.animeEntry.name!.match(/[a-zA-Z0-9\s]*/g) || []).join("") === (this.props.anime.name!.match(/[a-zA-Z0-9\s]*/g) || []).join("")
+            return !isNaN(item.animeEntry.malId!) && (item.animeEntry.malId === this.props.anime.malId ||
+                (item.animeEntry.name!.match(/[a-zA-Z0-9\s]*/g) || []).join("") === (this.props.anime.name!.match(/[a-zA-Z0-9\s]*/g) || []).join(""))
         });
     }
 
@@ -195,7 +195,7 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
         })
     }
     startDownload(magnetLink: string, episode: SearchResult) {
-        TorrentManager.add({ magnetURL: magnetLink, name: `${episode.episodeData.seriesName} Episode ${episode.episodeData.episodeNumber}` });
+        TorrentManager.add({ magnetURL: magnetLink });
         (window as any).displayToast({
             title: "Download Successfully started",
             body: `Started downloading ${episode.episodeData.seriesName} Episode ${episode.episodeData.episodeNumber}.`

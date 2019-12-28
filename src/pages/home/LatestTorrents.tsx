@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Carousel, OverlayTrigger, Spinner, Table, Tooltip } from "react-bootstrap";
+import { Carousel, OverlayTrigger, Spinner, Tooltip } from "react-bootstrap";
 //@ts-ignore
 import { LazyLoadComponent, LazyLoadImage } from "react-lazy-load-image-component";
 import { Link } from "react-router-dom";
@@ -8,6 +8,7 @@ import TorrentManager from "../../classes/TorrentManager";
 import ChooseSource from "../../components/ChooseSource";
 import HasSeen from "../../components/HasSeen";
 import SearchBar from "../../components/SearchBar";
+import downloadedAnimeStyle from "../../css/pages/DownloadedAnime.module.css";
 import styles from "../../css/pages/SeasonalCarousel.module.css";
 import { ReactComponent as DownloadIcon } from "../../icons/download.svg";
 import { chunkArray, Confirm } from "../../utils/general";
@@ -20,7 +21,7 @@ class DisplayTorrentEntry extends Component<{ searchResult: SearchResult; }> {
     render() {
         if (this.props.searchResult.animeEntry.malId)
             return (
-                <td className={styles.td}>
+                <div className="position-relative">
                     {
                         this.props.searchResult.seenThisEpisode() ? <HasSeen className={styles.downloadIcon} hasSeen={true} />
                             : this.props.searchResult.alreadyDownloaded() ?
@@ -46,10 +47,10 @@ class DisplayTorrentEntry extends Component<{ searchResult: SearchResult; }> {
                         <div className={styles.cover}></div>
                         <span className={styles.title}>{this.props.searchResult.animeEntry.name}</span>
                     </Link>
-                </td>
+                </div>
             )
         return (
-            <td className={styles.td + " pb-4"}>
+            <div className="position-relative pb-4">
                 <LazyLoadComponent>
                     <div style={{ height: "-webkit-fill-available", overflowY: "hidden" }}>
                         <SearchBar
@@ -64,7 +65,7 @@ class DisplayTorrentEntry extends Component<{ searchResult: SearchResult; }> {
                         style={{ flex: "0 1" }}
                         className={styles.title}>{this.props.searchResult.episodeData.seriesName}</span>
                 </LazyLoadComponent>
-            </td>
+            </div>
         )
     }
     setMALLink(searchResult: SearchResult, animeEntry: AnimeEntry) {
@@ -73,11 +74,10 @@ class DisplayTorrentEntry extends Component<{ searchResult: SearchResult; }> {
         this.setState({});
     }
     downloadNow(searchResult: any) {
-        if (!searchResult || !searchResult.episodeData || !searchResult.episodeData.seriesName || !searchResult.episodeData.episodeNumber) return;
         const downloadName = `${searchResult.episodeData.seriesName} Episode ${searchResult.episodeData.episodeNumber}`;
         Confirm(`Download ${downloadName}?`, (ok: boolean) => {
             if (ok && searchResult.links && searchResult.links[0] && searchResult.links[0].magnet)
-                TorrentManager.add({ magnetURL: (searchResult as any).links[0].magnet, name: downloadName });
+                TorrentManager.add({ magnetURL: (searchResult as any).links[0].magnet });
         });
     }
 }
@@ -126,27 +126,19 @@ class DisplayLatestTorrents extends Component<{ source?: Sources }>{
                             .map((arrayChunk, i) => {
                                 return (
                                     <Carousel.Item key={i} className={styles.carousel}>
-                                        <Table responsive={true} className={styles.table}>
-                                            <tbody>
-                                                {
-                                                    chunkArray(arrayChunk, SeasonalCarousel.GRID_SIZE_X).map((chunk, i) => {
-                                                        return (
-                                                            <tr key={i}>
-                                                                {
-                                                                    chunk.map((searchResult, i) => <DisplayTorrentEntry searchResult={searchResult} key={i} />)
-                                                                }
-                                                            </tr>
-                                                        );
-                                                    })
-                                                }
-                                            </tbody>
-                                        </Table>
+                                        <div className={downloadedAnimeStyle.grid}>
+                                            {
+                                                arrayChunk.map((searchResult, i) => {
+                                                    return <DisplayTorrentEntry searchResult={searchResult} key={i} />;
+                                                })
+                                            }
+                                        </div>
                                     </Carousel.Item>
                                 );
                             })
                     }
                 </Carousel>
-            </div>
+            </div >
         )
     }
 }
@@ -154,7 +146,7 @@ class DisplayLatestTorrents extends Component<{ source?: Sources }>{
 export default class LatestTorrents extends Component {
     render() {
         return (
-            <div className="mx-auto">
+            <div className="mx-auto mt-5">
                 <ChooseSource>
                     <DisplayLatestTorrents />
                 </ChooseSource>

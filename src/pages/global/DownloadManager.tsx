@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Button, ButtonGroup, Col, Container, ListGroup, OverlayTrigger, ProgressBar, Row, Tooltip } from "react-bootstrap";
 import { Torrent } from "webtorrent";
 import Consts from "../../classes/Consts";
+import DownloadedItem from "../../classes/DownloadedItem";
 import TorrentManager from "../../classes/TorrentManager";
 import CloseButton from "../../components/CloseButton";
 import MovableComponent from "../../components/MovableComponent";
@@ -67,7 +68,7 @@ export default class DownloadManager extends Component {
                                     <ListGroup.Item key={torrent.magnetURI}>
                                         <OverlayTrigger trigger="hover" overlay={
                                             <Tooltip id="tooltip-auto" style={{ zIndex: 9999 }}>
-                                                Renamed to: "{(torrent as any).torrentName}"
+                                                Renamed to: "{torrent.name}"
                                             </Tooltip>
                                         } placement="auto">
                                             <h5>
@@ -125,14 +126,9 @@ export default class DownloadManager extends Component {
     currentServers = new Set();
     playTorrent(torrent: Torrent) {
         if (!torrent.files.length) return (window as any).displayToast({ title: "Couldn't start playnig torrent", body: "Can't find downloaded files!" })
-        let url = Consts.FILE_URL_PROTOCOL + torrent.path + "/" + torrent.files[0].path;
-        (window as any).setAppState({
-            showVideo: true,
-            videoItem: {
-                videoSrc: url,
-                fileName: (torrent as any).torrentName
-            }
-        });
+        const url = Consts.FILE_URL_PROTOCOL + torrent.path + "/" + torrent.files[0].path,
+            videoItem = new DownloadedItem(url, torrent.files[0].name, new Date());
+        videoItem.startPlaying();
     }
 }
 function downloadSizeText(bytes: number): string {

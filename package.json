@@ -90,5 +90,5 @@
     "react": "react-scripts start",
     "build-electron": "electron-builder ."
   },
-  "homepage": "."
+  "homepage": "./"
 }

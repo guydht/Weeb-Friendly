@@ -1,15 +1,16 @@
 import React, { Component } from "react";
-import { Carousel, Spinner, Table } from "react-bootstrap";
+import { Carousel, Spinner } from "react-bootstrap";
 //@ts-ignore
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { Link } from "react-router-dom";
 import AnimeEntry from "../../classes/AnimeEntry";
+import downloadedAnimeStyle from "../../css/pages/DownloadedAnime.module.css";
 import styles from "../../css/pages/SeasonalCarousel.module.css";
 import { chunkArray } from "../../utils/general";
 import MALUtils from "../../utils/MAL";
 
 export default class SeasonalCarousel extends Component {
-    static readonly GRID_SIZE_X = 5;
+    static readonly GRID_SIZE_X = 4;
     static readonly GRID_SIZE_Y = 2;
 
     state: { seasonalAnimes: AnimeEntry[] } = {
@@ -31,7 +32,7 @@ export default class SeasonalCarousel extends Component {
                 </div>
             )
         return (
-            <div>
+            <div className="mt-5">
                 <h1>
                     Current Seasonal:
             </h1>
@@ -39,41 +40,30 @@ export default class SeasonalCarousel extends Component {
                     {
                         chunkArray(this.state.seasonalAnimes, SeasonalCarousel.GRID_SIZE_X * SeasonalCarousel.GRID_SIZE_Y)
                             .map((arrayChunk, i) => {
-                                // return (
-                                //     <DisplayAnimeEntry key={i} arrayChunk={arrayChunk} />
-                                // );
                                 return (
                                     <Carousel.Item key={i} className={styles.carousel}>
-                                        <Table responsive={false} className={styles.table}>
-                                            <tbody>
-                                                {
-                                                    chunkArray(arrayChunk, SeasonalCarousel.GRID_SIZE_X).map(chunk => {
-                                                        return (
-                                                            <tr key={chunk[0].name}>
-                                                                {
-                                                                    chunk.map(seasonalAnime => {
-                                                                        return <td key={seasonalAnime.name} className={styles.td}>
-                                                                            <Link to={{
-                                                                                pathname: "/anime/" + seasonalAnime.malId,
-                                                                                state: {
-                                                                                    animeEntry: seasonalAnime
-                                                                                }
-                                                                            }}
-                                                                                className={styles.link}>
-                                                                                <LazyLoadImage src={seasonalAnime.imageURL}
-                                                                                    className={styles.image} />
-                                                                                <div className={styles.cover}></div>
-                                                                                <span className={styles.title}>{seasonalAnime.name}</span>
-                                                                            </Link>
-                                                                        </td>
-                                                                    })
+                                        <div className={downloadedAnimeStyle.grid}>
+                                            {
+                                                arrayChunk.map(seasonalAnime => {
+                                                    return (
+                                                        <div key={seasonalAnime.name}>
+                                                            <Link to={{
+                                                                pathname: "/anime/" + seasonalAnime.malId,
+                                                                state: {
+                                                                    animeEntry: seasonalAnime
                                                                 }
-                                                            </tr>
-                                                        );
-                                                    })
-                                                }
-                                            </tbody>
-                                        </Table>
+                                                            }}
+                                                                className={styles.link}>
+                                                                <LazyLoadImage src={seasonalAnime.imageURL}
+                                                                    className={styles.image} />
+                                                                <div className={styles.cover}></div>
+                                                                <span className={styles.title}>{seasonalAnime.name}</span>
+                                                            </Link>
+                                                        </div>
+                                                    )
+                                                })
+                                            }
+                                        </div>
                                     </Carousel.Item>
                                 );
                             })

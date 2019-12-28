@@ -2,11 +2,12 @@
 import { pantsu, si } from "nyaapi";
 import AnimeEntry from "../classes/AnimeEntry";
 import Consts from "../classes/Consts";
+import DownloadedItem from "../classes/DownloadedItem";
 
 export enum Sources {
     HorribleSubs,
     Ohys,
-    EraiRaws,
+    "Erai-raws",
     All,
     Any
 }
@@ -19,7 +20,7 @@ const siPantsuMapping = {
     [Sources.Ohys]: {
         si: "ohys"
     },
-    [Sources.EraiRaws]: {
+    [Sources["Erai-raws"]]: {
         pantsu: "11974",
         si: "Erai-raws"
     }
@@ -121,30 +122,7 @@ function siResultToSearchResult(source: Sources, siResult: any): SearchResult {
     result.nbDownload = Number(siResult.nbDownload);
     result.seeders = Number(siResult.seeders);
     result.timestamp = new Date(siResult.timestamp);
-    switch (source) {
-        case Sources.HorribleSubs:
-            result.episodeData = {
-                episodeNumber: Number((result.name.match(/[0-9]+(\.[0-9]+)?(?=\s\[[0-9]+p\])/g) || [])[0]),
-                seriesName: (result.name.match(/(?<=\[HorribleSubs\]\s).+(?=\s-\s[0-9]+)/g) || [])[0],
-                quality: Number((result.name.match(/(?<=\s-\s[0-9]+(\.[0-9]+)?\s\[)[0-9]+(?=p)/g) || [])[0])
-            };
-            break;
-        case Sources.Ohys:
-            result.episodeData = {
-                episodeNumber: Number((result.name.match(/(?<=\s-\s)[0-9]+(\.[0-9]+)?(?=\s)/g) || [])[0]),
-                seriesName: (result.name.match(/(?<=\[Ohys-Raws\]\s).+(?=\s-\s[0-9]+)/g) || [])[0],
-                quality: Number((result.name.match(/(?<=\s[0-9]+x)[0-9]+(?=\sx264)/g) || [])[0]),
-                episodeType: (result.name.match(/(?<=\s-\s[0-9]+(\.[0-9]+)?\s)[a-zA-Z]+/g) || [])[0]
-            };
-            break;
-        case Sources.EraiRaws:
-            result.episodeData = {
-                episodeNumber: Number((result.name.match(/(?<=\s-\s)[0-9]+(\.[0-9]+)?(?=\s)/g) || [])[0]),
-                seriesName: (result.name.match(/(?<=\[Erai-raws\]\s).+(?=\s-\s[0-9]+)/g) || [])[0],
-                quality: Number((result.name.match(/[0-9]+(?=p)/g) || [])[0]),
-                episodeType: (result.name.match(/(?<=\[[0-9]+p\]\[])[^[]]+(?=\])+/g) || result.name.match(/(?<=\s-\s[0-9]+(\.[0-9]+)?\s)[a-zA-Z]+/g) || [])[0]
-            };
-    }
+    result.episodeData = episodeDataFromSource(source, result.name)!;
     result.animeEntry = new AnimeEntry({
         name: result.episodeData.seriesName
     });
@@ -169,28 +147,42 @@ function pantsuResultToSearchResult(source: Sources, pantsuResult: any) {
     result.leechers = pantsuResult.leechers;
     result.timestamp = new Date(pantsuResult.date);
     result.nbDownload = pantsuResult.completed;
-    switch (source) {
-        case Sources.EraiRaws:
-            result.episodeData = {
-                episodeNumber: Number((result.name.match(/(?<=\s-\s)[0-9]+(\.[0-9]+)?(?=\s)/g) || [])[0]),
-                seriesName: (result.name.match(/(?<=\[Erai-raws\]\s).+(?=\s-\s[0-9]+)/g) || [])[0],
-                quality: Number((result.name.match(/[0-9]+(?=p)/g) || [])[0]),
-                episodeType: (result.name.match(/(?<=\[[0-9]+p\]\[])[^[]]+(?=\])+/g) || result.name.match(/(?<=\s-\s[0-9]+(\.[0-9]+)?\s)[a-zA-Z]+/g) || [])[0]
-            };
-            break;
-        case Sources.HorribleSubs:
-            result.episodeData = {
-                episodeNumber: Number((result.name.match(/[0-9]+(\.[0-9]+)?(?=\s\[[0-9]+p\])/g) || [])[0]),
-                seriesName: (result.name.match(/(?<=\[HorribleSubs\]\s).+(?=\s-\s[0-9]+)/g) || [])[0],
-                quality: Number((result.name.match(/(?<=\s-\s[0-9]+(\.[0-9]+)?\s\[)[0-9]+(?=p)/g) || [])[0])
-            };
-    }
+    result.episodeData = episodeDataFromSource(source, result.name)!;
     result.animeEntry = new AnimeEntry({
         name: result.episodeData.seriesName
     });
     return result;
 }
 (window as any).torrentUtils = TorrentUtils;
+
+export function episodeDataFromSource(source: Sources, name: string): EpisodeData | undefined {
+    let episodeData;
+    switch (source) {
+        case Sources.HorribleSubs:
+            episodeData = {
+                episodeNumber: Number((name.match(/[0-9]+(\.[0-9]+)?(?=\s\[[0-9]+p\])/g) || [])[0]),
+                seriesName: (name.match(/(?<=\[HorribleSubs\]\s).+(?=\s-\s[0-9]+)/g) || [])[0],
+                quality: Number((name.match(/(?<=\s-\s[0-9]+(\.[0-9]+)?\s\[)[0-9]+(?=p)/g) || [])[0])
+            };
+            break;
+        case Sources.Ohys:
+            episodeData = {
+                episodeNumber: Number((name.match(/(?<=\s-\s)[0-9]+(\.[0-9]+)?(?=\s)/g) || [])[0]),
+                seriesName: (name.match(/(?<=\[Ohys-Raws\]\s).+(?=\s-\s[0-9]+)/g) || [])[0],
+                quality: Number((name.match(/(?<=\s[0-9]+x)[0-9]+(?=\sx264)/g) || [])[0]),
+                episodeType: (name.match(/(?<=\s-\s[0-9]+(\.[0-9]+)?\s)[a-zA-Z]+/g) || [])[0]
+            };
+            break;
+        case Sources["Erai-raws"]:
+            episodeData = {
+                episodeNumber: Number((name.match(/(?<=\s-\s)[0-9]+(\.[0-9]+)?(?=\s)/g) || [])[0]),
+                seriesName: (name.match(/(?<=\[Erai-raws\]\s).+(?=\s-\s[0-9]+)/g) || [])[0],
+                quality: Number((name.match(/[0-9]+(?=p)/g) || [])[0]),
+                episodeType: (name.match(/(?<=\[[0-9]+p\]\[])[^[]]+(?=\])+/g) || name.match(/(?<=\s-\s[0-9]+(\.[0-9]+)?\s)[a-zA-Z]+/g) || [])[0]
+            };
+    }
+    return episodeData;
+}
 
 export class SearchResult {
     category!: {
@@ -214,8 +206,16 @@ export class SearchResult {
         return this.animeEntry && !isNaN(this.episodeData.episodeNumber) && this.animeEntry.seenEpisode(this.episodeData.episodeNumber);
     }
     alreadyDownloaded() {
-        return !isNaN(this.episodeData.episodeNumber) && this.episodeData.seriesName.length &&
-            Consts.DOWNLOADED_ITEMS.some(ele => ele.episodeData.seriesName === this.episodeData.seriesName && ele.episodeData.episodeNumber === this.episodeData.episodeNumber);
+        const compareEpisodeData = (downloadedItem: DownloadedItem) => {
+            return downloadedItem.episodeData.seriesName === this.episodeData.seriesName &&
+                downloadedItem.episodeData.episodeNumber === this.episodeData.episodeNumber;
+        },
+            compareAnimeEntry = (downloadedItem: DownloadedItem) => {
+                return this.animeEntry.malId === downloadedItem.animeEntry.malId &&
+                    downloadedItem.episodeData.episodeNumber === this.episodeData.episodeNumber;
+            }
+        return !isNaN(this.episodeData.episodeNumber) && this.episodeData.seriesName &&
+            this.animeEntry.malId ? Consts.DOWNLOADED_ITEMS.some(compareAnimeEntry) : Consts.DOWNLOADED_ITEMS.some(compareEpisodeData);
     }
 }
 

@@ -106,12 +106,12 @@ export default class VideoPlayer extends Component {
         if (nextEpisode)
             ReactDom.render(<NextEpisodeButton thumbnailMarginLeft={prevEpisode ? -60 : -25}
                 onClick={() => nextEpisode.startPlaying()}
-                videoContainer={container} title={nextEpisode.fileName} src={Consts.FILE_URL_PROTOCOL + nextEpisode.absolutePath} />,
+                videoContainer={container} title={nextEpisode.episodeName} src={Consts.FILE_URL_PROTOCOL + nextEpisode.absolutePath} />,
                 container.querySelector("#guydhtNextEpisodeButton"));
         if (prevEpisode)
             ReactDom.render(<PrevEpisodeButton thumbnailMarginLeft={10}
                 onClick={() => prevEpisode.startPlaying()}
-                videoContainer={container} title={prevEpisode.fileName} src={Consts.FILE_URL_PROTOCOL + prevEpisode.absolutePath} />,
+                videoContainer={container} title={prevEpisode.episodeName} src={Consts.FILE_URL_PROTOCOL + prevEpisode.absolutePath} />,
                 container.querySelector("#guydhtPrevEpisodeButton"));
         let handleSubs = async subFiles => {
             const subtitles = [],
@@ -183,7 +183,7 @@ export default class VideoPlayer extends Component {
         const similar = series.filter(ele => ele[0].episodeData.seriesName !== downloadedItem.episodeData.seriesName).sort((a, b) => {
             return Math.max(...b.map(ele => ele.lastUpdated)) -
                 Math.max(...a.map(ele => ele.lastUpdated))
-        }).map(ele => ele.sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { numeric: true }))[0]);
+        }).map(ele => ele.sort((a, b) => a.episodeName.localeCompare(b.episodeName, undefined, { numeric: true }))[0]);
         return thisSeries.sort(sortByEpisodeProximity).slice(0, 2).concat(similar);
         function sortByEpisodeProximity(a, b) {
             return Math.abs(a.episodeData.episodeNumber - downloadedItem.episodeData.episodeNumber) -

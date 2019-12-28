@@ -71,7 +71,7 @@ export default class Consts {
     }
 
     static SOURCE_PREFERENCE_STORAGE_KEY = "default-source";
-    static DEFAULT_SOURCE_PREFERENCE: Sources[] = [Sources.HorribleSubs, Sources.EraiRaws, Sources.Ohys];
+    static DEFAULT_SOURCE_PREFERENCE: Sources[] = [Sources.HorribleSubs, Sources["Erai-raws"], Sources.Ohys];
     static SOURCE_PREFERENCE: Sources[] = (storage.get(Consts.SOURCE_PREFERENCE_STORAGE_KEY) || Consts.DEFAULT_SOURCE_PREFERENCE).map(Number);
     static get SOURCE_REFERENCE_KEYS(): string[] {
         return Consts.SOURCE_PREFERENCE.map(ele => Object.keys(Sources).find(source => (Sources as any)[source] === ele)!);
@@ -92,13 +92,13 @@ export default class Consts {
     }
 
     static SAVED_TORRENTS_STORAGE_KEY = "saved_torrents";
-    static SAVED_TORRENTS = new Set<Torrent>((storage.get(Consts.SAVED_TORRENTS_STORAGE_KEY) || []).filter((ele: any) => ele.magnetURI && ele.torrentName)
-        .map((ele: Torrent) => TorrentManager.add({ magnetURL: ele.magnetURI, name: (ele as any).torrentName })));
+    static SAVED_TORRENTS = new Set<Torrent>((storage.get(Consts.SAVED_TORRENTS_STORAGE_KEY) || []).filter((ele: any) => ele.magnetURI)
+        .map((ele: Torrent) => TorrentManager.add({ magnetURL: ele.magnetURI })));
     static addToSavedTorrents(torrent: Torrent) {
         Consts.SAVED_TORRENTS.add(torrent);
         waitFor(() => torrent.magnetURI, () => {
             storage.set(Consts.SAVED_TORRENTS_STORAGE_KEY, Array.from(Consts.SAVED_TORRENTS).map(torrent => {
-                return { torrentName: (torrent as any).torrentName, magnetURI: torrent.magnetURI }
+                return { magnetURI: torrent.magnetURI }
             }));
         });
     }
@@ -134,7 +134,7 @@ export default class Consts {
     static removeFromSavedTorrents(torrent: Torrent) {
         Consts.SAVED_TORRENTS.delete(torrent);
         storage.set(Consts.SAVED_TORRENTS_STORAGE_KEY, Array.from(Consts.SAVED_TORRENTS).map(torrent => {
-            return { torrentName: (torrent as any).torrentName, magnetURI: torrent.magnetURI }
+            return { magnetURI: torrent.magnetURI }
         }));
     }
     static FILE_URL_PROTOCOL = "file://";

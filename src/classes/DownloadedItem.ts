@@ -1,22 +1,29 @@
-import { EpisodeData } from "../utils/torrents";
+import { EpisodeData, episodeDataFromSource, Sources } from "../utils/torrents";
 import AnimeEntry from "./AnimeEntry";
 
 export default class DownloadedItem {
-    constructor(absolutePath: string, fileName: string, lastUpdated: Date, animeEntry = new AnimeEntry({})) {
+    constructor(absolutePath: string, fileName: string, lastUpdated: Date, animeEntry?: AnimeEntry, episodeData?: Omit<EpisodeData, 'quality'>) {
         this.absolutePath = absolutePath;
         this.fileName = fileName;
         this.lastUpdated = lastUpdated;
-        this.animeEntry = animeEntry;
-        this.episodeData = {
-            episodeNumber: Number((this.fileName.match(/(?<=Episode\s)[0-9]+(\.[0-9]+)?/g) || [])[0]),
-            seriesName: (this.fileName.match(/.+(?=\sEpisode\s)/g) || [])[0]
+        if (!episodeData) {
+            const downloadSource: Sources = Sources[Object.keys(Sources).find(source => isNaN(source as any) && fileName.includes(source)) || Sources[Sources.Any] as any] as any;
+            this.episodeData = episodeDataFromSource(downloadSource, fileName) || {} as any;
         }
+        else
+            this.episodeData = episodeData;
+        this.animeEntry = animeEntry || new AnimeEntry({ name: this.episodeData.seriesName });
+        if (!isNaN(this.episodeData.episodeNumber) && this.episodeData.seriesName)
+            this.episodeName = `${this.episodeData.seriesName} Episode ${this.episodeData.episodeNumber}`;
+        else
+            this.episodeName = this.fileName;
     }
     absolutePath: string;
     fileName: string;
     lastUpdated: Date;
     animeEntry: AnimeEntry;
     episodeData: Omit<EpisodeData, 'quality'>;
+    episodeName: string;
     seenThisEpisode() {
         return !isNaN(this.episodeData.episodeNumber) && this.animeEntry.seenEpisode(this.episodeData.episodeNumber);
     }

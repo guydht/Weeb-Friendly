@@ -1,6 +1,5 @@
 import { Seasons } from "jikants/dist/src/interfaces/season/Season";
 import moment from "moment";
-import AnimeEntry from "../classes/AnimeEntry";
 import DownloadedItem from "../classes/DownloadedItem";
 
 function levenshteinDistance(s1: string, s2: string): number {
@@ -130,13 +129,11 @@ let fs = window.require("fs"),
                 if (stat.isDirectory())
                     results = results.concat(walkDir(file));
                 else {
-                    let withoutExtension = filename.replace(path.extname(filename), ""),
-                        animeEntry = new AnimeEntry({ name: withoutExtension.substring(0, withoutExtension.lastIndexOf(" Episode ")) || withoutExtension });
+                    const withoutExtension = filename.replace(path.extname(filename), "");
                     results.push(new DownloadedItem(
                         file,
                         withoutExtension,
-                        stat.birthtime,
-                        animeEntry
+                        stat.birthtime
                     ));
                 }
             });

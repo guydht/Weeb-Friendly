@@ -38,7 +38,7 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
         this.props.downloadedItem.animeEntry.syncGet();
         const progressFromLocalStorage = () => {
             let obj = JSON.parse(localStorage.getItem("videoLastTime") || "{}"),
-                relevant = obj[this.props.downloadedItem.fileName];
+                relevant = obj[this.props.downloadedItem.episodeName];
             if (relevant)
                 return relevant[1].progress;
             return 0;
@@ -50,15 +50,15 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                     this.wantsToUpdateInMAL = true;
                 if (this.wantsToUpdateInMAL && current > Watch.UPDATE_ANIME_PROGRESS_THRESHOLD) {
                     this.wantsToUpdateInMAL = false;
-                    Confirm(`Do you want to update ${this.props.downloadedItem.fileName} in MAL?`, (ok: boolean) => {
+                    Confirm(`Do you want to update ${this.props.downloadedItem.episodeName} in MAL?`, (ok: boolean) => {
                         if (ok) {
                             MALUtils.UpdateWatchedEpisode(this.props.downloadedItem).then(ok => {
                                 ok ? (window as any).displayToast({
                                     title: "Anime Updated Successfully",
-                                    body: `Successfully updated ${this.props.downloadedItem.fileName} in MAL!`
+                                    body: `Successfully updated ${this.props.downloadedItem.episodeName} in MAL!`
                                 }) : hasInternet() && (window as any).displayToast({
                                     title: "Failed updating Anime",
-                                    body: `Failed updating ${this.props.downloadedItem.fileName} in MAL! Try logging in again!`
+                                    body: `Failed updating ${this.props.downloadedItem.episodeName} in MAL! Try logging in again!`
                                 });
                                 (window as any).reloadPage();
                             })
@@ -98,9 +98,8 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                 showingVideo: true
             });
         }
-        if (prevProps.downloadedItem.fileName !== this.props.downloadedItem.fileName) {
+        if (prevProps.downloadedItem.absolutePath !== this.props.downloadedItem.absolutePath)
             this.wantsToUpdateInMAL = true;
-        }
     };
     render() {
         const hide = (e: React.MouseEvent) => {
@@ -142,7 +141,7 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                     as={Jumbotron}
                     className={styles.container}
                     src={(this.props.downloadedItem as any).videoSrc || Consts.FILE_URL_PROTOCOL + this.props.downloadedItem.absolutePath}
-                    name={this.props.downloadedItem.fileName}>
+                    name={this.props.downloadedItem.episodeName}>
                     {
                         this.props.downloadedItem.animeEntry && this.props.downloadedItem.animeEntry.malId && (
                             <AnimeInfo
