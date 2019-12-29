@@ -33,7 +33,9 @@ class DisplayReview extends Component<{ review: ReviewData, anime: AnimeInfoProp
                     <div style={{ float: "right", textAlign: "right" }}>
                         <div>{review.date.toLocaleDateString()}</div>
                         <div>{review.reviewer.episodes_seen} of {this.props.anime.totalEpisodes} episodes seen</div>
-                        <div>Overall Rating: {review.reviewer.scores.overall}</div>
+                        {
+                            collapsed && <div>Overall Rating: {review.reviewer.scores.overall}</div>
+                        }
                         {
                             !collapsed &&
                             <Table striped bordered hover size="sm" style={{ textAlign: "initial" }}>

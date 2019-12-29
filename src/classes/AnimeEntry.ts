@@ -133,7 +133,7 @@ export default class AnimeEntry {
         if (inStorage)
             Object.entries(inStorage).forEach(([key, value]) => {
                 if (value !== this[key as keyof AnimeEntry])
-                    (this as any)[key] = value;
+                    (this as any)[key] = (this as any)[key] ?? value;
             });
         return this;
     }

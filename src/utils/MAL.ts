@@ -18,6 +18,8 @@ mal = new mal();
 type HasMalId = {
     malId: Number
 }
+
+
 export default class MALUtils {
     static readonly MAX_ANIMES_PER_PAGE = 300;
     static readonly MINIMUM_ANIMENAME_SIMILARITY = 0.8;
@@ -306,12 +308,44 @@ export default class MALUtils {
         });
     }
     static async animeReviews(anime: AnimeEntry & HasMalId): Promise<Reviews | undefined> {
-        let data = await mal.findAnime(anime.malId, "reviews");
+        const data = await mal.findAnime(anime.malId, "reviews");
         data.reviews.forEach((review: any) => {
             review.date = new Date(review.date);
         });
         return data;
     }
+    static async animeRecommandation(anime: AnimeEntry & HasMalId): Promise<AnimeRecommandation[] | void> {
+        const data = await fetch(`https://myanimelist.net/anime/${anime.malId}/asd/userrecs`).then(ele => ele.text()),
+            html = document.createElement("html");
+        html.innerHTML = data;
+        const recommandations: AnimeRecommandation[] = [...html.querySelectorAll(".js-scrollfix-bottom-rel > .borderClass")].map(ele => {
+            const recommandedAnimeId = Number(ele.querySelector("a")?.href.match(/(?<=\/)[0-9]+(?=\/)/g));
+            return {
+                animeRecommanded: new AnimeEntry({ 
+                    malId: recommandedAnimeId, 
+                    imageURL: (ele.querySelector("a > img[srcset]") as any)?.src,
+                    name: ele.querySelector("td:nth-child(2) > div > a")?.textContent ?? ""
+                 }),
+                recommandationEntries: [...ele.querySelectorAll(".borderClass")].map(ele => {
+                    return {
+                        recommandedUsername: ele.children[1].querySelector("a[href*='/profile/']")?.innerHTML ?? "",
+                        recommandedText: ele.children[0].textContent ?? ""
+                    };
+                })
+            }
+        });
+        return recommandations;
+    }
+}
+
+interface RecommandationEntry {
+    recommandedUsername: string;
+    recommandedText: string;
+}
+
+interface AnimeRecommandation {
+    animeRecommanded: AnimeEntry;
+    recommandationEntries: RecommandationEntry[];
 }
 
 export interface ForumTopic {
