@@ -92,7 +92,7 @@ function asd(AnimeName, container, videoURL) {
         secondSettingsList.children[0].onclick = function () {
             settingsList.style = "";
             secondSettingsList.style = "margin: 0;";
-        }
+        };
         video.currentTime = (new CacheLocalStorage("videoLastTime").getItem(AnimeName) || {}).currentTime || 0;
         video.focus();
         video.addEventListener("error", function (e) {
@@ -293,8 +293,8 @@ function asd(AnimeName, container, videoURL) {
                 sliderTimeout = setTimeout(function () {
                     slider.style.opacity = 0;
                     upperName.style.opacity = 0;
-                    resolve();
                 }, video.paused === false ? 1000 : 2000);
+                setTimeout(resolve, video.paused === false ? 1000 : 2000);
             });
         }
         displaySlider();
@@ -433,7 +433,7 @@ function asd(AnimeName, container, videoURL) {
             }
             if (mone > 9) {
                 mone = 0;
-                if (previousTime === currentTime && video.paused === false) previousTime = currentTime
+                if (previousTime === currentTime && video.paused === false) previousTime = currentTime;
                 previousTime = currentTime;
             }
             mone++;
@@ -588,7 +588,7 @@ function asd(AnimeName, container, videoURL) {
                 mouseIsDown = false;
                 if (Body !== window) Body.remove();
                 document.body.style.setProperty(tempVal, tempP);
-                window.removeEventListener("mouseup", abcde)
+                window.removeEventListener("mouseup", abcde);
             }, {
                 once: true
             });
@@ -628,7 +628,7 @@ function asd(AnimeName, container, videoURL) {
             }
             if (e.clientY > slider.getBoundingClientRect().top) return false;
             if (video.paused) video.play();
-            else video.pause()
+            else video.pause();
         };
         var volumeTimeout, firstPlayOK = true;
         setTimeout(function () {
@@ -672,7 +672,7 @@ function asd(AnimeName, container, videoURL) {
                 };
                 middleTooltip.style = "transition: all 0s;";
             } else if (text === "pause") middleTooltip.children[0].innerHTML = '<svg height="100%" width="100%" viewBox="0 0 36 36"><path d="M 12,26 16,26 16,10 12,10 z M 21,26 25,26 25,10 21,10 z"></path></svg>';
-            else if (text === "play") middleTooltip.children[0].innerHTML = '<svg height="100%" viewBox="0 0 36 36" width="100%"><path d="M 12,26 18.5,22 18.5,14 12,10 z M 18.5,22 25,18 25,18 18.5,14 z" id="ytp-svg-176"></path></svg>'
+            else if (text === "play") middleTooltip.children[0].innerHTML = '<svg height="100%" viewBox="0 0 36 36" width="100%"><path d="M 12,26 18.5,22 18.5,14 12,10 z M 18.5,22 25,18 25,18 18.5,14 z" id="ytp-svg-176"></path></svg>';
             else if (text === "mute") {
                 middleTooltip.children[0].innerHTML = '<svg height="100%" viewBox="0 0 36 36" width="100%"><path d="M8,21 L12,21 L17,26 L17,10 L12,15 L8,15 L8,21 Z"></path><path d="M 26.11,15.73 24.85,14.5 22.52,16.76 20.20,14.5 18.94,15.73 21.26,18 18.94,20.26 20.20,21.5 22.52,19.23 24.85,21.5 26.11,20.26 23.79,18 l 2.32,-2.26 0,0 z"></path></svg>';
                 muted();
@@ -759,7 +759,7 @@ function asd(AnimeName, container, videoURL) {
         };
         window.onbeforeunload = function () {
             sessionStorage.setItem(AnimeName, video.currentTime);
-        }
+        };
         var killingDisappearing;
 
         function checkInfoText(again) {
@@ -797,7 +797,7 @@ function asd(AnimeName, container, videoURL) {
             },
             currentSrc: videoURL,
             currentName: AnimeName
-        }
+        };
     }
 }
 

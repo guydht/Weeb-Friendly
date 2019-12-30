@@ -118,7 +118,7 @@ class DisplayLatestTorrents extends Component<{ source?: Sources }>{
         return (
             <div>
                 <h1>
-                    Latest {Sources[this.props.source]} Updates:
+                    Latest {Sources[this.props.source]} Uploads:
             </h1>
                 <Carousel interval={null} className="px-5 mx-5 mt-5" onSelect={handleSelect}>
                     {
