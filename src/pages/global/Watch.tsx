@@ -48,7 +48,8 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                 let current = progressFromLocalStorage();
                 if (current <= Watch.UPDATE_ANIME_PROGRESS_THRESHOLD)
                     this.wantsToUpdateInMAL = true;
-                if (this.wantsToUpdateInMAL && current > Watch.UPDATE_ANIME_PROGRESS_THRESHOLD) {
+                if (this.wantsToUpdateInMAL && current > Watch.UPDATE_ANIME_PROGRESS_THRESHOLD &&
+                    this.props.downloadedItem.episodeData.episodeNumber !== this.props.downloadedItem.animeEntry.myWatchedEpisodes {
                     this.wantsToUpdateInMAL = false;
                     Confirm(`Do you want to update ${this.props.downloadedItem.episodeName} in MAL?`, (ok: boolean) => {
                         if (ok) {
