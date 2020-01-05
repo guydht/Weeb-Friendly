@@ -76,7 +76,7 @@ export default class MALUtils {
             fromData.synopsis = result.synopsis;
             fromData.name = result.title;
             fromData.malUrl = result.url;
-            return fromData.syncPut();
+            return fromData.syncGet().syncPut();
         });
     }
     static async getUserAnimeList(user: User, listType: AnimeListTypes = "all", page = 1): Promise<AnimeList> {
