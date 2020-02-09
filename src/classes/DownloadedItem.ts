@@ -25,7 +25,7 @@ export default class DownloadedItem {
     episodeData: Omit<EpisodeData, 'quality'>;
     episodeName: string;
     seenThisEpisode() {
-        return !isNaN(this.episodeData.episodeNumber) && this.animeEntry.seenEpisode(this.episodeData.episodeNumber);
+        return !isNaN(this.episodeData.episodeNumber) && this.animeEntry.syncGet().seenEpisode(this.episodeData.episodeNumber);
     }
     startPlaying() {
         (window as any).setAppState({

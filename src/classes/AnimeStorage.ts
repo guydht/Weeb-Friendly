@@ -14,14 +14,27 @@ class ThumbnailManager {
 
     static SAVED_THUMBNAILS_STORAGE_KEY = "saved-thumbnail-storage";
     static SAVED_THUMBNAILS_PATH = path.join((electron.app || electron.remote.app).getPath("cache"), "/thumbnail-image-storage/");
-    static SAVED_THUMBNAILS = new Set<number>(storageObject.get(ThumbnailManager.SAVED_THUMBNAILS_STORAGE_KEY) || []);
-    static setThumbnailStorage(thumbnailStorage: Set<number> = ThumbnailManager.SAVED_THUMBNAILS) {
-        ThumbnailManager.SAVED_THUMBNAILS = thumbnailStorage;
-        storageObject.set(ThumbnailManager.SAVED_THUMBNAILS_STORAGE_KEY, [...thumbnailStorage]);
-    }
+    static SAVED_THUMBNAILS: Set<number>;
 }
-if (!fs.existsSync(ThumbnailManager.SAVED_THUMBNAILS_PATH))
-    fs.mkdirSync(ThumbnailManager.SAVED_THUMBNAILS_PATH);
+
+function getSavedThumbnails(): Set<number> {
+    if (!fs.existsSync(ThumbnailManager.SAVED_THUMBNAILS_PATH))
+        fs.mkdirSync(ThumbnailManager.SAVED_THUMBNAILS_PATH);
+    const thumbnails = new Set<number>(fs.readdirSync(ThumbnailManager.SAVED_THUMBNAILS_PATH)
+        .map((fileName: string) => Number(fileName)).filter((num: number) => !isNaN(num)));
+    for (const thumbnail of thumbnails) {
+        const fileName = path.join(ThumbnailManager.SAVED_THUMBNAILS_PATH, thumbnail.toString()),
+            stats = fs.statSync(fileName);
+        if (stats && stats.size <= 453) {
+            fs.unlinkSync(fileName);
+            thumbnails.delete(thumbnail);
+        }
+    }
+    return thumbnails;
+}
+
+if (!ThumbnailManager.SAVED_THUMBNAILS)
+    ThumbnailManager.SAVED_THUMBNAILS = getSavedThumbnails();
 
 let _storageKey = "anime-storage",
     STORAGE_TTL_IN_SECONDS = 86400,
@@ -102,7 +115,11 @@ setInterval(() => {
     if (needsUpdating) {
         let copy: { [key: number]: [Date, AnimeEntry] } = {};
         _ANIMES.forEach(([date, anime], animeId) => {
-            copy[animeId] = [date, anime.readyForJSON()];
+            const jsonedAnime = anime.readyForJSON();
+            for (let key in jsonedAnime)
+                if (jsonedAnime[key] === undefined || jsonedAnime[key] === null || jsonedAnime[key].length === 0)
+                    delete jsonedAnime[key];
+            copy[animeId] = [date, jsonedAnime];
         });
         storageObject.set(_storageKey, Object.values(copy));
         needsUpdating = false;
