@@ -285,16 +285,18 @@ function asd(AnimeName, container, videoURL) {
         var sliderTimeout;
 
         function displaySlider(select) {
-            if (showSliders === false) return Promise.resolve();
+            if (showSliders === false) return Promise.resolve(false);
             return new Promise(resolve => {
                 clearTimeout(sliderTimeout);
                 if (select !== "upper") slider.style.opacity = 1;
                 if (select !== "bottom") upperName.style.opacity = 1;
+                let canceledTimeout = true;
                 sliderTimeout = setTimeout(function () {
                     slider.style.opacity = 0;
                     upperName.style.opacity = 0;
+                    canceledTimeout = false;
                 }, video.paused === false ? 1000 : 2000);
-                setTimeout(resolve, video.paused === false ? 1000 : 2000);
+                setTimeout(() => resolve(canceledTimeout), video.paused === false ? 1000 : 2000);
             });
         }
         displaySlider();
@@ -784,8 +786,9 @@ function asd(AnimeName, container, videoURL) {
         container.onmousemove = function (e) {
             if (!targetIsNotThis(e, slider)) return;
             wrapper.style.cursor = "";
-            displaySlider().then(() => {
-                wrapper.style.cursor = "none";
+            displaySlider().then(canceled => {
+                if(!canceled)
+                    wrapper.style.cursor = "none";
             });
         };
         return {

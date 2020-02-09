@@ -97,7 +97,7 @@ export default class VideoPlayer extends Component {
             handleKeyDown = e => {
                 if (e.shiftKey && !e.ctrlKey && !e.altKey && e.code === "KeyN" && nextEpisode) 
                     nextEpisode.startPlaying();
-                else if (e.shiftKey && !e.ctrlKey && !e.altKey && e.code === "KeyB" && prevEpisode) 
+                else if (e.shiftKey && !e.ctrlKey && !e.altKey && e.code === "KeyP" && prevEpisode) 
                     prevEpisode.startPlaying();
             };
         document.body.addEventListener("keydown", handleKeyDown);

@@ -37,7 +37,6 @@ export default class MALUtils {
             fromData.score = result.score;
             fromData.startDate = parseStupidAmericanDateString(result.start_date);
             fromData.endDate = parseStupidAmericanDateString(result.end_date);
-            fromData.synopsis = result.synopsis;
             fromData.name = result.title;
             fromData.malUrl = result.url;
             return fromData.syncPut();
@@ -73,7 +72,6 @@ export default class MALUtils {
             fromData.genres = result.genres as any;
             fromData.imageURL = result.image_url;
             fromData.score = result.score as any;
-            fromData.synopsis = result.synopsis;
             fromData.name = result.title;
             fromData.malUrl = result.url;
             return fromData.syncGet().syncPut();
@@ -120,7 +118,6 @@ export default class MALUtils {
         anime.endDate = parseStupidAmericanDateString(data.aired.to);
         anime.synonyms = new Set([...anime.synonyms, data.title, data.title_english, data.title_japanese, ...data.title_synonyms]);
         anime.synonyms.delete(null as any);
-        anime.synopsis = data.synopsis;
         anime.malUrl = data.url;
         anime.totalEpisodes = data.episodes;
         anime.syncPut();
@@ -129,10 +126,10 @@ export default class MALUtils {
     static UPDATE_ANIME_URL = "https://myanimelist.net/ownlist/anime/edit.json";
     static ADD_ANIME_URL = "https://myanimelist.net/ownlist/anime/add.json";
     static MAL_LOGIN_URL = "https://myanimelist.net/login.php";
-    static async updateAnime(anime: AnimeEntry & HasMalId, { episodes, status, score }: { episodes?: number, status?: MALStatuses, score?: number }, reloginWhenFailure = false): Promise<boolean> {
+    static async updateAnime(anime: AnimeEntry & HasMalId, { episodes, status, score }: { episodes?: number, status?: MALStatuses, score?: number }, reloginWhenFailure = true): Promise<boolean> {
         if (!hasInternet()) {
-            return await new Promise(resolve => Confirm(`Do you want to update ${anime.name} in MAL? ` +
-                `You don't have internet connection, but I can update it when you do have internet.`, (ok: boolean) => {
+            return await new Promise(resolve => Confirm(`DYou don't have internet connection, but I can update it when you do have internet.`,
+                (ok: boolean) => {
                     if (ok) {
                         updateInMalWhenHasInternet(
                             anime, {
@@ -200,7 +197,7 @@ export default class MALUtils {
                 Consts.setMALUser(new User(username, password, undefined, true));
                 await MALUtils.getUserAnimeList(Consts.MAL_USER);
                 Consts.setMALUser(Consts.MAL_USER);
-                return this.updateAnime(anime, { episodes, status, score }, reloginWhenFailure);
+                return this.updateAnime(anime, { episodes, status, score }, false);
             }
         }
         return isOk;
@@ -248,9 +245,9 @@ export default class MALUtils {
             status = downloadedItem.animeEntry.totalEpisodes === episode ? MALStatuses.Completed : MALStatuses.Watching,
             ok: boolean = true;
         if (!downloadedItem.animeEntry.myMalStatus)
-            ok = await MALUtils.addAnime(downloadedItem.animeEntry as AnimeEntry & { malId: Number })
+            ok = await MALUtils.addAnime(downloadedItem.animeEntry as AnimeEntry & HasMalId)
         if (!ok) return ok;
-        ok = await MALUtils.updateAnime(downloadedItem.animeEntry as AnimeEntry & { malId: Number }, { episodes: episode, status });
+        ok = await MALUtils.updateAnime(downloadedItem.animeEntry as AnimeEntry & HasMalId, { episodes: episode, status });
         Consts.MAL_USER.animeList.loadAnime(downloadedItem.animeEntry);
         Consts.setMALUser(Consts.MAL_USER);
         return ok;
@@ -321,11 +318,11 @@ export default class MALUtils {
         const recommandations: AnimeRecommandation[] = [...html.querySelectorAll(".js-scrollfix-bottom-rel > .borderClass")].map(ele => {
             const recommandedAnimeId = Number(ele.querySelector("a")?.href.match(/(?<=\/)[0-9]+(?=\/)/g));
             return {
-                animeRecommanded: new AnimeEntry({ 
-                    malId: recommandedAnimeId, 
+                animeRecommanded: new AnimeEntry({
+                    malId: recommandedAnimeId,
                     imageURL: (ele.querySelector("a > img[srcset]") as any)?.src,
                     name: ele.querySelector("td:nth-child(2) > div > a")?.textContent ?? ""
-                 }),
+                }),
                 recommandationEntries: [...ele.querySelectorAll(".borderClass")].map(ele => {
                     return {
                         recommandedUsername: ele.children[1].querySelector("a[href*='/profile/']")?.innerHTML ?? "",

@@ -11,7 +11,7 @@ import AnimeInfo from "../AnimeInfo";
 
 export default class Watch extends Component<{ downloadedItem: DownloadedItem }> {
 
-    static UPDATE_ANIME_PROGRESS_THRESHOLD = 0.9;
+    static UPDATE_ANIME_PROGRESS_THRESHOLD = 0.95;
     wantsToUpdateInMAL = true;
 
     state: {
@@ -49,7 +49,7 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                 if (current <= Watch.UPDATE_ANIME_PROGRESS_THRESHOLD)
                     this.wantsToUpdateInMAL = true;
                 if (this.wantsToUpdateInMAL && current > Watch.UPDATE_ANIME_PROGRESS_THRESHOLD &&
-                    this.props.downloadedItem.episodeData.episodeNumber !== this.props.downloadedItem.animeEntry.myWatchedEpisodes {
+                    this.props.downloadedItem.episodeData.episodeNumber !== this.props.downloadedItem.animeEntry.myWatchedEpisodes) {
                     this.wantsToUpdateInMAL = false;
                     Confirm(`Do you want to update ${this.props.downloadedItem.episodeName} in MAL?`, (ok: boolean) => {
                         if (ok) {
@@ -62,7 +62,7 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                                     body: `Failed updating ${this.props.downloadedItem.episodeName} in MAL! Try logging in again!`
                                 });
                                 (window as any).reloadPage();
-                            })
+                            });
                         }
                     });
                 }

@@ -103,7 +103,7 @@ export default class Details extends Component<AnimeInfoProps> {
                                     <FormControl
                                         key={this.props.anime.myWatchedEpisodes}
                                         type="number"
-                                        max={this.props.anime.totalEpisodes}
+                                        max={this.props.anime.totalEpisodes || undefined}
                                         min={0}
                                         style={{ background: "transparent", width: "1.5em" }}
                                         plaintext
@@ -135,7 +135,7 @@ export default class Details extends Component<AnimeInfoProps> {
                         <Modal.Body>
                             <p>
                                 {
-                                    this.props.anime.synopsis
+                                    this.props.info.synopsis
                                 }
                             </p>
                         </Modal.Body>

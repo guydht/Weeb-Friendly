@@ -8,7 +8,7 @@
     "url": "https://github.com/guydht",
     "email": "guydht1@gmail.com"
   },
-  "icon": "./build/icons/",
+  "icon": "./icons/",
   "description": "App for managing and downloading Animes from myanimelist/torrents respectively.",
   "eslintConfig": {
     "extends": "react-app"
@@ -21,10 +21,10 @@
         "deb"
       ],
       "category": "Video",
-      "icon": "./build/icons/"
+      "icon": "./icons/"
     },
     "win": {
-      "icon": "./build/icons/icon.ico",
+      "icon": "./icons/icon.ico",
       "target": [
         "portable",
         "nsis"
@@ -80,10 +80,10 @@
     "typescript": "^3.7.2",
     "webtorrent": "^0.107.17"
   },
-  "main": "build/electron.js",
+  "main": "public/electron.js",
   "scripts": {
     "start": "electron . & react-scripts start",
-    "build": "react-scripts build && cp public/electron.js build/electron.js && cp -r icons/ build/icons/ && electron-builder .",
+    "build": "react-scripts build && electron-builder .",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "electron": "electron .",
