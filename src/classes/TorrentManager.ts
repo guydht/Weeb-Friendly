@@ -113,6 +113,14 @@ export default class TorrentManager {
                 TorrentManager.dispatchEvent([torrent, updatedProps], ListenerTypes.updatedTorrent);
         })
         TorrentManager.currentTorrentState = new Set([...Consts.SAVED_TORRENTS].map(ele => Object.assign({}, ele)));
+        if (TorrentManager.waitingForDownload.length &&
+            TorrentManager.client.torrents.length < TorrentManager.MAX_NUMBER_OF_SIMULTANIOUS_TORRENTS) {
+            const torrentToDownload = TorrentManager.waitingForDownload.pop();
+            Consts.removeFromSavedTorrents(torrentToDownload as any);
+            TorrentManager.add({
+                magnetURL: torrentToDownload?.magnetURI ?? ''
+            });
+        }
     }, 500);
     private static dispatchEvent(data: any, type: ListenerTypes) {
         TorrentManager.listeners.forEach(listener => {

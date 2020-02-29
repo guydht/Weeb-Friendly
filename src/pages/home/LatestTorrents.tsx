@@ -101,6 +101,10 @@ class DisplayLatestTorrents extends Component<{ source?: Sources }>{
         nextPageToLoad: 1
     }
 
+    componentDidMount(){
+        this.loadMoreUpdated();
+    }
+
     async loadMoreUpdated() {
         if (this.props.source === undefined) return;
         const latest = await TorrentUtils.latest(this.state.nextPageToLoad, this.props.source);
