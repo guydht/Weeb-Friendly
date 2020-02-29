@@ -152,7 +152,7 @@ export default class VideoPlayer extends Component {
     }
 
     setupVideo() {
-        const container = this.videoWrapper.current,
+        let container = this.videoWrapper.current,
             [prevEpisode, nextEpisode] = this.getAdjacentDownloadedItems(),
             handleKeyDown = e => {
                 if (e.shiftKey && !e.ctrlKey && !e.altKey && e.code === "KeyN" && nextEpisode)
