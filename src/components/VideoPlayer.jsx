@@ -314,7 +314,7 @@ export default class VideoPlayer extends Component {
             delete props[prop];
         props.children = React.Children.toArray(props.children);
         if (this.state.displayFinishScreenEntries.length) {
-            if (Consts.autoPlay)
+            if (Consts.AUTO_PLAY)
                 props.children.push((
                     <div className={styles.endScreenContainer} key={this.state.displayFinishScreenEntries.length}>
                         <CountdownToNextEpisode nextEpisode={this.getNextEpisode()} />
