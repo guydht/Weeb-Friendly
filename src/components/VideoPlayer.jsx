@@ -164,10 +164,11 @@ export default class VideoPlayer extends Component {
         document.body.addEventListener("keydown", handleKeyDown);
         this.videoHandler = asd(this.props.downloadedItem.episodeName, container, this.props.src);
         this.videoHandler.handleKeyDown = handleKeyDown;
-        ReactDom.render(<NextEpisodeButton thumbnailMarginLeft={prevEpisode ? -60 : -25}
-            onClick={() => nextEpisode.startPlaying()}
-            videoContainer={container} title={nextEpisode.episodeName} downloadedItem={nextEpisode} />,
-            container.querySelector("#guydhtNextEpisodeButton"));
+        if (nextEpisode)
+            ReactDom.render(<NextEpisodeButton thumbnailMarginLeft={prevEpisode ? -60 : -25}
+                onClick={() => nextEpisode.startPlaying()}
+                videoContainer={container} title={nextEpisode.episodeName} downloadedItem={nextEpisode} />,
+                container.querySelector("#guydhtNextEpisodeButton"));
         if (prevEpisode)
             ReactDom.render(<PrevEpisodeButton thumbnailMarginLeft={10}
                 onClick={() => prevEpisode.startPlaying()}
@@ -336,7 +337,7 @@ export default class VideoPlayer extends Component {
         if (adjacent[1])
             return adjacent[1];
         const downloadedItem = this.props.downloadedItem,
-            series = groupBy(Consts.FILTERED_DOWNLOADED_ITEMS.filter(ele => ele.absolutePath !== downloadedItem.absolutePath), ["episodeData", "seriesName"]).filter(ele => ele[0].episodeData.seriesName),
+            series = groupBy(Consts.FILTERED_DOWNLOADED_ITEMS.filter(ele => ele.absolutePath !== downloadedItem.absolutePath), ["episodeData", "seriesName"]).filter(ele => ele[0] && ele[0].episodeData.seriesName),
             nextEpisode = series.sort((a, b) => {
                 return Math.max(...b.map(ele => ele.lastUpdated)) -
                     Math.max(...a.map(ele => ele.lastUpdated));
