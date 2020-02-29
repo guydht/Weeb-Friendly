@@ -128,7 +128,7 @@ export default class MALUtils {
     static MAL_LOGIN_URL = "https://myanimelist.net/login.php";
     static async updateAnime(anime: AnimeEntry & HasMalId, { episodes, status, score }: { episodes?: number, status?: MALStatuses, score?: number }, reloginWhenFailure = true): Promise<boolean> {
         if (!hasInternet()) {
-            return await new Promise(resolve => Confirm(`DYou don't have internet connection, but I can update it when you do have internet.`,
+            return await new Promise(resolve => Confirm(`You don't have internet connection, but I can update it when you do have internet.`,
                 (ok: boolean) => {
                     if (ok) {
                         updateInMalWhenHasInternet(
