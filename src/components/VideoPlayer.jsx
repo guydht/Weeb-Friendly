@@ -160,14 +160,14 @@ export default class VideoPlayer extends Component {
                 else if (e.shiftKey && !e.ctrlKey && !e.altKey && e.code === "KeyP" && prevEpisode)
                     prevEpisode.startPlaying();
             };
+        if (!nextEpisode) nextEpisode = this.getNextEpisode();
         document.body.addEventListener("keydown", handleKeyDown);
         this.videoHandler = asd(this.props.downloadedItem.episodeName, container, this.props.src);
         this.videoHandler.handleKeyDown = handleKeyDown;
-        if (nextEpisode)
-            ReactDom.render(<NextEpisodeButton thumbnailMarginLeft={prevEpisode ? -60 : -25}
-                onClick={() => nextEpisode.startPlaying()}
-                videoContainer={container} title={nextEpisode.episodeName} downloadedItem={nextEpisode} />,
-                container.querySelector("#guydhtNextEpisodeButton"));
+        ReactDom.render(<NextEpisodeButton thumbnailMarginLeft={prevEpisode ? -60 : -25}
+            onClick={() => nextEpisode.startPlaying()}
+            videoContainer={container} title={nextEpisode.episodeName} downloadedItem={nextEpisode} />,
+            container.querySelector("#guydhtNextEpisodeButton"));
         if (prevEpisode)
             ReactDom.render(<PrevEpisodeButton thumbnailMarginLeft={10}
                 onClick={() => prevEpisode.startPlaying()}
