@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button, ButtonGroup, Col, Container, ListGroup, OverlayTrigger, ProgressBar, Row, Tooltip } from "react-bootstrap";
+import { Button, ButtonGroup, Col, Container, ListGroup, ProgressBar, Row } from "react-bootstrap";
 import { Torrent } from "webtorrent";
 import Consts from "../../classes/Consts";
 import DownloadedItem from "../../classes/DownloadedItem";
@@ -11,19 +11,23 @@ import styles from "../../css/pages/DownloadManager.module.css";
 export default class DownloadManager extends Component {
 
     state: { torrents: Torrent[], hideFlag: boolean } = {
-        torrents: TorrentManager.getAll(),
+        torrents: TorrentManager.getAll().sort(DownloadManager.torrentSorter),
         hideFlag: false
     };
 
     container = React.createRef<any>();
 
+    static torrentSorter(a: Torrent, b: Torrent) {
+        return a.files && b.files && a.name && b.name ? a.name.localeCompare(b.name) : 0;
+    }
+
     componentDidMount() {
         let updatingFlag = false;
-        const updateState = () => {
+        const updateState = (data: any) => {
             if (updatingFlag) return;
             updatingFlag = true;
             setTimeout(() => {
-                this.setState({ torrents: TorrentManager.getAll() });
+                this.setState({ torrents: TorrentManager.getAll().sort(DownloadManager.torrentSorter) });
                 updatingFlag = false;
             }, 1000);
         };
@@ -46,7 +50,6 @@ export default class DownloadManager extends Component {
             };
         if (!this.state.torrents.length)
             return null;
-        this.state.torrents.sort((a, b) => a.name && b.name ? a.name.localeCompare(b.name) : 0);
         return (
             <MovableComponent
                 style={{ position: "fixed", top: 0, left: 10, height: this.state.hideFlag ? 0 : "auto", zIndex: 2029 }}>
@@ -64,25 +67,31 @@ export default class DownloadManager extends Component {
                         {
                             this.state.torrents.map(torrent => {
                                 if (!torrent.name || !torrent.magnetURI) return null;
+                                if (!torrent.files) return (
+                                    <ListGroup.Item key={torrent.magnetURI}>
+                                        <h5>
+                                            {torrent.name}
+                                        </h5>
+                                        <Row>
+                                            <Button disabled={true}>
+                                                On Hold
+                                            </Button>
+                                        </Row>
+                                    </ListGroup.Item>
+                                )
                                 return (
                                     <ListGroup.Item key={torrent.magnetURI}>
-                                        <OverlayTrigger trigger="hover" overlay={
-                                            <Tooltip id="tooltip-auto" style={{ zIndex: 9999 }}>
-                                                Renamed to: "{torrent.name}"
-                                            </Tooltip>
-                                        } placement="auto">
-                                            <h5>
-                                                {torrent.name}
-                                            </h5>
-                                        </OverlayTrigger>
+                                        <h5>
+                                            {torrent.name}
+                                        </h5>
                                         <Row>
                                             <Col>
-                                                <small>
+                                                <small key={torrent.downloadSpeed.toPrecision(3)}>
                                                     {downloadSpeedText(Number(torrent.downloadSpeed.toPrecision(3)))}
                                                 </small>
                                             </Col>
                                             <Col>
-                                                <small>
+                                                <small key={torrent.numPeers}>
                                                     Peers: {torrent.numPeers}
                                                 </small>
                                             </Col>
@@ -102,6 +111,7 @@ export default class DownloadManager extends Component {
                                         </Row>
                                         <Row className="mt-2">
                                             <ProgressBar style={{ width: "100%" }}
+                                                key={torrent.progress + torrent.length}
                                                 now={torrent.progress * 100}
                                                 label={`${Number((torrent.progress * 100).toPrecision(3))}% / ${downloadSizeText(torrent.length)}`} />
                                         </Row>

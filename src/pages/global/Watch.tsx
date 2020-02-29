@@ -51,20 +51,24 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                 if (this.wantsToUpdateInMAL && current > Watch.UPDATE_ANIME_PROGRESS_THRESHOLD &&
                     this.props.downloadedItem.episodeData.episodeNumber !== this.props.downloadedItem.animeEntry.myWatchedEpisodes) {
                     this.wantsToUpdateInMAL = false;
-                    Confirm(`Do you want to update ${this.props.downloadedItem.episodeName} in MAL?`, (ok: boolean) => {
-                        if (ok) {
-                            MALUtils.UpdateWatchedEpisode(this.props.downloadedItem).then(ok => {
-                                ok ? (window as any).displayToast({
-                                    title: "Anime Updated Successfully",
-                                    body: `Successfully updated ${this.props.downloadedItem.episodeName} in MAL!`
-                                }) : hasInternet() && (window as any).displayToast({
-                                    title: "Failed updating Anime",
-                                    body: `Failed updating ${this.props.downloadedItem.episodeName} in MAL! Try logging in again!`
-                                });
-                                (window as any).reloadPage();
+                    const updateEpisodeInMal = () => {
+                        MALUtils.UpdateWatchedEpisode(this.props.downloadedItem).then(ok => {
+                            ok ? (window as any).displayToast({
+                                title: "Anime Updated Successfully",
+                                body: `Successfully updated ${this.props.downloadedItem.episodeName} in MAL!`
+                            }) : hasInternet() && (window as any).displayToast({
+                                title: "Failed updating Anime",
+                                body: `Failed updating ${this.props.downloadedItem.episodeName} in MAL! Try logging in again!`
                             });
-                        }
-                    });
+                            (window as any).reloadPage();
+                        });
+                    }
+                    if (Consts.AUTO_UPDATE_IN_MAL)
+                        updateEpisodeInMal();
+                    else
+                        Confirm(`Do you want to update ${this.props.downloadedItem.episodeName} in MAL?`, (ok: boolean) => {
+                            if (ok) updateEpisodeInMal()
+                        });
                 }
             }, 500) as unknown as number;
     }
@@ -141,8 +145,7 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                     downloadedItem={this.props.downloadedItem}
                     as={Jumbotron}
                     className={styles.container}
-                    src={(this.props.downloadedItem as any).videoSrc || Consts.FILE_URL_PROTOCOL + this.props.downloadedItem.absolutePath}
-                    name={this.props.downloadedItem.episodeName}>
+                    src={(this.props.downloadedItem as any).videoSrc || Consts.FILE_URL_PROTOCOL + this.props.downloadedItem.absolutePath}>
                     {
                         this.props.downloadedItem.animeEntry && this.props.downloadedItem.animeEntry.malId && (
                             <AnimeInfo

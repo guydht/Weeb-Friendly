@@ -3,6 +3,7 @@ import { pantsu, si } from "nyaapi";
 import AnimeEntry from "../classes/AnimeEntry";
 import Consts from "../classes/Consts";
 import DownloadedItem from "../classes/DownloadedItem";
+import TorrentManager from "../classes/TorrentManager";
 
 export enum Sources {
     HorribleSubs,
@@ -184,6 +185,12 @@ export function episodeDataFromSource(source: Sources, name: string): EpisodeDat
     return episodeData;
 }
 
+export enum DownloadStatus {
+    notDownloaded,
+    currentlyDownloading,
+    downloaded
+}
+
 export class SearchResult {
     category!: {
         label: string;
@@ -205,7 +212,7 @@ export class SearchResult {
     seenThisEpisode() {
         return this.animeEntry && !isNaN(this.episodeData.episodeNumber) && this.animeEntry.seenEpisode(this.episodeData.episodeNumber);
     }
-    alreadyDownloaded() {
+    downloadStatus(): DownloadStatus {
         const compareEpisodeData = (downloadedItem: DownloadedItem) => {
             return downloadedItem.episodeData.seriesName === this.episodeData.seriesName &&
                 downloadedItem.episodeData.episodeNumber === this.episodeData.episodeNumber;
@@ -213,9 +220,10 @@ export class SearchResult {
             compareAnimeEntry = (downloadedItem: DownloadedItem) => {
                 return this.animeEntry.malId === downloadedItem.animeEntry.malId &&
                     downloadedItem.episodeData.episodeNumber === this.episodeData.episodeNumber;
-            }
-        return !isNaN(this.episodeData.episodeNumber) && this.episodeData.seriesName &&
-            this.animeEntry.malId ? Consts.DOWNLOADED_ITEMS.some(compareAnimeEntry) : Consts.DOWNLOADED_ITEMS.some(compareEpisodeData);
+            },
+            isDownloaded = Consts.DOWNLOADED_ITEMS.some(compareAnimeEntry) || Consts.DOWNLOADED_ITEMS.some(compareEpisodeData),
+            isDownloading = TorrentManager.getAll().some(torrent => torrent.name === this.name || torrent.files?.some(torrentFile => torrentFile.name === this.name))
+        return isDownloaded ? DownloadStatus.downloaded : isDownloading ? DownloadStatus.currentlyDownloading : DownloadStatus.notDownloaded;
     }
 }
 

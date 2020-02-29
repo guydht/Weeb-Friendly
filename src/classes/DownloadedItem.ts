@@ -1,3 +1,4 @@
+import { CacheLocalStorage } from "../utils/general";
 import { EpisodeData, episodeDataFromSource, Sources } from "../utils/torrents";
 import AnimeEntry from "./AnimeEntry";
 
@@ -25,7 +26,9 @@ export default class DownloadedItem {
     episodeData: Omit<EpisodeData, 'quality'>;
     episodeName: string;
     seenThisEpisode() {
-        return !isNaN(this.episodeData.episodeNumber) && this.animeEntry.syncGet().seenEpisode(this.episodeData.episodeNumber);
+        const savedVideoProgress = new CacheLocalStorage("videoLastTime").getItem(this.episodeName);
+        return (!isNaN(this.episodeData.episodeNumber) && this.animeEntry.syncGet().seenEpisode(this.episodeData.episodeNumber)) ||
+            (savedVideoProgress && savedVideoProgress.progress > 0.9);
     }
     startPlaying() {
         (window as any).setAppState({

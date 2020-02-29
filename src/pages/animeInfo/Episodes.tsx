@@ -2,6 +2,7 @@ import { createSliderWithTooltip, Range } from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import React, { Component } from "react";
 import { Button, ButtonGroup, Card, Col, Container, Modal, OverlayTrigger, Popover, Row, Spinner } from "react-bootstrap";
+import { ReactComponent as DownloadIcon } from "../../assets/download.svg";
 import AnimeEntry from "../../classes/AnimeEntry";
 import Consts from "../../classes/Consts";
 import DownloadedItem from "../../classes/DownloadedItem";
@@ -12,7 +13,6 @@ import SearchBar from "../../components/SearchBar";
 import changableTextStyles from "../../css/components/ChangableText.module.css";
 import animeStyles from "../../css/pages/DownloadedAnime.module.css";
 import styles from "../../css/pages/Episodes.module.css";
-import { ReactComponent as DownloadIcon } from "../../icons/download.svg";
 import { groupBy } from "../../utils/general";
 import TorrentUtils, { SearchResult, Sources } from "../../utils/torrents";
 import { AnimeInfoProps } from "../AnimeInfo";
@@ -291,7 +291,7 @@ export default class Episodes extends Component<AnimeInfoProps>{
                         {/* <span className="float-right f-right ">Display downloaded episodes only: <Form.Check type="switch" /></span> */}
                         <DisplayEpisodes source={source} {...this.props} />
                     </div>
-                )}>
+                )} lazyLoad={true} >
                 </ChooseSource>
             </div>
         )

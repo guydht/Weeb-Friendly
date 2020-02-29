@@ -22,33 +22,50 @@ class Listener {
 }
 
 export default class TorrentManager {
+    static MAX_NUMBER_OF_SIMULTANIOUS_TORRENTS = 3;
+    static waitingForDownload: { name: string, magnetURI: string }[] = []
     private static client = new webtorrent();
     static add({ magnetURL }: { magnetURL: string; }) {
-        let returnedTorrent = this.client.add(magnetURL, {
-            path: Consts.DOWNLOADS_FOLDER
-        }, (torrent: Torrent) => {
-            torrent.on('done', () => {
-                let files = [...torrent.files];
-                torrent.destroy(() => {
-                    files.forEach((file: any) => {
-                        const absolutePath = path.join(torrent.path, file.path),
-                            newAbsolutePath = path.join(Consts.DOWNLOADS_FOLDER, file.path);
-                        if (newAbsolutePath !== absolutePath)
-                            fs.rename(absolutePath, newAbsolutePath);
-                        Consts.removeFromSavedTorrents(returnedTorrent);
-                        Consts.DOWNLOADED_ITEMS = walkDir(Consts.DOWNLOADS_FOLDER);
-                        (window as any).reloadPage();
+        if (Consts.SAVED_TORRENTS && Consts.SAVED_TORRENTS.some(torrent => torrent.magnetURI === magnetURL)) return;
+        let returnedTorrent: any;
+        if (this.client.torrents.length < TorrentManager.MAX_NUMBER_OF_SIMULTANIOUS_TORRENTS)
+            returnedTorrent = this.client.add(magnetURL, {
+                path: Consts.DOWNLOADS_FOLDER
+            }, (torrent: Torrent) => {
+                torrent.on('done', () => {
+                    let files = [...torrent.files];
+                    torrent.destroy(() => {
+                        files.forEach((file: any) => {
+                            const absolutePath = path.join(torrent.path, file.path),
+                                newAbsolutePath = path.join(Consts.DOWNLOADS_FOLDER, file.path);
+                            if (newAbsolutePath !== absolutePath)
+                                fs.rename(absolutePath, newAbsolutePath);
+                            Consts.removeFromSavedTorrents(returnedTorrent);
+                            Consts.DOWNLOADED_ITEMS = walkDir(Consts.DOWNLOADS_FOLDER);
+                            if (TorrentManager.waitingForDownload.length) {
+                                TorrentManager.add({
+                                    magnetURL: TorrentManager.waitingForDownload.pop()?.magnetURI ?? ''
+                                });
+                            }
+                            (window as any).reloadPage();
+                        });
                     });
                 });
+                (window as any).reloadPage();
             });
-            (window as any).reloadPage();
-        });
+        else {
+            returnedTorrent = {
+                magnetURI: magnetURL,
+                name: decodeURIComponent(magnetURL.split("&").find(ele => ele.startsWith("dn="))?.substring(3) ?? 'Unknown').replace(/\+/g, ' ')
+            };
+            TorrentManager.waitingForDownload.push(returnedTorrent);
+        }
         if (Consts.SAVED_TORRENTS)
             Consts.addToSavedTorrents(returnedTorrent);
         return returnedTorrent;
     }
     static getAll() {
-        return Array.from(Consts.SAVED_TORRENTS);
+        return Consts.SAVED_TORRENTS;
     }
     static remove(torrent: Torrent) {
         torrent.files.forEach(file => {
@@ -79,7 +96,7 @@ export default class TorrentManager {
     private static currentTorrentState = new Set<Torrent>();
     static changeInterval = setInterval(() => {
         let added = Array.from(Consts.SAVED_TORRENTS).filter(ele => !TorrentManager.currentTorrentState.has(ele)),
-            removed = Array.from(TorrentManager.currentTorrentState).filter(ele => !Consts.SAVED_TORRENTS.has(ele));
+            removed = Array.from(TorrentManager.currentTorrentState).filter(ele => !Consts.SAVED_TORRENTS.includes(ele));
         added.forEach(torrent => {
             TorrentManager.dispatchEvent(torrent, ListenerTypes.addedTorrent);
         });

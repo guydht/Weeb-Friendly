@@ -92,12 +92,14 @@ export default class Consts {
     }
 
     static SAVED_TORRENTS_STORAGE_KEY = "saved_torrents";
-    static SAVED_TORRENTS = new Set<Torrent>((storage.get(Consts.SAVED_TORRENTS_STORAGE_KEY) || []).filter((ele: any) => ele.magnetURI)
-        .map((ele: Torrent) => TorrentManager.add({ magnetURL: ele.magnetURI })));
+    static SAVED_TORRENTS: Torrent[] = (storage.get(Consts.SAVED_TORRENTS_STORAGE_KEY) || [])
+        .filter((ele: any) => ele.magnetURI)
+        .map((ele: Torrent) => TorrentManager.add({ magnetURL: ele.magnetURI }));
     static addToSavedTorrents(torrent: Torrent) {
-        Consts.SAVED_TORRENTS.add(torrent);
         waitFor(() => torrent.magnetURI, () => {
-            storage.set(Consts.SAVED_TORRENTS_STORAGE_KEY, Array.from(Consts.SAVED_TORRENTS).map(torrent => {
+            if (Consts.SAVED_TORRENTS.some(ele => torrent.magnetURI === ele.magnetURI)) return;
+            Consts.SAVED_TORRENTS.push(torrent);
+            storage.set(Consts.SAVED_TORRENTS_STORAGE_KEY, Consts.SAVED_TORRENTS.map(torrent => {
                 return { magnetURI: torrent.magnetURI }
             }));
         });
@@ -132,11 +134,28 @@ export default class Consts {
     }
 
     static removeFromSavedTorrents(torrent: Torrent) {
-        Consts.SAVED_TORRENTS.delete(torrent);
-        storage.set(Consts.SAVED_TORRENTS_STORAGE_KEY, Array.from(Consts.SAVED_TORRENTS).map(torrent => {
+        Consts.SAVED_TORRENTS.splice(Consts.SAVED_TORRENTS.findIndex(ele => ele.magnetURI === torrent.magnetURI), 1);
+        storage.set(Consts.SAVED_TORRENTS_STORAGE_KEY, Consts.SAVED_TORRENTS.map(torrent => {
             return { magnetURI: torrent.magnetURI }
         }));
     }
+
+
+    static get AUTO_PLAY() { return localStorage.getItem("autoPlay") === "true" };
+    static setAutoPlay(autoPlayValue: boolean) {
+        localStorage.setItem("autoPlay", autoPlayValue.toString());
+    }
+
+    static get AUTO_UPDATE_IN_MAL() { return localStorage.getItem("autoUpdateInMAL") === "true" };
+    static setAutoUpdateInMal(value: boolean) {
+        localStorage.setItem("autoUpdateInMAL", value.toString());
+    }
+
+    static get AUTO_DOWNLOAD_NEW_EPISODES_OF_WATCHED_SERIES() { return localStorage.getItem("autoDownloadNewEpisode") === "true" }
+    static setAutoDownloadNewEpisodeOfWatchedSeries(value: boolean) {
+        localStorage.setItem("autoDownloadNewEpisode", value.toString());
+    }
+
     static FILE_URL_PROTOCOL = "file://";
 }
 Consts.setMiddleClick(Consts.MIDDLE_CLICK);

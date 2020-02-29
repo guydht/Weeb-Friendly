@@ -3,34 +3,42 @@ import { Carousel, OverlayTrigger, Spinner, Tooltip } from "react-bootstrap";
 //@ts-ignore
 import { LazyLoadComponent, LazyLoadImage } from "react-lazy-load-image-component";
 import { Link } from "react-router-dom";
+import { ReactComponent as DownloadIcon } from "../../assets/download.svg";
+import { ReactComponent as DownloadingIcon } from "../../assets/Downloading.svg";
 import AnimeEntry from "../../classes/AnimeEntry";
+import Consts from "../../classes/Consts";
+import { MALStatuses } from "../../classes/MalStatuses";
 import TorrentManager from "../../classes/TorrentManager";
 import ChooseSource from "../../components/ChooseSource";
 import HasSeen from "../../components/HasSeen";
 import SearchBar from "../../components/SearchBar";
 import downloadedAnimeStyle from "../../css/pages/DownloadedAnime.module.css";
 import styles from "../../css/pages/SeasonalCarousel.module.css";
-import { ReactComponent as DownloadIcon } from "../../icons/download.svg";
 import { chunkArray, Confirm } from "../../utils/general";
-import TorrentUtils, { SearchResult, Sources } from "../../utils/torrents";
+import TorrentUtils, { DownloadStatus, SearchResult, Sources } from "../../utils/torrents";
 import { DisplayEpisodes } from "../animeInfo/Episodes";
 import SeasonalCarousel from "./SeasonalCarousel";
 
 
 class DisplayTorrentEntry extends Component<{ searchResult: SearchResult; }> {
     render() {
+        const downloadStatus = this.props.searchResult.downloadStatus();
         if (this.props.searchResult.animeEntry.malId)
             return (
                 <div className="position-relative">
                     {
                         this.props.searchResult.seenThisEpisode() ? <HasSeen className={styles.downloadIcon} hasSeen={true} />
-                            : this.props.searchResult.alreadyDownloaded() ?
+                            : downloadStatus === DownloadStatus.downloaded ?
                                 <OverlayTrigger overlay={<Tooltip id={this.props.searchResult.animeEntry.malId}>Already Downloaded</Tooltip>} placement="auto">
                                     <DownloadIcon className={styles.downloadIcon} style={{ cursor: "not-allowed", opacity: 0.4 }} />
                                 </OverlayTrigger>
-                                : <OverlayTrigger overlay={<Tooltip id={this.props.searchResult.animeEntry.malId}>Download Episode</Tooltip>}>
-                                    <DownloadIcon className={styles.downloadIcon} onClick={() => this.downloadNow(this.props.searchResult)} />
-                                </OverlayTrigger>
+                                : downloadStatus === DownloadStatus.currentlyDownloading ?
+                                    <OverlayTrigger overlay={<Tooltip id={this.props.searchResult.animeEntry.malId}>Download Episode</Tooltip>}>
+                                        <DownloadingIcon className={styles.downloadIcon} style={{ cursor: "progress" }} />
+                                    </OverlayTrigger>
+                                    : <OverlayTrigger overlay={<Tooltip id={this.props.searchResult.animeEntry.malId}>Download Episode</Tooltip>}>
+                                        <DownloadIcon className={styles.downloadIcon} onClick={() => DisplayTorrentEntry.downloadNow(this.props.searchResult)} />
+                                    </OverlayTrigger>
                     }
                     <span className={styles.upperTitle}>
                         Episode {this.props.searchResult.episodeData.episodeNumber}
@@ -73,12 +81,16 @@ class DisplayTorrentEntry extends Component<{ searchResult: SearchResult; }> {
         searchResult.animeEntry = animeEntry;
         this.setState({});
     }
-    downloadNow(searchResult: any) {
-        const downloadName = `${searchResult.episodeData.seriesName} Episode ${searchResult.episodeData.episodeNumber}`;
-        Confirm(`Download ${downloadName}?`, (ok: boolean) => {
-            if (ok && searchResult.links && searchResult.links[0] && searchResult.links[0].magnet)
-                TorrentManager.add({ magnetURL: (searchResult as any).links[0].magnet });
-        });
+    static downloadNow(searchResult: any, promptDownload: boolean = true) {
+        const downloadName = `${searchResult.episodeData.seriesName} Episode ${searchResult.episodeData.episodeNumber}`,
+            doDownload = () => TorrentManager.add({ magnetURL: (searchResult as any).links[0].magnet });
+        if (promptDownload)
+            Confirm(`Download ${downloadName}?`, (ok: boolean) => {
+                if (ok && searchResult.links && searchResult.links[0] && searchResult.links[0].magnet)
+                    doDownload();
+            });
+        else
+            doDownload();
     }
 }
 
@@ -89,16 +101,12 @@ class DisplayLatestTorrents extends Component<{ source?: Sources }>{
         nextPageToLoad: 1
     }
 
-    componentDidMount() {
-        this.loadMoreUpdated();
-    }
-
-    loadMoreUpdated() {
+    async loadMoreUpdated() {
         if (this.props.source === undefined) return;
-        TorrentUtils.latest(this.state.nextPageToLoad, this.props.source).then(latest => {
-            this.state.torrents.push(...DisplayEpisodes.groupByQuality(latest.filter(ele => ele.animeEntry.name)));
-            this.setState({ torrents: this.state.torrents, nextPageToLoad: this.state.nextPageToLoad + 1 });
-        })
+        const latest = await TorrentUtils.latest(this.state.nextPageToLoad, this.props.source);
+        this.state.torrents.push(...DisplayEpisodes.groupByQuality(latest.filter(ele => ele.animeEntry.name)));
+        this.setState({ torrents: this.state.torrents, nextPageToLoad: this.state.nextPageToLoad + 1 });
+        return latest
     }
 
     render() {
@@ -123,7 +131,7 @@ class DisplayLatestTorrents extends Component<{ source?: Sources }>{
                 <Carousel interval={null} className="px-5 mx-5 mt-5" onSelect={handleSelect}>
                     {
                         chunkArray(this.state.torrents, SeasonalCarousel.GRID_SIZE_X * SeasonalCarousel.GRID_SIZE_Y)
-                            .map((arrayChunk, i) => {
+                            .map((arrayChunk: SearchResult[], i) => {
                                 return (
                                     <Carousel.Item key={i} className={styles.carousel}>
                                         <div className={downloadedAnimeStyle.grid}>
@@ -144,10 +152,22 @@ class DisplayLatestTorrents extends Component<{ source?: Sources }>{
 }
 
 export default class LatestTorrents extends Component {
+
+    componentDidMount() {
+        if (Consts.AUTO_DOWNLOAD_NEW_EPISODES_OF_WATCHED_SERIES)
+            TorrentUtils.latest(1, Consts.SOURCE_PREFERENCE[0]).then(latest => {
+                DisplayEpisodes.groupByQuality(latest.filter(ele => ele.animeEntry.name)).forEach(torrentEntry => {
+                    if ((torrentEntry.animeEntry.myMalStatus === MALStatuses.Watching || torrentEntry.animeEntry.myMalStatus === MALStatuses["Plan To Watch"])
+                        && torrentEntry.downloadStatus() === DownloadStatus.notDownloaded)
+                        DisplayTorrentEntry.downloadNow(torrentEntry, false);
+                })
+            });
+    }
+
     render() {
         return (
             <div className="mx-auto mt-5">
-                <ChooseSource>
+                <ChooseSource lazyLoad={true}>
                     <DisplayLatestTorrents />
                 </ChooseSource>
             </div>

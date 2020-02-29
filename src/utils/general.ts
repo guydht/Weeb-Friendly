@@ -80,12 +80,12 @@ class CacheLocalStorage {
     cacheTTLDays: number;
     storage: any;
     stoarge: any;
-    constructor(storageKey: string, cacheTTLDays: number, initialStorage: any) {
+    constructor(storageKey: string, cacheTTLDays: number = CacheLocalStorage.DEFAULT_TTL_DAYS, initialStorage: any = JSON.parse(localStorage.getItem(storageKey) || "false") || {}) {
         if (!storageKey)
             throw new Error("You must give me a valid key to store in localStorage!");
         this.storageKey = storageKey
-        this.cacheTTLDays = cacheTTLDays || CacheLocalStorage.DEFAULT_TTL_DAYS;
-        this.storage = initialStorage || JSON.parse(localStorage.getItem(storageKey) || "false") || {};
+        this.cacheTTLDays = cacheTTLDays;
+        this.storage = initialStorage;
         for (let key in this.storage)
             this.storage[key][0] = new Date(this.storage[key][0]);
     }
