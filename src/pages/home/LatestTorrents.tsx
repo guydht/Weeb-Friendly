@@ -101,7 +101,7 @@ class DisplayLatestTorrents extends Component<{ source?: Sources }>{
         nextPageToLoad: 1
     }
 
-    componentDidMount(){
+    componentDidMount() {
         this.loadMoreUpdated();
     }
 
@@ -162,7 +162,7 @@ export default class LatestTorrents extends Component {
             TorrentUtils.latest(1, Consts.SOURCE_PREFERENCE[0]).then(latest => {
                 DisplayEpisodes.groupByQuality(latest.filter(ele => ele.animeEntry.name)).forEach(torrentEntry => {
                     if ((torrentEntry.animeEntry.myMalStatus === MALStatuses.Watching || torrentEntry.animeEntry.myMalStatus === MALStatuses["Plan To Watch"])
-                        && torrentEntry.downloadStatus() === DownloadStatus.notDownloaded)
+                        && torrentEntry.downloadStatus() === DownloadStatus.notDownloaded && torrentEntry.episodeData.qualities[0] === Consts.QUALITY_PREFERENCE[0])
                         DisplayTorrentEntry.downloadNow(torrentEntry, false);
                 })
             });
