@@ -157,13 +157,13 @@ export default class MALUtils {
             };
         if (episodes === 1 && !(anime.userStartDate && !isNaN(anime.userStartDate.getDate())))
             body['start_date'] = {
-                month: rightNow.getMonth(),
+                month: rightNow.getMonth() + 1,
                 day: rightNow.getDate(),
                 year: rightNow.getFullYear()
             }
         if (status === MALStatuses.Completed && !(anime.userEndDate && !isNaN(anime.userEndDate.getDate())))
             body['finish_date'] = {
-                month: rightNow.getMonth(),
+                month: rightNow.getMonth() + 1,
                 day: rightNow.getDate(),
                 year: rightNow.getFullYear()
             };

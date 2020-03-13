@@ -54,17 +54,17 @@ function stringCompare(givenString: string, toCompare: string): number {
 function getCurrentSeason(): Seasons {
     let month = new Date().getMonth();
     switch (month) {
-        case 12:
+        case 11:
+        case 0:
         case 1:
-        case 2:
             return 'winter';
+        case 2:
         case 3:
         case 4:
-        case 5:
             return 'spring';
+        case 5:
         case 6:
         case 7:
-        case 8:
             return 'summer';
     }
     return "fall";
