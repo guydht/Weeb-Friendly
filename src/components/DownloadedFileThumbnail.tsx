@@ -103,7 +103,7 @@ export default withRouter(class DownloadedFileThumbnail extends Component<Downlo
                         (window as any).displayToast({ title: "Successfully deleted video", body: this.props.downloadedItem.episodeName + " was successfully deleted!" });
                     }
                     else
-                        (window as any).displayToast({ title: "Couldn't delte video!", body: err.toString() })
+                        (window as any).displayToast({ title: "Couldn't delee video!", body: err.toString() })
                 });
             }
         })
