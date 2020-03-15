@@ -37,10 +37,10 @@ export default class ChooseSource extends Component<{ contentComponent?: ReactEl
                 </Nav>
                 <Tab.Content>
                     {
-                        Consts.SOURCE_PREFERENCE.map(source =>
+                        Consts.SOURCE_PREFERENCE.map((source, index) =>
                             <Tab.Pane eventKey={source} key={source}>
                                 {
-                                    this.props.lazyLoad ?
+                                    this.props.lazyLoad && index !== 0 ?
                                         <LazyLoadComponent>
                                             {
                                                 this.props.render ? this.props.render(source) : React.cloneElement(contentComponent as any, { source })
