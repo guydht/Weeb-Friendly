@@ -291,7 +291,7 @@ export default class Episodes extends Component<AnimeInfoProps>{
                         {/* <span className="float-right f-right ">Display downloaded episodes only: <Form.Check type="switch" /></span> */}
                         <DisplayEpisodes source={source} {...this.props} />
                     </div>
-                )} lazyLoad={true} >
+                )} lazyLoad >
                 </ChooseSource>
             </div>
         )

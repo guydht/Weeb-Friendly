@@ -172,7 +172,7 @@ export default class LatestTorrents extends Component {
     render() {
         return (
             <div className="mx-auto mt-5">
-                <ChooseSource lazyLoad={true}>
+                <ChooseSource lazyLoad>
                     <DisplayLatestTorrents />
                 </ChooseSource>
             </div>

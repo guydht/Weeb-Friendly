@@ -108,7 +108,8 @@ export default class TorrentUtils {
             results.push(...(await pantsu.search({
                 term: '*',
                 userId: apiSource.pantsu,
-                page
+                page,
+                c: "3_5"
             })).map(pantsuResultToSearchResult.bind(this, source)));
         return results;
     }

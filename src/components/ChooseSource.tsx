@@ -38,7 +38,7 @@ export default class ChooseSource extends Component<{ contentComponent?: ReactEl
                 <Tab.Content>
                     {
                         Consts.SOURCE_PREFERENCE.map((source, index) =>
-                            <Tab.Pane eventKey={source} key={source}>
+                            <Tab.Pane eventKey={source} key={index}>
                                 {
                                     this.props.lazyLoad && index !== 0 ?
                                         <LazyLoadComponent>
