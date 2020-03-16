@@ -23,7 +23,7 @@ class Listener {
 
 export default class TorrentManager {
     static MAX_NUMBER_OF_SIMULTANIOUS_TORRENTS = 3;
-    static waitingForDownload: { name: string, magnetURI: string }[] = []
+    static waitingForDownload: { name: string, magnetURI: string }[] = [];
     private static client = new webtorrent();
     static add({ magnetURL }: { magnetURL: string; }) {
         if (Consts.SAVED_TORRENTS && Consts.SAVED_TORRENTS.some(torrent => torrent.magnetURI === magnetURL)) return;
@@ -41,7 +41,7 @@ export default class TorrentManager {
                             if (newAbsolutePath !== absolutePath)
                                 fs.rename(absolutePath, newAbsolutePath);
                             Consts.removeFromSavedTorrents(returnedTorrent);
-                            Consts.DOWNLOADED_ITEMS = walkDir(Consts.DOWNLOADS_FOLDER);
+                            Consts.reloadDownloads()
                             if (TorrentManager.waitingForDownload.length) {
                                 TorrentManager.add({
                                     magnetURL: TorrentManager.waitingForDownload.pop()?.magnetURI ?? ''
@@ -68,13 +68,19 @@ export default class TorrentManager {
         return Consts.SAVED_TORRENTS;
     }
     static remove(torrent: Torrent) {
-        torrent.files.forEach(file => {
-            let pathName = path.join(torrent.path, file.path);
-            fs.unlink(pathName);
-        });
-        torrent.destroy();
-        Consts.DOWNLOADED_ITEMS = walkDir(Consts.DOWNLOADS_FOLDER);
+        if (torrent.files){
+            torrent.files.forEach(file => {
+                let pathName = path.join(torrent.path, file.path);
+                fs.unlink(pathName);
+            });
+            Consts.reloadDownloads();
+        }
+        if (typeof torrent.destroy === "function")
+            torrent.destroy();
         Consts.removeFromSavedTorrents(torrent);
+        const indexInWaiting = TorrentManager.waitingForDownload.findIndex(waiting => waiting.magnetURI === torrent.magnetURI);
+        if(indexInWaiting !== -1)
+            TorrentManager.waitingForDownload.splice(indexInWaiting, 1);
     }
     static pause(torrent: Torrent) {
         torrent.pause();

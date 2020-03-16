@@ -59,7 +59,10 @@ export default class Consts {
     static setDownloadsFolder(val: string) {
         Consts.DOWNLOADS_FOLDER = val;
         storage.set(Consts.DOWNLOADS_FOLDER_STORAGE_KEY, val);
-        Consts.DOWNLOADED_ITEMS = walkDir(val).filter(ele => ele.absolutePath.endsWith(".mkv") || ele.absolutePath.endsWith(".mp4"));
+        Consts.reloadDownloads();
+    }
+    static reloadDownloads() {
+        Consts.DOWNLOADED_ITEMS = walkDir(Consts.DOWNLOADS_FOLDER).filter(ele => ele.absolutePath.endsWith(".mkv") || ele.absolutePath.endsWith(".mp4"));
     }
 
     static QUALITY_PREFERENCE_STORAGE_KEY = "quality-storage";

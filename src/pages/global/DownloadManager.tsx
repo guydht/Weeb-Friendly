@@ -73,9 +73,16 @@ export default class DownloadManager extends Component {
                                             {torrent.name}
                                         </h5>
                                         <Row>
-                                            <Button disabled={true}>
-                                                On Hold
+                                            <Col>
+                                                <Button disabled>
+                                                    On Hold
                                             </Button>
+                                            </Col>
+                                            <Col>
+                                                <Button onClick={() => this.removeTorrent(torrent)}>
+                                                    Cancel Torrent
+                                                </Button>
+                                            </Col>
                                         </Row>
                                     </ListGroup.Item>
                                 )
