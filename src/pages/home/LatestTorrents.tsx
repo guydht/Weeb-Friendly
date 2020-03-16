@@ -93,10 +93,9 @@ class DisplayTorrentEntry extends Component<{ searchResult: SearchResult; }> {
             doDownload();
     }
 }
-
 class DisplayLatestTorrents extends Component<{ source?: Sources }>{
 
-    state: { torrents: SearchResult[], nextPageToLoad: number } = {
+    state: { torrents: ReturnType<typeof DisplayEpisodes.groupByQuality>, nextPageToLoad: number } = {
         torrents: [],
         nextPageToLoad: 1
     }
@@ -107,10 +106,23 @@ class DisplayLatestTorrents extends Component<{ source?: Sources }>{
 
     async loadMoreUpdated() {
         if (this.props.source === undefined) return;
+
         const latest = await TorrentUtils.latest(this.state.nextPageToLoad, this.props.source);
         this.state.torrents.push(...DisplayEpisodes.groupByQuality(latest.filter(ele => ele.animeEntry.name)));
         this.setState({ torrents: this.state.torrents, nextPageToLoad: this.state.nextPageToLoad + 1 });
-        return latest
+
+        if (Consts.AUTO_DOWNLOAD_NEW_EPISODES_OF_WATCHED_SERIES)
+            this.autoDownloadNewEpisodes();
+        return latest;
+    }
+
+    autoDownloadNewEpisodes() {
+        this.state.torrents.forEach(torrentEntry => {
+            if ((torrentEntry.animeEntry.myMalStatus === MALStatuses.Watching || torrentEntry.animeEntry.myMalStatus === MALStatuses["Plan To Watch"])
+                && !torrentEntry.seenThisEpisode() && torrentEntry.downloadStatus() === DownloadStatus.notDownloaded
+                && torrentEntry.episodeData.qualities[0] === Consts.QUALITY_PREFERENCE[0])
+                DisplayTorrentEntry.downloadNow(torrentEntry, false);
+        });
     }
 
     render() {
@@ -156,18 +168,6 @@ class DisplayLatestTorrents extends Component<{ source?: Sources }>{
 }
 
 export default class LatestTorrents extends Component {
-
-    componentDidMount() {
-        if (Consts.AUTO_DOWNLOAD_NEW_EPISODES_OF_WATCHED_SERIES)
-            TorrentUtils.latest(1, Consts.SOURCE_PREFERENCE[0]).then(latest => {
-                DisplayEpisodes.groupByQuality(latest.filter(ele => ele.animeEntry.name)).forEach(torrentEntry => {
-                    if ((torrentEntry.animeEntry.myMalStatus === MALStatuses.Watching || torrentEntry.animeEntry.myMalStatus === MALStatuses["Plan To Watch"])
-                        && !torrentEntry.seenThisEpisode() && torrentEntry.downloadStatus() === DownloadStatus.notDownloaded
-                        && torrentEntry.episodeData.qualities[0] === Consts.QUALITY_PREFERENCE[0])
-                        DisplayTorrentEntry.downloadNow(torrentEntry, false);
-                })
-            });
-    }
 
     render() {
         return (
