@@ -77,7 +77,7 @@ let emptyFrom = {
 
 export default class AnimeInfo extends Component<{ anime?: AnimeEntry } & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>> {
 
-    private PAGE_LINKS = { Details, Episodes: Episodes, Reviews, Recommendations, Stats, News, Forum, Pictures }
+    private PAGE_LINKS = { Details, Episodes, Reviews, Recommendations, Stats, News, Forum, Pictures };
 
     state: { info?: AnimeById, anime: AnimeEntry, highResPhoto: string } = {
         anime: this.props.anime ||
@@ -152,7 +152,7 @@ export default class AnimeInfo extends Component<{ anime?: AnimeEntry } & React.
                                         <Tab eventKey={name} title={name} mountOnEnter={true} key={i}>
                                             <LazyLoadComponent>
                                                 <Container>
-                                                    <MyComponent key={this.state.anime.malId} anime={this.state.anime} info={this.state.info || { ...emptyInfo } as any} />
+                                                    <MyComponent anime={this.state.anime} info={this.state.info || { ...emptyInfo } as any} />
                                                 </Container>
                                             </LazyLoadComponent>
                                         </Tab>

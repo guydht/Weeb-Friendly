@@ -17,7 +17,7 @@ export class DisplayDownloadedAnime extends Component {
                 {
                     this.props.downloadedItems.map(downloadedItem => {
                         return (
-                            <DownloadedFileThumbnail {...props} key={downloadedItem.absolutePath} downloadedItem={downloadedItem} className="m-1" />
+                            <DownloadedFileThumbnail {...props} key={downloadedItem.absolutePath} downloadedItem={downloadedItem} />
                         )
                     })
                 }
@@ -36,7 +36,7 @@ export default withRouter(class DownloadedAnime extends Component {
                 displayName: 'File Name',
                 active: false,
                 reverse: true,
-                sortFunction(a, b) { return a.fileName.localeCompare(b.fileName) }
+                sortFunction(a, b) { return a.episodeName.localeCompare(b.episodeName) }
             },
             {
                 displayName: 'Download Time',

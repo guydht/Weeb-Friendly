@@ -1,10 +1,10 @@
 import React, { Component } from "react";
 import { Button, Navbar as BootstrapNavbar, NavDropdown, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import { ReactComponent as SettingsIcon } from "../../assets/settings.svg";
 import Consts from "../../classes/Consts";
 import ChooseDirectoryText from "../../components/ChooseDirectoryText";
 import SearchBar from "../../components/SearchBar";
-import { ReactComponent as SettingsIcon } from "../../icons/settings.svg";
 import CustomMiddleClick from "../../jsHelpers/CustomMiddleClick";
 import { checkScrollSpeed } from "../../utils/general";
 

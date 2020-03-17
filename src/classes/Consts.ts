@@ -59,7 +59,10 @@ export default class Consts {
     static setDownloadsFolder(val: string) {
         Consts.DOWNLOADS_FOLDER = val;
         storage.set(Consts.DOWNLOADS_FOLDER_STORAGE_KEY, val);
-        Consts.DOWNLOADED_ITEMS = walkDir(val).filter(ele => ele.absolutePath.endsWith(".mkv") || ele.absolutePath.endsWith(".mp4"));
+        Consts.reloadDownloads();
+    }
+    static reloadDownloads() {
+        Consts.DOWNLOADED_ITEMS = walkDir(Consts.DOWNLOADS_FOLDER).filter(ele => ele.absolutePath.endsWith(".mkv") || ele.absolutePath.endsWith(".mp4"));
     }
 
     static QUALITY_PREFERENCE_STORAGE_KEY = "quality-storage";
@@ -71,7 +74,7 @@ export default class Consts {
     }
 
     static SOURCE_PREFERENCE_STORAGE_KEY = "default-source";
-    static DEFAULT_SOURCE_PREFERENCE: Sources[] = [Sources.HorribleSubs, Sources.EraiRaws, Sources.Ohys];
+    static DEFAULT_SOURCE_PREFERENCE: Sources[] = [Sources.HorribleSubs, Sources["Erai-raws"], Sources.Ohys];
     static SOURCE_PREFERENCE: Sources[] = (storage.get(Consts.SOURCE_PREFERENCE_STORAGE_KEY) || Consts.DEFAULT_SOURCE_PREFERENCE).map(Number);
     static get SOURCE_REFERENCE_KEYS(): string[] {
         return Consts.SOURCE_PREFERENCE.map(ele => Object.keys(Sources).find(source => (Sources as any)[source] === ele)!);
@@ -92,13 +95,15 @@ export default class Consts {
     }
 
     static SAVED_TORRENTS_STORAGE_KEY = "saved_torrents";
-    static SAVED_TORRENTS = new Set<Torrent>((storage.get(Consts.SAVED_TORRENTS_STORAGE_KEY) || []).filter((ele: any) => ele.magnetURI && ele.torrentName)
-        .map((ele: Torrent) => TorrentManager.add({ magnetURL: ele.magnetURI, name: (ele as any).torrentName })));
+    static SAVED_TORRENTS: Torrent[] = (storage.get(Consts.SAVED_TORRENTS_STORAGE_KEY) || [])
+        .filter((ele: any) => ele.magnetURI)
+        .map((ele: Torrent) => TorrentManager.add({ magnetURL: ele.magnetURI }));
     static addToSavedTorrents(torrent: Torrent) {
-        Consts.SAVED_TORRENTS.add(torrent);
         waitFor(() => torrent.magnetURI, () => {
-            storage.set(Consts.SAVED_TORRENTS_STORAGE_KEY, Array.from(Consts.SAVED_TORRENTS).map(torrent => {
-                return { torrentName: (torrent as any).torrentName, magnetURI: torrent.magnetURI }
+            if (Consts.SAVED_TORRENTS.some(ele => torrent.magnetURI === ele.magnetURI)) return;
+            Consts.SAVED_TORRENTS.push(torrent);
+            storage.set(Consts.SAVED_TORRENTS_STORAGE_KEY, Consts.SAVED_TORRENTS.map(torrent => {
+                return { magnetURI: torrent.magnetURI }
             }));
         });
     }
@@ -132,11 +137,28 @@ export default class Consts {
     }
 
     static removeFromSavedTorrents(torrent: Torrent) {
-        Consts.SAVED_TORRENTS.delete(torrent);
-        storage.set(Consts.SAVED_TORRENTS_STORAGE_KEY, Array.from(Consts.SAVED_TORRENTS).map(torrent => {
-            return { torrentName: (torrent as any).torrentName, magnetURI: torrent.magnetURI }
+        Consts.SAVED_TORRENTS.splice(Consts.SAVED_TORRENTS.findIndex(ele => ele.magnetURI === torrent.magnetURI), 1);
+        storage.set(Consts.SAVED_TORRENTS_STORAGE_KEY, Consts.SAVED_TORRENTS.map(torrent => {
+            return { magnetURI: torrent.magnetURI }
         }));
     }
+
+
+    static get AUTO_PLAY() { return localStorage.getItem("autoPlay") === "true" };
+    static setAutoPlay(autoPlayValue: boolean) {
+        localStorage.setItem("autoPlay", autoPlayValue.toString());
+    }
+
+    static get AUTO_UPDATE_IN_MAL() { return localStorage.getItem("autoUpdateInMAL") === "true" };
+    static setAutoUpdateInMal(value: boolean) {
+        localStorage.setItem("autoUpdateInMAL", value.toString());
+    }
+
+    static get AUTO_DOWNLOAD_NEW_EPISODES_OF_WATCHED_SERIES() { return localStorage.getItem("autoDownloadNewEpisode") === "true" }
+    static setAutoDownloadNewEpisodeOfWatchedSeries(value: boolean) {
+        localStorage.setItem("autoDownloadNewEpisode", value.toString());
+    }
+
     static FILE_URL_PROTOCOL = "file://";
 }
 Consts.setMiddleClick(Consts.MIDDLE_CLICK);

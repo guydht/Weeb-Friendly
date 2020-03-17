@@ -5,11 +5,12 @@ import { AnimeListTypes } from "jikants/dist/src/interfaces/user/AnimeList";
 import App from "../App";
 import AnimeEntry from "../classes/AnimeEntry";
 import AnimeList from "../classes/AnimeList";
+import { updateInMalWhenHasInternet } from "../classes/AnimeStorage";
 import Consts from "../classes/Consts";
 import DownloadedItem from "../classes/DownloadedItem";
 import { MALStatuses } from "../classes/MalStatuses";
 import User from "../classes/User";
-import { getCurrentSeason, parseStupidAmericanDateString } from "./general";
+import { Confirm, getCurrentSeason, hasInternet, parseStupidAmericanDateString } from "./general";
 
 let mal = window.require("jikan-node");
 mal = new mal();
@@ -17,6 +18,8 @@ mal = new mal();
 type HasMalId = {
     malId: Number
 }
+
+
 export default class MALUtils {
     static readonly MAX_ANIMES_PER_PAGE = 300;
     static readonly MINIMUM_ANIMENAME_SIMILARITY = 0.8;
@@ -34,7 +37,6 @@ export default class MALUtils {
             fromData.score = result.score;
             fromData.startDate = parseStupidAmericanDateString(result.start_date);
             fromData.endDate = parseStupidAmericanDateString(result.end_date);
-            fromData.synopsis = result.synopsis;
             fromData.name = result.title;
             fromData.malUrl = result.url;
             return fromData.syncPut();
@@ -70,10 +72,9 @@ export default class MALUtils {
             fromData.genres = result.genres as any;
             fromData.imageURL = result.image_url;
             fromData.score = result.score as any;
-            fromData.synopsis = result.synopsis;
             fromData.name = result.title;
             fromData.malUrl = result.url;
-            return fromData.syncPut();
+            return fromData.syncGet().syncPut();
         });
     }
     static async getUserAnimeList(user: User, listType: AnimeListTypes = "all", page = 1): Promise<AnimeList> {
@@ -117,7 +118,6 @@ export default class MALUtils {
         anime.endDate = parseStupidAmericanDateString(data.aired.to);
         anime.synonyms = new Set([...anime.synonyms, data.title, data.title_english, data.title_japanese, ...data.title_synonyms]);
         anime.synonyms.delete(null as any);
-        anime.synopsis = data.synopsis;
         anime.malUrl = data.url;
         anime.totalEpisodes = data.episodes;
         anime.syncPut();
@@ -126,7 +126,27 @@ export default class MALUtils {
     static UPDATE_ANIME_URL = "https://myanimelist.net/ownlist/anime/edit.json";
     static ADD_ANIME_URL = "https://myanimelist.net/ownlist/anime/add.json";
     static MAL_LOGIN_URL = "https://myanimelist.net/login.php";
-    static async updateAnime(anime: AnimeEntry & HasMalId, { episodes, status, score }: { episodes?: number, status?: MALStatuses, score?: number }, reloginWhenFailure = false): Promise<boolean> {
+    static async updateAnime(anime: AnimeEntry & HasMalId, { episodes, status, score }: { episodes?: number, status?: MALStatuses, score?: number }, reloginWhenFailure = true): Promise<boolean> {
+        if (!hasInternet()) {
+            return await new Promise(resolve => Confirm(`You don't have internet connection, but I can update it when you do have internet.`,
+                (ok: boolean) => {
+                    if (ok) {
+                        updateInMalWhenHasInternet(
+                            anime, {
+                            episodes,
+                            status
+                        });
+                        anime.myMalStatus = status;
+                        anime.myWatchedEpisodes = episodes;
+                        anime.syncPut();
+                        (window as any).displayToast({
+                            title: "Success",
+                            body: `Will update ${anime.name} in MAL when you have internet connectivity again!`
+                        });
+                    }
+                    resolve(ok);
+                }));
+        }
         let rightNow = new Date(),
             body: any = {
                 anime_id: anime.malId,
@@ -135,18 +155,18 @@ export default class MALUtils {
                 num_watched_episodes: episodes,
                 csrf_token: Consts.CSRF_TOKEN
             };
-        if (episodes === 1 && !(anime.startDate && !isNaN(anime.startDate.getDate())))
+        if (episodes === 1 && !(anime.userStartDate && !isNaN(anime.userStartDate.getDate())))
             body['start_date'] = {
-                month: rightNow.getMonth(),
+                month: rightNow.getMonth() + 1,
                 day: rightNow.getDate(),
                 year: rightNow.getFullYear()
             }
-        if (status === MALStatuses.Completed)
+        if (status === MALStatuses.Completed && !(anime.userEndDate && !isNaN(anime.userEndDate.getDate())))
             body['finish_date'] = {
-                month: rightNow.getMonth(),
+                month: rightNow.getMonth() + 1,
                 day: rightNow.getDate(),
                 year: rightNow.getFullYear()
-            }
+            };
         let request = await fetch(this.UPDATE_ANIME_URL, {
             method: "POST",
             body: JSON.stringify(body)
@@ -157,8 +177,10 @@ export default class MALUtils {
             anime.myWatchedEpisodes = episodes;
             anime.myMalStatus = status;
             anime.myMalRating = score as any;
-            if (episodes === 1 && !(anime.startDate && !isNaN(anime.startDate.getDate())))
-                anime.startDate = rightNow;
+            if (body['start_date'])
+                anime.userStartDate = rightNow;
+            if (body['finish_date'])
+                anime.userEndDate = rightNow;
             anime.syncPut();
             Consts.MAL_USER.animeList.loadAnime(anime);
         }
@@ -167,15 +189,15 @@ export default class MALUtils {
                 username = Consts.MAL_USER.username;
             await Consts.MAL_USER.logOut();
             const response = await this.login(username, password);
-            if (response.url === this.MAL_LOGIN_URL){
+            if (response.url === this.MAL_LOGIN_URL) {
                 App.loadLoginModal(username, password);
-                (window as any).displayToast({title: "Please login to MAL again", body: "For some reason MAL needs users to sign in every once in a while..... So please do"})
+                (window as any).displayToast({ title: "Please login to MAL again", body: "For some reason MAL needs users to sign in every once in a while..... So please do" })
             }
             else {
                 Consts.setMALUser(new User(username, password, undefined, true));
                 await MALUtils.getUserAnimeList(Consts.MAL_USER);
                 Consts.setMALUser(Consts.MAL_USER);
-                return this.updateAnime(anime, { episodes, status, score }, reloginWhenFailure);
+                return this.updateAnime(anime, { episodes, status, score }, false);
             }
         }
         return isOk;
@@ -223,9 +245,9 @@ export default class MALUtils {
             status = downloadedItem.animeEntry.totalEpisodes === episode ? MALStatuses.Completed : MALStatuses.Watching,
             ok: boolean = true;
         if (!downloadedItem.animeEntry.myMalStatus)
-            ok = await MALUtils.addAnime(downloadedItem.animeEntry as AnimeEntry & { malId: Number })
+            ok = await MALUtils.addAnime(downloadedItem.animeEntry as AnimeEntry & HasMalId)
         if (!ok) return ok;
-        ok = await MALUtils.updateAnime(downloadedItem.animeEntry as AnimeEntry & { malId: Number }, { episodes: episode, status });
+        ok = await MALUtils.updateAnime(downloadedItem.animeEntry as AnimeEntry & HasMalId, { episodes: episode, status });
         Consts.MAL_USER.animeList.loadAnime(downloadedItem.animeEntry);
         Consts.setMALUser(Consts.MAL_USER);
         return ok;
@@ -283,9 +305,44 @@ export default class MALUtils {
         });
     }
     static async animeReviews(anime: AnimeEntry & HasMalId): Promise<Reviews | undefined> {
-        let data = await mal.findAnime(anime.malId, "reviews");
+        const data = await mal.findAnime(anime.malId, "reviews");
+        data.reviews.forEach((review: any) => {
+            review.date = new Date(review.date);
+        });
         return data;
     }
+    static async animeRecommandation(anime: AnimeEntry & HasMalId): Promise<AnimeRecommandation[] | void> {
+        const data = await fetch(`https://myanimelist.net/anime/${anime.malId}/asd/userrecs`).then(ele => ele.text()),
+            html = document.createElement("html");
+        html.innerHTML = data;
+        const recommandations: AnimeRecommandation[] = [...html.querySelectorAll(".js-scrollfix-bottom-rel > .borderClass")].map(ele => {
+            const recommandedAnimeId = Number(ele.querySelector("a")?.href.match(/(?<=\/)[0-9]+(?=\/)/g));
+            return {
+                animeRecommanded: new AnimeEntry({
+                    malId: recommandedAnimeId,
+                    imageURL: (ele.querySelector("a > img[srcset]") as any)?.src,
+                    name: ele.querySelector("td:nth-child(2) > div > a")?.textContent ?? ""
+                }),
+                recommandationEntries: [...ele.querySelectorAll(".borderClass")].map(ele => {
+                    return {
+                        recommandedUsername: ele.children[1].querySelector("a[href*='/profile/']")?.innerHTML ?? "",
+                        recommandedText: ele.children[0].textContent ?? ""
+                    };
+                })
+            }
+        });
+        return recommandations;
+    }
+}
+
+interface RecommandationEntry {
+    recommandedUsername: string;
+    recommandedText: string;
+}
+
+interface AnimeRecommandation {
+    animeRecommanded: AnimeEntry;
+    recommandationEntries: RecommandationEntry[];
 }
 
 export interface ForumTopic {
@@ -340,4 +397,3 @@ class ForumMessage {
         this.id = id;
     }
 }
-(window as any).MALUtils = MALUtils;

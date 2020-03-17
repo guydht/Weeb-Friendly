@@ -5,13 +5,13 @@ import DownloadedItem from "../../classes/DownloadedItem";
 import MovableComponent from "../../components/MovableComponent";
 import VideoPlayer from "../../components/VideoPlayer";
 import styles from "../../css/pages/WatchPlayer.module.css";
-import { Confirm } from "../../utils/general";
+import { Confirm, hasInternet } from "../../utils/general";
 import MALUtils from "../../utils/MAL";
 import AnimeInfo from "../AnimeInfo";
 
 export default class Watch extends Component<{ downloadedItem: DownloadedItem }> {
 
-    static UPDATE_ANIME_PROGRESS_THRESHOLD = 0.9;
+    static UPDATE_ANIME_PROGRESS_THRESHOLD = 0.95;
     wantsToUpdateInMAL = true;
 
     state: {
@@ -38,33 +38,39 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
         this.props.downloadedItem.animeEntry.syncGet();
         const progressFromLocalStorage = () => {
             let obj = JSON.parse(localStorage.getItem("videoLastTime") || "{}"),
-                relevant = obj[this.props.downloadedItem.fileName];
+                relevant = obj[this.props.downloadedItem.episodeName];
             if (relevant)
                 return relevant[1].progress;
             return 0;
         }
-        this.checkForProgressInterval = setInterval(() => {
-            let current = progressFromLocalStorage();
-            if (current <= Watch.UPDATE_ANIME_PROGRESS_THRESHOLD)
-                this.wantsToUpdateInMAL = true;
-            if (this.wantsToUpdateInMAL && current > Watch.UPDATE_ANIME_PROGRESS_THRESHOLD) {
-                this.wantsToUpdateInMAL = false;
-                Confirm(`Do you want to update ${this.props.downloadedItem.fileName} in MAL?`, (ok: boolean) => {
-                    if (ok) {
+        if (this.props.downloadedItem.animeEntry.malId)
+            this.checkForProgressInterval = setInterval(() => {
+                let current = progressFromLocalStorage();
+                if (current <= Watch.UPDATE_ANIME_PROGRESS_THRESHOLD)
+                    this.wantsToUpdateInMAL = true;
+                if (this.wantsToUpdateInMAL && current > Watch.UPDATE_ANIME_PROGRESS_THRESHOLD &&
+                    this.props.downloadedItem.episodeData.episodeNumber !== this.props.downloadedItem.animeEntry.myWatchedEpisodes) {
+                    this.wantsToUpdateInMAL = false;
+                    const updateEpisodeInMal = () => {
                         MALUtils.UpdateWatchedEpisode(this.props.downloadedItem).then(ok => {
                             ok ? (window as any).displayToast({
                                 title: "Anime Updated Successfully",
-                                body: `Successfully updated ${this.props.downloadedItem.fileName} in MAL!`
-                            }) : (window as any).displayToast({
+                                body: `Successfully updated ${this.props.downloadedItem.episodeName} in MAL!`
+                            }) : hasInternet() && (window as any).displayToast({
                                 title: "Failed updating Anime",
-                                body: `Failed updating ${this.props.downloadedItem.fileName} in MAL! Try logging in again!`
+                                body: `Failed updating ${this.props.downloadedItem.episodeName} in MAL! Try logging in again!`
                             });
                             (window as any).reloadPage();
-                        })
+                        });
                     }
-                })
-            }
-        }, 500) as unknown as number;
+                    if (Consts.AUTO_UPDATE_IN_MAL)
+                        updateEpisodeInMal();
+                    else
+                        Confirm(`Do you want to update ${this.props.downloadedItem.episodeName} in MAL?`, (ok: boolean) => {
+                            if (ok) updateEpisodeInMal()
+                        });
+                }
+            }, 500) as unknown as number;
     }
 
     componentWillUnmount() {
@@ -97,10 +103,8 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                 showingVideo: true
             });
         }
-        if (prevProps.downloadedItem.fileName !== this.props.downloadedItem.fileName){
+        if (prevProps.downloadedItem.absolutePath !== this.props.downloadedItem.absolutePath)
             this.wantsToUpdateInMAL = true;
-            console.log("changed video from", prevProps.downloadedItem, "to", this.props.downloadedItem)
-        }
     };
     render() {
         const hide = (e: React.MouseEvent) => {
@@ -141,8 +145,7 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                     downloadedItem={this.props.downloadedItem}
                     as={Jumbotron}
                     className={styles.container}
-                    src={(this.props.downloadedItem as any).videoSrc || Consts.FILE_URL_PROTOCOL + this.props.downloadedItem.absolutePath}
-                    name={this.props.downloadedItem.fileName}>
+                    src={(this.props.downloadedItem as any).videoSrc || Consts.FILE_URL_PROTOCOL + this.props.downloadedItem.absolutePath}>
                     {
                         this.props.downloadedItem.animeEntry && this.props.downloadedItem.animeEntry.malId && (
                             <AnimeInfo
