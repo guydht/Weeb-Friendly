@@ -5,7 +5,7 @@ import { LazyLoadComponent } from "react-lazy-load-image-component";
 import Consts from "../classes/Consts";
 import { Sources } from "../utils/torrents";
 
-export default class ChooseSource extends Component<{ contentComponent?: ReactElement, render?: (source: Sources) => ReactElement } & TabContainerProps> {
+export default class ChooseSource extends Component<{ contentComponent?: ReactElement, render?: (source: Sources) => ReactElement, lazyLoad?: boolean } & TabContainerProps> {
 
     state: { currentSource: Sources } = {
         currentSource: Consts.SOURCE_PREFERENCE[0]
@@ -37,13 +37,18 @@ export default class ChooseSource extends Component<{ contentComponent?: ReactEl
                 </Nav>
                 <Tab.Content>
                     {
-                        Consts.SOURCE_PREFERENCE.map(source =>
-                            <Tab.Pane eventKey={source} key={source}>
-                                <LazyLoadComponent>
-                                    {
+                        Consts.SOURCE_PREFERENCE.map((source, index) =>
+                            <Tab.Pane eventKey={source} key={index}>
+                                {
+                                    this.props.lazyLoad && index !== 0 ?
+                                        <LazyLoadComponent>
+                                            {
+                                                this.props.render ? this.props.render(source) : React.cloneElement(contentComponent as any, { source })
+                                            }
+                                        </LazyLoadComponent>
+                                        :
                                         this.props.render ? this.props.render(source) : React.cloneElement(contentComponent as any, { source })
-                                    }
-                                </LazyLoadComponent>
+                                }
                             </Tab.Pane>
                         )
                     }

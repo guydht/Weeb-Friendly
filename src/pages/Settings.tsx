@@ -2,11 +2,11 @@ import React, { Component } from "react";
 import { Col, Container, FormCheck, Jumbotron, Row } from "react-bootstrap";
 //@ts-ignore
 import Sortable from "react-sortablejs";
+import { ThumbnailManager } from "../classes/AnimeStorage";
 import Consts from "../classes/Consts";
 import changableTextStyles from "../css/components/ChangableText.module.css";
 import styles from "../css/pages/Settings.module.css";
 import { Sources } from "../utils/torrents";
-import { ThumbnailManager } from "../classes/AnimeStorage";
 
 export default class Settings extends Component {
     render() {
@@ -72,6 +72,30 @@ export default class Settings extends Component {
                                 label="" custom />
                         </Col>
                     </Row>
+                    <Row className="mb-5">
+                        <Col>Auto download new episodes of shows I'm watching</Col>
+                        <Col>
+                            <FormCheck
+                                className={styles.bigSwitch}
+                                type="switch"
+                                id="autoDownloadNewEpisodes"
+                                checked={Consts.AUTO_DOWNLOAD_NEW_EPISODES_OF_WATCHED_SERIES}
+                                onChange={(e: React.ChangeEvent) => this.setAutoDownloadNewEpisode((e.target as HTMLInputElement).checked)}
+                                label="" custom />
+                        </Col>
+                    </Row>
+                    <Row className="mb-5">
+                        <Col>Auto update MAL when finishing an episode (set as "watched" when you've watched 95% of the episode) </Col>
+                        <Col>
+                            <FormCheck
+                                className={styles.bigSwitch}
+                                type="switch"
+                                id="autoUpdateInMal"
+                                checked={Consts.AUTO_UPDATE_IN_MAL}
+                                onChange={(e: React.ChangeEvent) => this.setAutoUpdateInMal((e.target as HTMLInputElement).checked)}
+                                label="" custom />
+                        </Col>
+                    </Row>
                 </Container>
             </Jumbotron>
         );
@@ -88,8 +112,16 @@ export default class Settings extends Component {
         Consts.setMiddleClick(activated);
         this.forceUpdate();
     }
-    setThumbnailStorage(activated: boolean){
+    setThumbnailStorage(activated: boolean) {
         ThumbnailManager.setThumbnailStorageState(activated);
+        this.forceUpdate();
+    }
+    setAutoUpdateInMal(activated: boolean) {
+        Consts.setAutoUpdateInMal(activated);
+        this.forceUpdate();
+    }
+    setAutoDownloadNewEpisode(activated: boolean) {
+        Consts.setAutoDownloadNewEpisodeOfWatchedSeries(activated);
         this.forceUpdate();
     }
 }

@@ -1,6 +1,5 @@
 import { Seasons } from "jikants/dist/src/interfaces/season/Season";
 import moment from "moment";
-import AnimeEntry from "../classes/AnimeEntry";
 import DownloadedItem from "../classes/DownloadedItem";
 
 function levenshteinDistance(s1: string, s2: string): number {
@@ -55,17 +54,17 @@ function stringCompare(givenString: string, toCompare: string): number {
 function getCurrentSeason(): Seasons {
     let month = new Date().getMonth();
     switch (month) {
-        case 12:
+        case 11:
+        case 0:
         case 1:
-        case 2:
             return 'winter';
+        case 2:
         case 3:
         case 4:
-        case 5:
             return 'spring';
+        case 5:
         case 6:
         case 7:
-        case 8:
             return 'summer';
     }
     return "fall";
@@ -81,12 +80,12 @@ class CacheLocalStorage {
     cacheTTLDays: number;
     storage: any;
     stoarge: any;
-    constructor(storageKey: string, cacheTTLDays: number, initialStorage: any) {
+    constructor(storageKey: string, cacheTTLDays: number = CacheLocalStorage.DEFAULT_TTL_DAYS, initialStorage: any = JSON.parse(localStorage.getItem(storageKey) || "false") || {}) {
         if (!storageKey)
             throw new Error("You must give me a valid key to store in localStorage!");
         this.storageKey = storageKey
-        this.cacheTTLDays = cacheTTLDays || CacheLocalStorage.DEFAULT_TTL_DAYS;
-        this.storage = initialStorage || JSON.parse(localStorage.getItem(storageKey) || "false") || {};
+        this.cacheTTLDays = cacheTTLDays;
+        this.storage = initialStorage;
         for (let key in this.storage)
             this.storage[key][0] = new Date(this.storage[key][0]);
     }
@@ -130,13 +129,11 @@ let fs = window.require("fs"),
                 if (stat.isDirectory())
                     results = results.concat(walkDir(file));
                 else {
-                    let withoutExtension = filename.replace(path.extname(filename), ""),
-                        animeEntry = new AnimeEntry({ name: withoutExtension.substring(0, withoutExtension.lastIndexOf(" Episode ")) || withoutExtension });
+                    const withoutExtension = filename.replace(path.extname(filename), "");
                     results.push(new DownloadedItem(
                         file,
                         withoutExtension,
-                        stat.birthtime,
-                        animeEntry
+                        stat.birthtime
                     ));
                 }
             });

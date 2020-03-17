@@ -1,10 +1,11 @@
 import React, { Component } from "react";
-import { Carousel, Table } from "react-bootstrap";
+import { Carousel } from "react-bootstrap";
 //@ts-ignore
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { Link } from "react-router-dom";
 import AnimeList from "../../classes/AnimeList";
 import Consts from "../../classes/Consts";
+import downloadedAnimeStyle from "../../css/pages/DownloadedAnime.module.css";
 import styles from "../../css/pages/SeasonalCarousel.module.css";
 import { chunkArray } from "../../utils/general";
 import MALUtils from "../../utils/MAL";
@@ -31,7 +32,7 @@ export default class CurrentlyWatching extends Component {
 
     render() {
         return (
-            <div>
+            <div className="mt-5">
                 <h1>
                     Currently Watching:
                     </h1>
@@ -42,37 +43,28 @@ export default class CurrentlyWatching extends Component {
                             .map((arrayChunk, i) => {
                                 return (
                                     <Carousel.Item key={i} className={styles.carousel}>
-                                        <Table responsive={false} className={styles.table}>
-                                            <tbody>
-                                                {
-                                                    chunkArray(arrayChunk, SeasonalCarousel.GRID_SIZE_X).map(chunk => {
-                                                        return (
-                                                            <tr key={chunk[0].name}>
-                                                                {
-                                                                    chunk.map(seasonalAnime => {
-                                                                        return <td key={seasonalAnime.name} className={styles.td}>
-                                                                            <Link to={{
-                                                                                pathname: "/anime/" + seasonalAnime.malId,
-                                                                                state: {
-                                                                                    animeEntry: seasonalAnime
-                                                                                }
-                                                                            }}
-                                                                                className={styles.link}>
-                                                                                <LazyLoadImage src={seasonalAnime.imageURL}
-                                                                                    alt={seasonalAnime.name}
-                                                                                    className={styles.image} />
-                                                                                <div className={styles.cover}></div>
-                                                                                <span className={styles.title}>{seasonalAnime.name}</span>
-                                                                            </Link>
-                                                                        </td>
-                                                                    })
+                                        <div className={downloadedAnimeStyle.grid}>
+                                            {
+                                                arrayChunk.map(seasonalAnime => {
+                                                    return (
+                                                        <div key={seasonalAnime.name}>
+                                                            <Link to={{
+                                                                pathname: "/anime/" + seasonalAnime.malId,
+                                                                state: {
+                                                                    animeEntry: seasonalAnime
                                                                 }
-                                                            </tr>
-                                                        );
-                                                    })
-                                                }
-                                            </tbody>
-                                        </Table>
+                                                            }}
+                                                                className={styles.link}>
+                                                                <LazyLoadImage src={seasonalAnime.imageURL}
+                                                                    className={styles.image} />
+                                                                <div className={styles.cover}></div>
+                                                                <span className={styles.title}>{seasonalAnime.name}</span>
+                                                            </Link>
+                                                        </div>
+                                                    )
+                                                })
+                                            }
+                                        </div>
                                     </Carousel.Item>
                                 );
                             })

@@ -11,7 +11,6 @@ export default class AnimeEntry {
         score = undefined,
         malUrl = undefined,
         genres = undefined,
-        synopsis = undefined,
         totalEpisodes = undefined,
         startDate = undefined,
         endDate = undefined,
@@ -53,7 +52,6 @@ export default class AnimeEntry {
         this.malUrl = malUrl;
         this.genres = new Set(genres);
         this.synonyms = new Set(Array.from(synonyms || []).sort());
-        this.synopsis = synopsis;
         this.totalEpisodes = totalEpisodes;
         this.startDate = startDate ? new Date(startDate) : startDate;
         this.endDate = endDate ? new Date(endDate) : endDate;
@@ -73,7 +71,6 @@ export default class AnimeEntry {
     score?: number;
     malUrl?: string;
     genres?: Set<String>;
-    synopsis?: string;
     totalEpisodes?: number;
     startDate?: Date;
     endDate?: Date;
@@ -91,7 +88,6 @@ export default class AnimeEntry {
             imageRequest.pipe(writeStream);
             writeStream.on("finish", () => {
                 ThumbnailManager.SAVED_THUMBNAILS.add(this.malId!);
-                ThumbnailManager.setThumbnailStorage();
             });
         }
         return ThumbnailManager.SAVED_THUMBNAILS_STATE && this.malId && ThumbnailManager.SAVED_THUMBNAILS.has(this.malId) ?
@@ -105,7 +101,6 @@ export default class AnimeEntry {
             imageRequest.pipe(writeStream);
             writeStream.on("finish", () => {
                 ThumbnailManager.SAVED_THUMBNAILS.add(this.malId!);
-                ThumbnailManager.setThumbnailStorage();
             });
         }
     }
@@ -139,6 +134,7 @@ export default class AnimeEntry {
     }
 
     seenEpisode(episodeNumber: number) {
+        this.syncGet();
         return this.myWatchedEpisodes !== undefined && this.myWatchedEpisodes >= episodeNumber;
     }
 
@@ -149,7 +145,8 @@ export default class AnimeEntry {
             this.myMalStatus === MALStatuses["Plan To Watch"]
         );
     }
-    clearUserData(){
+
+    clearUserData() {
         delete this.myMalRating;
         delete this.myMalStatus;
         delete this.myRewatchAmount;

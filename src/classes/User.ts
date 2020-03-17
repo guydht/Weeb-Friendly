@@ -30,8 +30,10 @@ export default class User {
             }),
             method: "POST"
         }).then(() => {
-            for (const animeEntry of Object.values(Consts.MAL_USER.animeList.all))
-                animeEntry.clearUserData();
+            for (const animeEntry of Object.values(Consts.MAL_USER.animeList.all)){
+                animeEntry.syncGet().clearUserData();
+                animeEntry.syncPut();
+            }
             Consts.setMALUser(new User());
             (window as any).reloadPage();
         });

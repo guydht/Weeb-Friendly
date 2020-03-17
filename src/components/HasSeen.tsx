@@ -11,7 +11,7 @@ export default class HasSeen extends Component<HasSeenProps & React.ComponentPro
         const props = { ...this.props };
         delete props.hasSeen;
         return (
-            this.props.hasSeen && <OverlayTrigger trigger="hover" placement="auto" overlay={
+            this.props.hasSeen ? <OverlayTrigger trigger="hover" placement="auto" overlay={
                 <Tooltip id="">Seen This Episode</Tooltip>
             }>
                 <ClosedEyelid {...props} style={{
@@ -24,7 +24,7 @@ export default class HasSeen extends Component<HasSeenProps & React.ComponentPro
                     borderRadius: "70%",
                     background: "rgba(0, 0, 0, 0.5)"
                 }} />
-            </OverlayTrigger>
+            </OverlayTrigger> : null
         )
     }
 }
