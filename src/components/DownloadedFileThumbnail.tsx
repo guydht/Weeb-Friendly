@@ -35,16 +35,13 @@ export default withRouter(class DownloadedFileThumbnail extends Component<Downlo
                         className={styles.thumbnail}
                     />
                 </LazyLoadComponent>
-                <div className={styles.cover}>
-                    {
-                        this.props.noDeleteButton !== true &&
-                        <span
-                            style={{ position: "absolute", zIndex: 4, right: 0, top: 0, cursor: "pointer" }}
-                            className="mr-2 mt-1 p-1" onClick={e => this.confirmDeletion() && e.stopPropagation()}>
-                            <span aria-hidden="true">×</span>
-                        </span>
-                    }
-                </div>
+                {
+                    this.props.noDeleteButton !== true &&
+                    <span
+                        className={"mr-2 mt-1 p-1 " + styles.deleteButton} onClick={e => this.confirmDeletion() && e.stopPropagation()}>
+                        <span aria-hidden="true">×</span>
+                    </span>
+                }
                 <span className={styles.title}>{downloadedItem.episodeName}</span>
             </div>
         )

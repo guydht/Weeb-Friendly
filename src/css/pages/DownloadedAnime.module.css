@@ -45,13 +45,11 @@
     grid-gap: .5rem;
 }
 
-
-
-.grid > *:hover {
+.grid>*:hover {
     background: rgba(0, 0, 0, 0.1) !important;
 }
 
-.grid > *, .gridElement {
+.grid>*, .gridElement {
     height: 100%;
     transition: background-color .1s;
     position: relative;
@@ -103,4 +101,12 @@
 
 .notSeenEpisode {
     color: rgb(255, 120, 120) !important;
+}
+
+.deleteButton {
+    position: absolute;
+    z-index: 5;
+    right: 0;
+    top: 0;
+    cursor: pointer;
 }
