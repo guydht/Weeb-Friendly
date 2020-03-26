@@ -22,7 +22,7 @@ import SeasonalCarousel from "./SeasonalCarousel";
 
 class DisplayTorrentEntry extends Component<{ searchResult: SearchResult; }> {
     render() {
-        const downloadStatus = this.props.searchResult.downloadStatus();
+        const downloadStatus = this.props.searchResult.downloadStatus;
         if (this.props.searchResult.animeEntry.malId)
             return (
                 <div className="position-relative">
@@ -119,7 +119,7 @@ class DisplayLatestTorrents extends Component<{ source?: Sources }>{
     autoDownloadNewEpisodes() {
         this.state.torrents.forEach(torrentEntry => {
             if ((torrentEntry.animeEntry.myMalStatus === MALStatuses.Watching || torrentEntry.animeEntry.myMalStatus === MALStatuses["Plan To Watch"])
-                && !torrentEntry.seenThisEpisode() && torrentEntry.downloadStatus() === DownloadStatus.notDownloaded
+                && !torrentEntry.seenThisEpisode() && torrentEntry.downloadStatus === DownloadStatus.notDownloaded
                 && torrentEntry.episodeData.qualities[0] === Consts.QUALITY_PREFERENCE[0])
                 DisplayTorrentEntry.downloadNow(torrentEntry, false);
         });

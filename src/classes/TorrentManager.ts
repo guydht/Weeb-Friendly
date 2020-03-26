@@ -1,5 +1,4 @@
 import { Torrent } from "webtorrent";
-import { walkDir } from "../utils/general";
 import Consts from "./Consts";
 
 const path = window.require("path"),
@@ -68,7 +67,7 @@ export default class TorrentManager {
         return Consts.SAVED_TORRENTS;
     }
     static remove(torrent: Torrent) {
-        if (torrent.files){
+        if (torrent.files) {
             torrent.files.forEach(file => {
                 let pathName = path.join(torrent.path, file.path);
                 fs.unlink(pathName);
@@ -79,7 +78,7 @@ export default class TorrentManager {
             torrent.destroy();
         Consts.removeFromSavedTorrents(torrent);
         const indexInWaiting = TorrentManager.waitingForDownload.findIndex(waiting => waiting.magnetURI === torrent.magnetURI);
-        if(indexInWaiting !== -1)
+        if (indexInWaiting !== -1)
             TorrentManager.waitingForDownload.splice(indexInWaiting, 1);
     }
     static pause(torrent: Torrent) {

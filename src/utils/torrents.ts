@@ -124,7 +124,7 @@ function siResultToSearchResult(source: Sources, siResult: any): SearchResult {
     result.nbDownload = Number(siResult.nbDownload);
     result.seeders = Number(siResult.seeders);
     result.timestamp = new Date(siResult.timestamp);
-    result.episodeData = episodeDataFromSource(source, result.name)!;
+    result.episodeData = episodeDataFromFilename(result.name, source)!;
     result.animeEntry = new AnimeEntry({
         name: result.episodeData.seriesName
     });
@@ -149,7 +149,7 @@ function pantsuResultToSearchResult(source: Sources, pantsuResult: any) {
     result.leechers = pantsuResult.leechers;
     result.timestamp = new Date(pantsuResult.date);
     result.nbDownload = pantsuResult.completed;
-    result.episodeData = episodeDataFromSource(source, result.name)!;
+    result.episodeData = episodeDataFromFilename(result.name, source)!;
     result.animeEntry = new AnimeEntry({
         name: result.episodeData.seriesName
     });
@@ -157,8 +157,9 @@ function pantsuResultToSearchResult(source: Sources, pantsuResult: any) {
 }
 (window as any).torrentUtils = TorrentUtils;
 
-export function episodeDataFromSource(source: Sources, name: string): EpisodeData | undefined {
+export function episodeDataFromFilename(name: string, source?: Sources): EpisodeData | undefined {
     let episodeData;
+    source = source ?? findSourceFromFilename(name);
     switch (source) {
         case Sources.HorribleSubs:
             episodeData = {
@@ -184,6 +185,17 @@ export function episodeDataFromSource(source: Sources, name: string): EpisodeDat
             };
     }
     return episodeData;
+}
+
+export function findSourceFromFilename(fileName: string): Sources {
+    const lowerCased = fileName.toLowerCase();
+    if (lowerCased.startsWith("[horriblesubs]"))
+        return Sources.HorribleSubs;
+    if (lowerCased.startsWith("[erai-raws]"))
+        return Sources["Erai-raws"];
+    if (lowerCased.startsWith("[ohys-raws]"))
+        return Sources.Ohys;
+    return Sources.Any;
 }
 
 export enum DownloadStatus {
@@ -213,8 +225,8 @@ export class SearchResult {
     seenThisEpisode() {
         return this.animeEntry && !isNaN(this.episodeData.episodeNumber) && this.animeEntry.seenEpisode(this.episodeData.episodeNumber);
     }
-    downloadStatus(): DownloadStatus {
-        const compareEpisodeData = (downloadedItem: DownloadedItem) => {
+    get downloadStatus(): DownloadStatus {
+        const compareEpisodeData = (downloadedItem: Pick<DownloadedItem, "episodeData">) => {
             return downloadedItem.episodeData.seriesName === this.episodeData.seriesName &&
                 downloadedItem.episodeData.episodeNumber === this.episodeData.episodeNumber;
         },
@@ -222,8 +234,14 @@ export class SearchResult {
                 return this.animeEntry.malId === downloadedItem.animeEntry.malId &&
                     downloadedItem.episodeData.episodeNumber === this.episodeData.episodeNumber;
             },
+            compareMaybeEpisodeData = (episodeData: EpisodeData | undefined) => {
+                return episodeData && compareEpisodeData({ episodeData });
+            },
             isDownloaded = Consts.DOWNLOADED_ITEMS.some(compareAnimeEntry) || Consts.DOWNLOADED_ITEMS.some(compareEpisodeData),
-            isDownloading = TorrentManager.getAll().some(torrent => torrent.name === this.name || torrent.files?.some(torrentFile => torrentFile.name === this.name))
+            isDownloading = TorrentManager.getAll().some(torrent => {
+                return compareMaybeEpisodeData(episodeDataFromFilename(torrent.name)) ||
+                    torrent.files?.some(file => compareMaybeEpisodeData(episodeDataFromFilename(file.name)));
+            });
         return isDownloaded ? DownloadStatus.downloaded : isDownloading ? DownloadStatus.currentlyDownloading : DownloadStatus.notDownloaded;
     }
 }
