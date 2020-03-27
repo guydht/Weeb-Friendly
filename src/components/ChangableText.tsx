@@ -2,7 +2,15 @@ import React, { ChangeEvent, Component, KeyboardEvent } from "react";
 import { FormControl } from "react-bootstrap";
 import styles from "../css/components/ChangableText.module.css";
 import CloseButton from "./CloseButton";
-export default class ChangableText extends Component<{ text: string, onChange?: (value: string) => void, removeButton?: boolean, removeButtonTooltipText?: string } & React.DetailedHTMLProps<React.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>> {
+
+export interface ChangableTextProps {
+    text: string;
+    onChange?: (value: string) => void;
+    removeButton?: boolean;
+    removeButtonTooltipText?: string;
+};
+
+export default class ChangableText extends Component<ChangableTextProps & React.DetailedHTMLProps<React.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>> {
 
     state = {
         isChanging: false,
@@ -59,7 +67,7 @@ export default class ChangableText extends Component<{ text: string, onChange?: 
     }
 
     onBlur() {
-        setTimeout(() => {
+        setImmediate(() => {
             if (!this.deleted)
                 this.submitText();
         });

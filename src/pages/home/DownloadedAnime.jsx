@@ -1,8 +1,9 @@
 import React, { Component } from "react";
-import { Button, ButtonGroup, Container, FormControl, InputGroup, Row } from "react-bootstrap";
+import { Button, ButtonGroup, Container, InputGroup, Row } from "react-bootstrap";
 import Form from "react-bootstrap/FormGroup";
 import { withRouter } from "react-router";
 import Consts from "../../classes/Consts";
+import ChangableText from "../../components/ChangableText";
 import DownloadedFileThumbnail from "../../components/DownloadedFileThumbnail";
 import styles from "../../css/pages/DownloadedAnime.module.css";
 import { waitFor } from "../../jsHelpers/jifa";
@@ -18,11 +19,11 @@ export class DisplayDownloadedAnime extends Component {
                     this.props.downloadedItems.map(downloadedItem => {
                         return (
                             <DownloadedFileThumbnail {...props} key={downloadedItem.absolutePath} downloadedItem={downloadedItem} />
-                        )
+                        );
                     })
                 }
             </div>
-        )
+        );
     }
 }
 
@@ -36,16 +37,17 @@ export default withRouter(class DownloadedAnime extends Component {
                 displayName: 'File Name',
                 active: false,
                 reverse: true,
-                sortFunction(a, b) { return a.episodeName.localeCompare(b.episodeName) }
+                sortFunction(a, b) { return a.episodeName.localeCompare(b.episodeName); }
             },
             {
                 displayName: 'Download Time',
                 active: true,
                 default: true,
                 reverse: false,
-                sortFunction(a, b) { return b.lastUpdated - a.lastUpdated }
+                sortFunction(a, b) { return b.lastUpdated - a.lastUpdated; }
             }
-        ]
+        ],
+        filters: []
     };
     componentDidMount() {
         if (Consts.DOWNLOADED_ITEMS.every(ele => !ele.malId) || MALUtils.storageSize === 0)
@@ -75,12 +77,30 @@ export default withRouter(class DownloadedAnime extends Component {
                                 }
                             </ButtonGroup>
                             <Form style={{ float: "right", marginBottom: 0 }}>
-                                <FormControl
-                                    placeholder="Filter"
-                                    ref={this.filterElement}
-                                    defaultValue={Consts.DOWNLOADED_ITEMS_FILTER}
-                                    onChange={() => this.setState({})}
-                                    type="text" />
+                                {
+                                    Consts.DOWNLOADED_ITEMS_FILTER.map((filter, i) => {
+                                        return (
+                                            <ChangableText text={filter} key={i + filter}
+                                                onChange={text => {
+                                                    if (text.trim() === "")
+                                                        Consts.DOWNLOADED_ITEMS_FILTER.splice(i, 1);
+                                                    else
+                                                        Consts.DOWNLOADED_ITEMS_FILTER[i] = text;
+                                                    Consts.setDownloadedItemsFilter(Consts.DOWNLOADED_ITEMS_FILTER);
+                                                    this.forceUpdate();
+                                                }} />
+                                        );
+                                    })
+                                }
+                                <ChangableText text="Add Filter" removeButton={false}
+                                    key={Consts.DOWNLOADED_ITEMS_FILTER.length}
+                                    onClick={e => e.target.innerHTML = ""}
+                                    onChange={text => {
+                                        if (text === "") return;
+                                        Consts.DOWNLOADED_ITEMS_FILTER.push(text);
+                                        Consts.setDownloadedItemsFilter(Consts.DOWNLOADED_ITEMS_FILTER);
+                                        this.forceUpdate();
+                                    }} />
                             </Form>
                         </InputGroup>
                     </Row>
@@ -89,7 +109,7 @@ export default withRouter(class DownloadedAnime extends Component {
                     </Row>
                 </Container>
             </div>
-        )
+        );
     }
     setSort(propIndex) {
         let options = this.state.sortOptions.map((prop, i) => {
@@ -105,7 +125,7 @@ export default withRouter(class DownloadedAnime extends Component {
         });
         this.setState({
             sortOptions: options
-        })
+        });
     }
     get sortedItems() {
         const current = this.currentOption;
