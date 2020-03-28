@@ -269,7 +269,10 @@ function asd(AnimeName, container, videoURL) {
                 wrapper.style.width = "100%";
                 ["top", "left", "right", "bottom"].forEach(prop => wrapper.style[prop] = "0px");
                 wrapper.style.border = "none";
-                finishFullscreenExitTimeout = setTimeout(() => fullScreenRect = wrapper.getBoundingClientRect().toJSON(), 500);
+                finishFullscreenExitTimeout = setTimeout(() => {
+                    wrapper.scrollIntoView();
+                    fullScreenRect = wrapper.getBoundingClientRect().toJSON();
+                }, 500);
                 container.style.zIndex = 3;
             }, 1);
             wrapper.classList.add("fullscreened");

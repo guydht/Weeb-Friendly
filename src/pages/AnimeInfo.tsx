@@ -152,7 +152,7 @@ export default class AnimeInfo extends Component<{ anime?: AnimeEntry } & React.
                                         <Tab eventKey={name} title={name} mountOnEnter={true} key={i}>
                                             <LazyLoadComponent>
                                                 <Container>
-                                                    <MyComponent anime={this.state.anime} info={this.state.info || { ...emptyInfo } as any} />
+                                                    <MyComponent key={this.state.anime.malId} anime={this.state.anime} info={this.state.info || { ...emptyInfo } as any} />
                                                 </Container>
                                             </LazyLoadComponent>
                                         </Tab>

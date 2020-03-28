@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { Button, ButtonGroup, Col, Container, ListGroup, ProgressBar, Row } from "react-bootstrap";
 import { Torrent } from "webtorrent";
-import Consts from "../../classes/Consts";
 import DownloadedItem from "../../classes/DownloadedItem";
 import TorrentManager from "../../classes/TorrentManager";
 import CloseButton from "../../components/CloseButton";
@@ -143,7 +142,7 @@ export default class DownloadManager extends Component {
     currentServers = new Set();
     playTorrent(torrent: Torrent) {
         if (!torrent.files.length) return (window as any).displayToast({ title: "Couldn't start playnig torrent", body: "Can't find downloaded files!" })
-        const url = Consts.FILE_URL_PROTOCOL + torrent.path + "/" + torrent.files[0].path,
+        const url = torrent.path + "/" + torrent.files[0].path,
             videoItem = new DownloadedItem(url, torrent.files[0].name, new Date());
         videoItem.startPlaying();
     }

@@ -14,8 +14,102 @@ import changableTextStyles from "../../css/components/ChangableText.module.css";
 import animeStyles from "../../css/pages/DownloadedAnime.module.css";
 import styles from "../../css/pages/Episodes.module.css";
 import { groupBy } from "../../utils/general";
-import TorrentUtils, { SearchResult, Sources } from "../../utils/torrents";
+import TorrentUtils, { SearchResult, SearchResultExtraInfo, Sources } from "../../utils/torrents";
 import { AnimeInfoProps } from "../AnimeInfo";
+
+class CustomPopover extends Component<{ episode: any, i: number, startDownload: any }> {
+    state: { extraInfo?: SearchResultExtraInfo } = {}
+    async componentDidMount() {
+        this.setState({
+            extraInfo: await TorrentUtils.torrentExtraInfo(this.props.episode.links[this.props.i].page as string)
+        });
+    }
+    render() {
+        const { episode, i, startDownload } = this.props;
+        return (
+            <Popover.Content>
+                <Row className="mb-2">
+                    <Col style={{ minHeight: 0 }}>
+                        <DownloadIcon style={{ cursor: "pointer" }} onClick={() => startDownload(episode.links[i].magnet, episode)} />
+                    </Col>
+                    <Col style={{ minHeight: 0 }}>
+                        <svg viewBox="0 0 56 18" className={styles.svgText}>
+                            <text fill="green">Seeders:</text>
+                        </svg>
+                        <span className={styles.seedersText}>{episode.seedersArr[i]}</span>
+                    </Col>
+                    <Col style={{ minHeight: 0 }}>
+                        <svg viewBox="0 0 56 18" className={styles.svgText}>
+                            <text fill="red">Leechers:</text>
+                        </svg>
+                        <span className={styles.seedersText}>{episode.leechersArr[i]}</span>
+                    </Col>
+                </Row>
+                {
+                    !!this.state.extraInfo?.description &&
+                    <Card className={styles.descriptionContainer}>
+                        <Card.Title>
+                            Description
+                    </Card.Title>
+                        <Card.Body>
+                            {
+                                this.state.extraInfo?.description
+                            }
+                        </Card.Body>
+                    </Card>
+                }
+                {
+                    !!this.state.extraInfo?.fileList.length &&
+                    <Card className={styles.fileListContainer}>
+                        <Card.Title>
+                            Files
+                    </Card.Title>
+                        <Card.Body>
+                            {
+                                this.state.extraInfo?.fileList.map((file, i) => <div key={i}>{file}</div>)
+                            }
+                        </Card.Body>
+                    </Card>
+                }
+                {
+                    (!!this.state.extraInfo?.comments.length &&
+                    <Card className={styles.commentsContainer}>
+                        <Card.Title>
+                            Comments
+                    </Card.Title>
+                        <Card.Body>
+                            {
+                                this.state.extraInfo?.comments.map((comment, i) => {
+                                    return (
+                                        <Row key={i} className={styles.commentBox}>
+                                            <Col md="5">
+                                                <Row>
+                                                    {comment.author}
+                                                </Row>
+                                                <Row>
+                                                    <img className={styles.commenterAvatar} src={comment.authorImage} alt={comment.author} />
+                                                </Row>
+                                            </Col>
+                                            <Col md="7">
+                                                <Row>
+                                                    {comment.date.toLocaleString()}
+                                                </Row>
+                                                <Row>
+                                                    {comment.text}
+                                                </Row>
+                                            </Col>
+                                        </Row>
+                                    )
+                                })
+                            }
+                        </Card.Body>
+                    </Card>)
+                    || <p>No Comments :(</p>
+                }
+            </Popover.Content>
+        )
+    }
+}
 
 export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Sources }>{
 
@@ -101,41 +195,24 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
                                     </Card.Subtitle>
                                     {
                                         !this.downloadedItemOfEpisode(episode) &&
-                                        <ButtonGroup size="sm" className="mt-1">
+                                        <ButtonGroup size="sm" className="mt-1 flex-wrap">
                                             {
                                                 episode.episodeData.qualities.map((quality, i) => {
-                                                    const popover = (
-                                                        <Popover id={"popover-basic-" + quality}>
-                                                            <Popover.Title as="h3">
-                                                                Download {episode.names[i]}:
-                                                        </Popover.Title>
-                                                            <Popover.Content>
-                                                                <Row>
-                                                                    <Col style={{ minHeight: 0 }}>
-                                                                        <DownloadIcon style={{ cursor: "pointer" }} onClick={() => this.startDownload(episode.links[i].magnet, episode)} />
-                                                                    </Col>
-                                                                    <Col style={{ minHeight: 0 }}>
-                                                                        <svg viewBox="0 0 56 18" className={styles.svgText}>
-                                                                            <text fill="green">Seeders:</text>
-                                                                        </svg>
-                                                                        <span className={styles.seedersText}>{episode.seedersArr[i]}</span>
-                                                                    </Col>
-                                                                    <Col style={{ minHeight: 0 }}>
-                                                                        <svg viewBox="0 0 56 18" className={styles.svgText}>
-                                                                            <text fill="red">Leechers:</text>
-                                                                        </svg>
-                                                                        <span className={styles.seedersText}>{episode.leechersArr[i]}</span>
-                                                                    </Col>
-                                                                </Row>
-                                                            </Popover.Content>
-                                                        </Popover>
-                                                    );
+                                                    const startDownload = this.startDownload.bind(this);
                                                     return (
                                                         <OverlayTrigger
                                                             key={i}
-                                                            trigger="focus"
+                                                            trigger="click"
                                                             placement="auto"
-                                                            overlay={popover}>
+                                                            rootClose
+                                                            rootCloseEvent="mousedown"
+                                                            overlay={
+                                                                <Popover id={"popover-basic-" + quality}>
+                                                                    <Popover.Title as="h3">
+                                                                        Download {episode.names[i]}:
+                                                                    </Popover.Title>
+                                                                    <CustomPopover episode={episode} i={i} startDownload={startDownload} />
+                                                                </Popover>}>
                                                             <Button variant="outline-dark">{
                                                                 `${quality}p${episode.episodeTypes[i] ? " - " + episode.episodeTypes[i] : ""}`
                                                             }</Button>
@@ -195,6 +272,9 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
         })
     }
     startDownload(magnetLink: string, episode: SearchResult) {
+        let anime = this.props.anime.syncGet();
+        anime.synonyms.add(episode.episodeData.seriesName);
+        anime.syncPut();
         TorrentManager.add({ magnetURL: magnetLink });
         (window as any).displayToast({
             title: "Download Successfully started",
@@ -202,9 +282,9 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
         });
     }
     confirmDownloadEpisodes([episodeStart, episodeEnd]: number[]) {
-        let episodes = DisplayEpisodes.groupByQuality(this.state.episodes);
+        const episodes = DisplayEpisodes.groupByQuality(this.state.episodes);
         episodes.slice(episodes.length - episodeEnd, episodes.length - episodeStart + 1).forEach(episode => {
-            let qualityOfBiggestPriority = episode.episodeData.qualities.sort((a: number, b: number) => {
+            const qualityOfBiggestPriority = episode.episodeData.qualities.sort((a: number, b: number) => {
                 a = Consts.QUALITY_PREFERENCE.indexOf([...Consts.QUALITY_PREFERENCE].sort((q1, q2) => Math.abs(q1 - a) - Math.abs(q2 - a))[0]);
                 b = Consts.QUALITY_PREFERENCE.indexOf([...Consts.QUALITY_PREFERENCE].sort((q1, q2) => Math.abs(q1 - b) - Math.abs(q2 - b))[0]);
                 return b - a;
@@ -214,13 +294,13 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
         });
     }
     async searchAnime(anime: AnimeEntry, source: Sources = Sources.Any, fetchAll = false): Promise<SearchResult[]> {
-        let episodes = await TorrentUtils.search(anime, fetchAll, source);
-        let groupedBySeries = groupBy(episodes, ['episodeData', 'seriesName']);
-        if (groupedBySeries.length > 0)
-            episodes = groupedBySeries.find(ele => {
-                return anime.synonyms.has(ele[0].episodeData.seriesName);
-            }) || episodes;
-        return episodes.sort((a, b) => b.episodeData.episodeNumber - a.episodeData.episodeNumber);
+        const episodes = await TorrentUtils.search(anime, fetchAll, source);
+        const groupedBySeries = groupBy(episodes, ['episodeData', 'seriesName']).flat().sort((a, b) => {
+            return b.episodeData.episodeNumber - a.episodeData.episodeNumber ||
+                b.episodeData.seriesName.localeCompare(a.episodeData.seriesName) ||
+                b.name.localeCompare(a.name, undefined, { numeric: true });
+        });
+        return groupedBySeries;
     }
     userChoseAnime = (anime: AnimeEntry) => {
         this.props.anime.syncGet();

@@ -22,9 +22,11 @@ export default class Settings extends Component {
                             <Sortable className={styles.backgroundGreenToRed + " py-1"} onChange={(sources: Sources[]) => this.setSourcesPriority(sources)}>
                                 {
                                     Consts.SOURCE_PREFERENCE_ENTRIES.map(([sourceName, source]) => {
-                                        return (
-                                            <span key={source} data-id={source} className={changableTextStyles.textWrapper + " ml-1"}>{sourceName}</span>
-                                        );
+                                        if (source !== Sources.Any) // Special edge casse - I don't want them to change this
+                                            return (
+                                                <span key={source} data-id={source} className={changableTextStyles.textWrapper + " ml-1"}>{sourceName}</span>
+                                            );
+                                        return null;
                                     })
                                 }
                             </Sortable>

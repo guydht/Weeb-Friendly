@@ -5,12 +5,29 @@
     overflow-y: auto;
     overflow-x: hidden;
 }
-.qualities{
+
+.qualities {
     float: right;
 }
-.svgText{
+
+.svgText {
     width: 100%;
 }
-.svgText > text{
+
+.svgText>text {
     transform: translateY(100%);
+}
+
+.commenterAvatar {
+    width: 100%;
+}
+
+.commentsContainer, .fileListContainer, .descriptionContainer {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: .5rem;
+}
+
+.commentBox:not(:last-child) {
+    margin-bottom: 1rem;
 }

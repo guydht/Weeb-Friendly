@@ -13,6 +13,17 @@ export enum Sources {
     Any
 }
 
+export interface SearchResultExtraInfo {
+    description: string;
+    fileList: string[];
+    comments: {
+        text: string,
+        author: string,
+        authorImage: string,
+        date: Date
+    }[];
+}
+
 const siPantsuMapping = {
     [Sources.HorribleSubs]: {
         si: "HorribleSubs",
@@ -30,13 +41,13 @@ const siPantsuMapping = {
 export default class TorrentUtils {
     static async search(anime: AnimeEntry, fetchAll: boolean = false, source: Sources = Sources.Any): Promise<SearchResult[]> {
         switch (source) {
-            case Sources.Any:
-                for (let source of Consts.SOURCE_PREFERENCE) {
-                    let results = await this.searchSource(anime, fetchAll, source);
-                    if (results.length)
-                        return results;
-                }
-                break;
+            //     case Sources.Any:
+            //         for (let source of Consts.SOURCE_PREFERENCE) {
+            //             let results = await this.searchSource(anime, fetchAll, source);
+            //             if (results.length)
+            //                 return results;
+            //         }
+            //         break;
             case Sources.All:
                 let results: SearchResult[] = [];
                 for (let source of Consts.SOURCE_PREFERENCE) {
@@ -46,12 +57,11 @@ export default class TorrentUtils {
             default:
                 return await this.searchSource(anime, fetchAll, source);
         }
-        return [];
     }
     private static async searchSource(anime: AnimeEntry, fetchAll: boolean = false, source: Sources): Promise<SearchResult[]> {
         for (let name of anime.synonyms) {
             try {
-                let apiSource = (siPantsuMapping as any)[source],
+                let apiSource = (siPantsuMapping as any)[source] || {},
                     results = [];
                 if (apiSource.si) {
                     let sourceValue = apiSource.si;
@@ -60,7 +70,7 @@ export default class TorrentUtils {
                     else
                         results.push(...(await si.searchByUserAndByPage(sourceValue, name, 1)).map(siResultToSearchResult.bind(this, source)));
                 }
-                if (apiSource.pantsu) {
+                if (results.length === 0 && apiSource.pantsu) {
                     let sourceValue = apiSource.pantsu;
                     if (fetchAll)
                         results.push(...(await pantsu.searchAll({
@@ -73,14 +83,47 @@ export default class TorrentUtils {
                             userID: sourceValue
                         })).map(pantsuResultToSearchResult.bind(this, source)));
                 }
+                if (results.length === 0 && Object.keys(apiSource).length === 0) {
+                    if (fetchAll)
+                        results.push(...(await si.searchAll(name).map(siResultToSearchResult.bind(this, source))));
+                    else
+                        results.push(...(await si.searchPage(name, 1)).map(siResultToSearchResult.bind(this, source)));
+                }
+                if (results.length === 0 && Object.keys(apiSource).length === 0) {
+                    if (fetchAll)
+                        results.push(...(await pantsu.searchAll({
+                            term: name
+                        })).map(pantsuResultToSearchResult.bind(this, source)));
+                    else
+                        results.push(...(await pantsu.search({
+                            term: name
+                        })).map(pantsuResultToSearchResult.bind(this, source)));
+                }
                 if (results.length)
                     return results;
             }
             catch (e) {
+                console.error(e);
             }
         }
         return [];
     }
+
+    static async torrentExtraInfo(torrentPageUrl: string): Promise<SearchResultExtraInfo> {
+        const response = await fetch(torrentPageUrl),
+            responseHTML = new DOMParser().parseFromString(await response.text(), 'text/html');
+        return {
+            description: responseHTML.querySelector("#torrent-description")?.textContent ?? "",
+            fileList: [...responseHTML.querySelectorAll(".torrent-file-list")].map(ele => ele.textContent ?? ""),
+            comments: [...responseHTML.querySelectorAll(".comment-panel")].map(element => ({
+                text: element.querySelector(".comment-content")?.textContent ?? "",
+                author: element.querySelector("a[title=\"User\"]")?.textContent ?? "",
+                authorImage: element.querySelector("img")?.src ?? "",
+                date: new Date(element.querySelector("[data-timestamp]")?.textContent ?? "")
+            }))
+        }
+    }
+
     static async latest(page = 1, source: Sources = Sources.Any): Promise<SearchResult[]> {
         switch (source) {
             case Sources.Any:
@@ -183,6 +226,13 @@ export function episodeDataFromFilename(name: string, source?: Sources): Episode
                 quality: Number((name.match(/[0-9]+(?=p)/g) || [])[0]),
                 episodeType: (name.match(/(?<=\[[0-9]+p\]\[])[^[]]+(?=\])+/g) || name.match(/(?<=\s-\s[0-9]+(\.[0-9]+)?\s)[a-zA-Z]+/g) || [])[0]
             };
+            break;
+        case Sources.Any:
+            episodeData = {
+                episodeNumber: Number((name.match(/(?<=\s-\s)[0-9]+(\.[0-9]+)?(?=\s)/g) || [])[0]),
+                seriesName: ((name.match(/(?<=((\[|\()[a-zA-Z0-9\s]*(\]|\)))?)[^[\])(]+(?=\s-\s)/g) || [])[0] || "").trim(),
+                quality: Number((name.match(/(?<=(\[|\()([a-zA-Z0-9]\s)*)[0-9]+(?=p([a-zA-Z0-9\s])*(\]|\)))/g) || [])[0])
+            }
     }
     return episodeData;
 }
