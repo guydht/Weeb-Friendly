@@ -73,37 +73,37 @@ class CustomPopover extends Component<{ episode: any, i: number, startDownload: 
                 }
                 {
                     (!!this.state.extraInfo?.comments.length &&
-                    <Card className={styles.commentsContainer}>
-                        <Card.Title>
-                            Comments
+                        <Card className={styles.commentsContainer}>
+                            <Card.Title>
+                                Comments
                     </Card.Title>
-                        <Card.Body>
-                            {
-                                this.state.extraInfo?.comments.map((comment, i) => {
-                                    return (
-                                        <Row key={i} className={styles.commentBox}>
-                                            <Col md="5">
-                                                <Row>
-                                                    {comment.author}
-                                                </Row>
-                                                <Row>
-                                                    <img className={styles.commenterAvatar} src={comment.authorImage} alt={comment.author} />
-                                                </Row>
-                                            </Col>
-                                            <Col md="7">
-                                                <Row>
-                                                    {comment.date.toLocaleString()}
-                                                </Row>
-                                                <Row>
-                                                    {comment.text}
-                                                </Row>
-                                            </Col>
-                                        </Row>
-                                    )
-                                })
-                            }
-                        </Card.Body>
-                    </Card>)
+                            <Card.Body>
+                                {
+                                    this.state.extraInfo?.comments.map((comment, i) => {
+                                        return (
+                                            <Row key={i} className={styles.commentBox}>
+                                                <Col md="5">
+                                                    <Row>
+                                                        {comment.author}
+                                                    </Row>
+                                                    <Row>
+                                                        <img className={styles.commenterAvatar} src={comment.authorImage} alt={comment.author} />
+                                                    </Row>
+                                                </Col>
+                                                <Col md="7">
+                                                    <Row>
+                                                        {comment.date.toLocaleString()}
+                                                    </Row>
+                                                    <Row>
+                                                        {comment.text}
+                                                    </Row>
+                                                </Col>
+                                            </Row>
+                                        )
+                                    })
+                                }
+                            </Card.Body>
+                        </Card>)
                     || <p>No Comments :(</p>
                 }
             </Popover.Content>
@@ -180,6 +180,7 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
             <Container className={styles.grid} key={0}>
                 {
                     grouped.map((episode, i) => {
+                        const downloadedItemOfEpisode = this.downloadedItemOfEpisode(episode);
                         return (
                             <Card key={i} className="m-1">
                                 <Card.Header>
@@ -193,39 +194,36 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
                                             episode.category.label
                                         }
                                     </Card.Subtitle>
-                                    {
-                                        !this.downloadedItemOfEpisode(episode) &&
-                                        <ButtonGroup size="sm" className="mt-1 flex-wrap">
-                                            {
-                                                episode.episodeData.qualities.map((quality, i) => {
-                                                    const startDownload = this.startDownload.bind(this);
-                                                    return (
-                                                        <OverlayTrigger
-                                                            key={i}
-                                                            trigger="click"
-                                                            placement="auto"
-                                                            rootClose
-                                                            rootCloseEvent="mousedown"
-                                                            overlay={
-                                                                <Popover id={"popover-basic-" + quality}>
-                                                                    <Popover.Title as="h3">
-                                                                        Download {episode.names[i]}:
+                                    <ButtonGroup size="sm" className="mt-1 flex-wrap">
+                                        {
+                                            episode.episodeData.qualities.map((quality, i) => {
+                                                const startDownload = this.startDownload.bind(this);
+                                                return (
+                                                    <OverlayTrigger
+                                                        key={i}
+                                                        trigger="click"
+                                                        placement="auto"
+                                                        rootClose
+                                                        rootCloseEvent="mousedown"
+                                                        overlay={
+                                                            <Popover id={"popover-basic-" + quality}>
+                                                                <Popover.Title as="h3">
+                                                                    Download {episode.names[i]}:
                                                                     </Popover.Title>
-                                                                    <CustomPopover episode={episode} i={i} startDownload={startDownload} />
-                                                                </Popover>}>
-                                                            <Button variant="outline-dark">{
-                                                                `${quality}p${episode.episodeTypes[i] ? " - " + episode.episodeTypes[i] : ""}`
-                                                            }</Button>
-                                                        </OverlayTrigger>
-                                                    )
-                                                })
-                                            }
-                                        </ButtonGroup>
-                                    }
+                                                                <CustomPopover episode={episode} i={i} startDownload={startDownload} />
+                                                            </Popover>}>
+                                                        <Button variant="outline-dark">{
+                                                            `${quality}p${episode.episodeTypes[i] ? " - " + episode.episodeTypes[i] : ""}`
+                                                        }</Button>
+                                                    </OverlayTrigger>
+                                                )
+                                            })
+                                        }
+                                    </ButtonGroup>
                                 </Card.Header>
                                 <Card.Body>
                                     {
-                                        !!this.downloadedItemOfEpisode(episode) && <DownloadedFileThumbnail downloadedItem={this.downloadedItemOfEpisode(episode)} />
+                                        !!downloadedItemOfEpisode && <DownloadedFileThumbnail downloadedItem={downloadedItemOfEpisode} />
                                     }
                                 </Card.Body>
                             </Card>
