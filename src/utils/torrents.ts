@@ -17,6 +17,7 @@ export enum Sources {
 
 export interface SearchResultExtraInfo {
     description: string;
+    size: string;
     fileList: string[];
     comments: {
         text: string,
@@ -119,7 +120,8 @@ export default class TorrentUtils {
             responseHTML = new DOMParser().parseFromString(await response.text(), 'text/html');
         return {
             description: responseHTML.querySelector("#torrent-description")?.textContent ?? "",
-            fileList: [...responseHTML.querySelectorAll(".torrent-file-list .fa.fa-file")].map(ele => ele.nextSibling?.textContent ?? ""),
+            size: [...responseHTML.querySelectorAll(".panel .row .col-md-5")].find(element => element.previousElementSibling?.textContent === "File size:")?.textContent ?? "",
+            fileList: [...responseHTML.querySelectorAll(".torrent-file-list .fa.fa-file")].map(ele => ele.parentNode?.textContent ?? ""),
             comments: [...responseHTML.querySelectorAll(".comment-panel")].map(element => ({
                 text: element.querySelector(".comment-content")?.textContent ?? "",
                 author: element.querySelector("a[title=\"User\"]")?.textContent ?? "",

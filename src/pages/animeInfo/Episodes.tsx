@@ -1,7 +1,7 @@
 import { createSliderWithTooltip, Range } from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import React, { Component } from "react";
-import { Button, ButtonGroup, Card, Col, Container, Modal, OverlayTrigger, Popover, Row, Spinner, ListGroup } from "react-bootstrap";
+import { Button, ButtonGroup, Card, Col, Container, ListGroup, Modal, OverlayTrigger, Popover, Row, Spinner } from "react-bootstrap";
 import { ReactComponent as DownloadIcon } from "../../assets/download.svg";
 import AnimeEntry from "../../classes/AnimeEntry";
 import Consts from "../../classes/Consts";
@@ -43,6 +43,12 @@ class CustomPopover extends Component<{ episode: any, i: number, startDownload: 
                         </svg>
                         <span className={styles.seedersText}>{episode.leechersArr[i]}</span>
                     </Col>
+                    {
+                        !!this.state.extraInfo?.size &&
+                        <Col style={{ minHeight: 0 }}>
+                            Total Files Size: <b>{this.state.extraInfo.size}</b>
+                        </Col>
+                    }
                 </Row>
                 {
                     !!this.state.extraInfo?.description &&
