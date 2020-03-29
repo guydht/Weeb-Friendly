@@ -63,7 +63,9 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                             (window as any).reloadPage();
                         });
                     }
-                    if (Consts.AUTO_UPDATE_IN_MAL)
+                    if (Consts.AUTO_UPDATE_IN_MAL && (
+                        this.props.downloadedItem.animeEntry.myWatchedEpisodes ?? 0 > this.props.downloadedItem.episodeData.episodeNumber
+                    ))
                         updateEpisodeInMal();
                     else
                         Confirm(`Do you want to update ${this.props.downloadedItem.episodeName} in MAL?`, (ok: boolean) => {

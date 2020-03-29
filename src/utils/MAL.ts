@@ -245,7 +245,7 @@ export default class MALUtils {
             status = downloadedItem.animeEntry.totalEpisodes === episode ? MALStatuses.Completed : MALStatuses.Watching,
             ok: boolean = true;
         if (!downloadedItem.animeEntry.myMalStatus)
-            ok = await MALUtils.addAnime(downloadedItem.animeEntry as AnimeEntry & HasMalId)
+            ok = await MALUtils.addAnime(downloadedItem.animeEntry as AnimeEntry & HasMalId);
         if (!ok) return ok;
         ok = await MALUtils.updateAnime(downloadedItem.animeEntry as AnimeEntry & HasMalId, { episodes: episode, status });
         Consts.MAL_USER.animeList.loadAnime(downloadedItem.animeEntry);
