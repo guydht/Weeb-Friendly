@@ -47,7 +47,7 @@ export default class SearchBar extends Component<SearchBarProps> {
                 });
             };
         return (
-            <Form onBlur={onBlur} onFocus={onFocus} {...(this.props.style || {})}>
+            <Form onBlur={onBlur} onFocus={onFocus} style={(this.props.style || {})}>
                 <FormControl type="text" placeholder={this.props.placeholder || "Search"} className="mr-sm-2"
                     onClick={(e: React.MouseEvent) => (this.props.onInputClick || function () { })(e) && this.searchAnime(e)}
                     onChange={(e: any) => this.searchAnime(e)}

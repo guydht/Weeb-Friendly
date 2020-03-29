@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Carousel, OverlayTrigger, Spinner, Tooltip } from "react-bootstrap";
 //@ts-ignore
-import { LazyLoadComponent, LazyLoadImage } from "react-lazy-load-image-component";
+import { LazyLoadImage } from "react-lazy-load-image-component";
 import { Link } from "react-router-dom";
 import { ReactComponent as DownloadIcon } from "../../assets/download.svg";
 import { ReactComponent as DownloadingIcon } from "../../assets/Downloading.svg";
@@ -33,7 +33,7 @@ class DisplayTorrentEntry extends Component<{ searchResult: SearchResult; }> {
                                     <DownloadIcon className={styles.downloadIcon} style={{ cursor: "not-allowed", opacity: 0.4 }} />
                                 </OverlayTrigger>
                                 : downloadStatus === DownloadStatus.currentlyDownloading ?
-                                    <OverlayTrigger overlay={<Tooltip id={this.props.searchResult.animeEntry.malId}>Download Episode</Tooltip>}>
+                                    <OverlayTrigger overlay={<Tooltip id={this.props.searchResult.animeEntry.malId}>Currently Downloading Episode</Tooltip>}>
                                         <DownloadingIcon className={styles.downloadIcon} style={{ cursor: "progress" }} />
                                     </OverlayTrigger>
                                     : <OverlayTrigger overlay={<Tooltip id={this.props.searchResult.animeEntry.malId}>Download Episode</Tooltip>}>
@@ -57,22 +57,21 @@ class DisplayTorrentEntry extends Component<{ searchResult: SearchResult; }> {
                     </Link>
                 </div>
             )
+        console.log(this.props.searchResult.animeEntry)
         return (
             <div className="position-relative pb-4">
-                <LazyLoadComponent>
-                    <div style={{ height: "-webkit-fill-available", overflowY: "hidden" }}>
-                        <SearchBar
-                            showImage={true}
-                            placeholder="Search in MAL"
-                            gotoAnimePageOnChoose={false}
-                            onInputClick={e =>
-                                (e.target as any).value = this.props.searchResult.episodeData.seriesName}
-                            onItemClick={entry => this.setMALLink(this.props.searchResult, entry)} />
-                    </div>
-                    <span
-                        style={{ flex: "0 1" }}
-                        className={styles.title}>{this.props.searchResult.episodeData.seriesName}</span>
-                </LazyLoadComponent>
+                <div style={{ overflowY: "hidden" }}>
+                    <SearchBar
+                        showImage={true}
+                        placeholder="Search in MAL"
+                        gotoAnimePageOnChoose={false}
+                        onInputClick={e =>
+                            (e.target as any).value = this.props.searchResult.episodeData.seriesName}
+                        onItemClick={entry => this.setMALLink(this.props.searchResult, entry)} />
+                </div>
+                <span
+                    style={{ flex: "0 1" }}
+                    className={styles.title}>{this.props.searchResult.episodeData.seriesName}</span>
             </div>
         )
     }
