@@ -25,11 +25,12 @@ export default withRouter(class DownloadedFileThumbnail extends Component<Downlo
             delete props[prop];
         return (
             <div {...props}
-                className={(this.props.className || "") + " " + styles.gridElement}
-                onDoubleClick={e => this.props.disableDoubleClick !== false && this.showAnime(downloadedItem) && e.stopPropagation()}
-                onClick={() => this.showVideo(downloadedItem)}>
+                className={(this.props.className || "") + " " + styles.gridElement}>
+                <HasSeen hasSeen={downloadedItem.seenThisEpisode()} />
+                <div className={styles.coverElement}
+                    onDoubleClick={e => this.props.disableDoubleClick !== false && this.showAnime(downloadedItem) && e.stopPropagation()}
+                    onClick={() => this.showVideo(downloadedItem)} />
                 <LazyLoadComponent>
-                    <HasSeen hasSeen={downloadedItem.seenThisEpisode()} />
                     <VideoThumbnail
                         videoUrl={Consts.FILE_URL_PROTOCOL + downloadedItem.absolutePath}
                         className={styles.thumbnail}

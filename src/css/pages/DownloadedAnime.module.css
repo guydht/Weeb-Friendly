@@ -44,14 +44,21 @@
     width: 100%;
     grid-gap: .5rem;
 }
-
-.grid>*:hover {
-    background: rgba(0, 0, 0, 0.1) !important;
+.grid>*>.coverElement{
+    height: 100%;
+    width: 100%;
+    background: none;
+    position: absolute;
+    z-index: 1;
+    transition: background-color .1s;
+    cursor: pointer;
+}
+.grid>*>.coverElement:hover {
+    background: rgba(0, 0, 0, 0.3);
 }
 
 .grid>*, .gridElement {
     height: 100%;
-    transition: background-color .1s;
     position: relative;
     z-index: 5;
 }
