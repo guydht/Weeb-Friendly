@@ -1,7 +1,7 @@
 import { createSliderWithTooltip, Range } from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import React, { Component } from "react";
-import { Button, ButtonGroup, Card, Col, Container, ListGroup, Modal, OverlayTrigger, Popover, Row, Spinner } from "react-bootstrap";
+import { Button, ButtonGroup, Card, Col, Container, ListGroup, Modal, Overlay, Popover, Row, Spinner, Tooltip } from "react-bootstrap";
 import { ReactComponent as DownloadIcon } from "../../assets/download.svg";
 import AnimeEntry from "../../classes/AnimeEntry";
 import Consts from "../../classes/Consts";
@@ -15,6 +15,45 @@ import styles from "../../css/pages/Episodes.module.css";
 import { groupBy } from "../../utils/general";
 import TorrentUtils, { SearchResult, SearchResultExtraInfo, Sources } from "../../utils/torrents";
 import { AnimeInfoProps } from "../AnimeInfo";
+
+class CustomOverlayButton extends Component<{ episode: any, quality: any, i: number, startDownload: any }>{
+
+    state = {
+        isHovering: false,
+        didClick: false
+    }
+
+    mainButtonRef = React.createRef();
+
+    render() {
+        return (
+            <>
+                <Button
+                    onPointerEnter={() => this.setState({ isHovering: true })}
+                    onPointerLeave={() => this.setState({ isHovering: false })}
+                    onClick={() => this.setState({ didClick: !this.state.didClick })}
+                    ref={this.mainButtonRef as any} variant="outline-dark">{
+                        `${this.props.quality}p${this.props.episode.episodeTypes[this.props.i] ? " - " + this.props.episode.episodeTypes[this.props.i] : ""}`
+                    }</Button>
+                <Overlay target={this.mainButtonRef?.current as any} show={this.state.isHovering && !this.state.didClick} placement="top">
+                    <Tooltip id={this.props.i}>{this.props.episode.names[this.props.i]}</Tooltip>
+                </Overlay>
+                <Overlay target={this.mainButtonRef.current as any}
+                    show={this.state.didClick}
+                    rootClose={true} rootCloseEvent="mousedown"
+                    placement="bottom"
+                    onHide={() => this.setState({ didClick: false })}>
+                    <Popover id={"popover-basic-" + this.props.quality}>
+                        <Popover.Title as="h3">
+                            Download {this.props.episode.names[this.props.i]}:
+                            </Popover.Title>
+                        <CustomPopover episode={this.props.episode} i={this.props.i} startDownload={this.props.startDownload} />
+                    </Popover>
+                </Overlay>
+            </>
+        )
+    }
+}
 
 class CustomPopover extends Component<{ episode: any, i: number, startDownload: any }> {
     state: { extraInfo?: SearchResultExtraInfo } = {}
@@ -58,7 +97,7 @@ class CustomPopover extends Component<{ episode: any, i: number, startDownload: 
                     </Card.Title>
                         <Card.Body>
                             {
-                                this.state.extraInfo?.description
+                                this.state.extraInfo?.description.split("\n").map((ele, i) => <p key={i}>{ele}</p>)
                             }
                         </Card.Body>
                     </Card>
@@ -206,24 +245,8 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
                                             episode.episodeData.qualities.map((quality, i) => {
                                                 const startDownload = this.startDownload.bind(this);
                                                 return (
-                                                    <OverlayTrigger
-                                                        key={i}
-                                                        trigger="click"
-                                                        placement="auto"
-                                                        rootClose
-                                                        rootCloseEvent="mousedown"
-                                                        overlay={
-                                                            <Popover id={"popover-basic-" + quality}>
-                                                                <Popover.Title as="h3">
-                                                                    Download {episode.names[i]}:
-                                                                    </Popover.Title>
-                                                                <CustomPopover episode={episode} i={i} startDownload={startDownload} />
-                                                            </Popover>}>
-                                                        <Button variant="outline-dark">{
-                                                            `${quality}p${episode.episodeTypes[i] ? " - " + episode.episodeTypes[i] : ""}`
-                                                        }</Button>
-                                                    </OverlayTrigger>
-                                                )
+                                                    <CustomOverlayButton episode={episode} i={i} quality={quality} startDownload={startDownload} />
+                                                );
                                             })
                                         }
                                     </ButtonGroup>
