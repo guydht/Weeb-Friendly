@@ -238,6 +238,26 @@ export default class MALUtils {
         }
         return ok;
     }
+    static async removeAnime(anime: AnimeEntry & HasMalId): Promise<boolean> {
+        const formData = new FormData();
+        formData.append('csrf_token', Consts.CSRF_TOKEN);
+        const request = await fetch(`https://myanimelist.net/ownlist/anime/${anime.malId}/delete`, {
+            method: "POST",
+            body: formData
+        });
+        const ok = (request.ok || (await request.text()).includes("Successfully deleted entry."));
+        if (ok) {
+            anime.syncGet();
+            anime.myMalStatus = undefined;
+            anime.myWatchedEpisodes = undefined;
+            anime.myMalRating = undefined;
+            anime.myRewatchAmount = undefined;
+            anime.syncPut();
+            Consts.MAL_USER.animeList.loadAnime(anime);
+            Consts.setMALUser(Consts.MAL_USER);
+        }
+        return ok;
+    }
     static async UpdateWatchedEpisode(downloadedItem: DownloadedItem): Promise<boolean> {
         downloadedItem.animeEntry.syncGet();
         if (!downloadedItem.animeEntry.malId) return false;

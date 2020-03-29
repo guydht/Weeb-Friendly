@@ -112,6 +112,9 @@ export default class Details extends Component<AnimeInfoProps> {
                                         ref={this.episodElement}
                                         defaultValue={(this.props.anime.myWatchedEpisodes || 0).toString()} />/{this.props.anime.totalEpisodes || "?"}
                                 </Col>
+                                <Col>
+                                    <span className={styles.removeAnimeButton} onClick={() => this.removeAnime(this.props.anime)}>Remove From List</span>
+                                </Col>
                             </Row>
                         </div>
                     ) : <Row>
@@ -209,8 +212,18 @@ export default class Details extends Component<AnimeInfoProps> {
     }
     updateTimeout?: number;
     static UPDATE_TIMEOUT_MS = 2000;
+    removeAnime(anime: AnimeEntry){
+        MALUtils.removeAnime(anime as any).then(ok => {
+            if(ok){
+                this.forceUpdate();
+                (window as any).displayToast({ title: 'Successfully Rmoved!', body: `Succesfully removed ${this.props.anime.name} from your MAL list!` });
+            }
+            else
+                (window as any).displayToast({ title: 'Failed To Remove!', body: `Failed removing ${this.props.anime.name} from your MAL list! Maybe try again later?` })
+        });
+    }
     addAnime(anime: AnimeEntry) {
-        MALUtils.addAnime(anime as any).then(ok => ok && this.setState({}));
+        MALUtils.addAnime(anime as any).then(ok => ok && this.forceUpdate());
     }
     updateAnime(e: SyntheticEvent) {
         if (!this.statusElement.current || !this.episodElement.current || !this.scoreElement.current) return;

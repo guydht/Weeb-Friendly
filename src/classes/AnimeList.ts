@@ -106,6 +106,9 @@ export default class AnimeList {
                 break;
             case MALStatuses["Plan To Watch"]:
                 this._plantowatch[anime.malId!] = anime;
+                break;
+            default:
+                delete this._all[anime.malId!];
         }
     }
     loadFromAll(all: Record<number, AnimeEntry>) {
