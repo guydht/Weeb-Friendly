@@ -1,7 +1,7 @@
 import { createSliderWithTooltip, Range } from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import React, { Component } from "react";
-import { Button, ButtonGroup, Card, Col, Container, Modal, OverlayTrigger, Popover, Row, Spinner } from "react-bootstrap";
+import { Button, ButtonGroup, Card, Col, Container, Modal, OverlayTrigger, Popover, Row, Spinner, ListGroup } from "react-bootstrap";
 import { ReactComponent as DownloadIcon } from "../../assets/download.svg";
 import AnimeEntry from "../../classes/AnimeEntry";
 import Consts from "../../classes/Consts";
@@ -10,7 +10,6 @@ import TorrentManager from "../../classes/TorrentManager";
 import ChooseSource from '../../components/ChooseSource';
 import DownloadedFileThumbnail from "../../components/DownloadedFileThumbnail";
 import SearchBar from "../../components/SearchBar";
-import changableTextStyles from "../../css/components/ChangableText.module.css";
 import animeStyles from "../../css/pages/DownloadedAnime.module.css";
 import styles from "../../css/pages/Episodes.module.css";
 import { groupBy } from "../../utils/general";
@@ -65,9 +64,14 @@ class CustomPopover extends Component<{ episode: any, i: number, startDownload: 
                             Files
                     </Card.Title>
                         <Card.Body>
-                            {
-                                this.state.extraInfo?.fileList.map((file, i) => <div key={i}>{file}</div>)
-                            }
+                            <ListGroup>
+
+                                {
+                                    this.state.extraInfo?.fileList.map((file, i) => (
+                                        <ListGroup.Item className={styles.fileListItem} key={i}>{file}</ListGroup.Item>
+                                    ))
+                                }
+                            </ListGroup>
                         </Card.Body>
                     </Card>
                 }
@@ -150,7 +154,6 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
     render() {
         this.searchDownloadedFromSeries();
         const grouped = DisplayEpisodes.groupByQuality(this.state.episodes),
-            groupedBySeries = groupBy(this.state.episodes, ["episodeData", "seriesName"]),
             TooltipRange = createSliderWithTooltip(Range),
             chosenForDownload = this.chosenForDownload;
         if (this.state.loading)
@@ -162,8 +165,6 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
             )
         if (!this.state.episodes.length)
             return this.couldntFindEpisodesComponent;
-        if (!groupedBySeries.length)
-            return this.notSureAboutSeriesComponent(groupedBySeries);
         return [(
             grouped.length > 1 && (
                 <div key={1} className="mb-3">
@@ -293,12 +294,12 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
     }
     async searchAnime(anime: AnimeEntry, source: Sources = Sources.Any, fetchAll = false): Promise<SearchResult[]> {
         const episodes = await TorrentUtils.search(anime, fetchAll, source);
-        const groupedBySeries = groupBy(episodes, ['episodeData', 'seriesName']).flat().sort((a, b) => {
-            return b.episodeData.episodeNumber - a.episodeData.episodeNumber ||
-                b.episodeData.seriesName.localeCompare(a.episodeData.seriesName) ||
-                b.name.localeCompare(a.name, undefined, { numeric: true });
+        episodes.forEach(episode => episode.episodeData.seriesName = this.props.anime.name ?? "")
+        episodes.sort((a, b) => {
+            return b.episodeData.episodeNumber - a.episodeData.episodeNumber;
         });
-        return groupedBySeries;
+        console.log(episodes);
+        return episodes;
     }
     userChoseAnime = (anime: AnimeEntry) => {
         this.props.anime.syncGet();
@@ -317,7 +318,7 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
                     <Modal.Title>Couldn't Find any episodes for {this.props.anime.name} :(</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    Try and search it:
+                    Try and search it manually:
             <SearchBar gotoAnimePageOnChoose={false} showImage={false} onItemClick={this.userChoseAnime.bind(this)}
                         onInputChange={e => this.searchAnime(new AnimeEntry({ name: (e.target as any).value }), this.props.source)
                             .then(results => e.setResults(results.map(ele => ele.animeEntry).filter((ele, i, arr) => arr.map(ele => ele.name).indexOf(ele.name) === i)))}
@@ -327,38 +328,6 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
         </div>
     );
 
-    notSureAboutSeriesComponent(groupedBySeries: SearchResult[][]) {
-        const onChoose = (episodes: SearchResult[]) => {
-            this.props.anime.syncGet();
-            this.props.anime.synonyms.add(episodes[0].episodeData.seriesName);
-            this.props.anime.syncPut(true);
-            this.setState({
-                episodes
-            });
-            (window as any).reloadPage();
-        }
-        return (
-            <div className="mx-1 mt-3">
-                <Modal.Dialog className={styles.modal}>
-                    <Modal.Header>
-                        <Modal.Title>Found {groupedBySeries.length} different series for {this.props.anime.name} :(</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <div>
-                            Please tell me which series is {this.props.anime.name} So I'll add it to the synonyms :)
-                        </div>
-                        {
-                            groupedBySeries.map((episodes, i) => {
-                                return (
-                                    <div key={i} className={changableTextStyles.textWrapper} onClick={() => onChoose(episodes)}>{episodes[0].episodeData.seriesName}</div>
-                                )
-                            })
-                        }
-                    </Modal.Body>
-                </Modal.Dialog>
-            </div>
-        )
-    }
 }
 export default class Episodes extends Component<AnimeInfoProps>{
     render() {

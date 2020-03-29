@@ -29,7 +29,7 @@ export default class Forum extends Component<AnimeInfoProps> {
     }
 
     loadPageNumber(pageNumber: number) {
-        if(pageNumber < 0) return;
+        if (pageNumber < 0) return;
         if (this.savedPages.has(pageNumber))
             return this.setState({ topics: this.savedPages.get(pageNumber), loading: false, currentPageNumber: pageNumber });;
         this.setState({ loading: true })
@@ -115,7 +115,7 @@ export default class Forum extends Component<AnimeInfoProps> {
                 <Container>
                     {this.state.forumEntry && (
                         <Jumbotron>
-                            <OverlayTrigger trigger="hover" overlay={<Tooltip id="placement-right">Go Back</Tooltip>} placement="right">
+                            <OverlayTrigger trigger={["hover", "focus"]} overlay={<Tooltip id="placement-right">Go Back</Tooltip>} placement="right">
                                 <span style={{ position: "absolute", top: "1.75rem", cursor: "pointer" }}
                                     className="carousel-control-prev-icon"
                                     onClick={() => this.transitionController.current!.moveTo(0)} />

@@ -5,9 +5,11 @@ import Consts from "../classes/Consts";
 import DownloadedItem from "../classes/DownloadedItem";
 import TorrentManager from "../classes/TorrentManager";
 
+const ENGLISH_TRANSLATED_ANIME_CATEGORY = "1_2",
+    DEFAULT_MAX_RESULTS = 300;
+
 export enum Sources {
     HorribleSubs,
-    Ohys,
     "Erai-raws",
     All,
     Any
@@ -28,9 +30,6 @@ const siPantsuMapping = {
     [Sources.HorribleSubs]: {
         si: "HorribleSubs",
         pantsu: "12035"
-    },
-    [Sources.Ohys]: {
-        si: "ohys"
     },
     [Sources["Erai-raws"]]: {
         pantsu: "11974",
@@ -66,37 +65,43 @@ export default class TorrentUtils {
                 if (apiSource.si) {
                     let sourceValue = apiSource.si;
                     if (fetchAll)
-                        results.push(...(await si.searchAllByUser(sourceValue, name)).map(siResultToSearchResult.bind(this, source)));
+                        results.push(...(await si.searchAllByUser(sourceValue, name, { category: ENGLISH_TRANSLATED_ANIME_CATEGORY })).map(siResultToSearchResult.bind(this, source)));
                     else
-                        results.push(...(await si.searchByUserAndByPage(sourceValue, name, 1)).map(siResultToSearchResult.bind(this, source)));
+                        results.push(...(await si.searchByUser(sourceValue, name, DEFAULT_MAX_RESULTS, { category: ENGLISH_TRANSLATED_ANIME_CATEGORY })).map(siResultToSearchResult.bind(this, source)));
                 }
                 if (results.length === 0 && apiSource.pantsu) {
                     let sourceValue = apiSource.pantsu;
                     if (fetchAll)
                         results.push(...(await pantsu.searchAll({
                             term: name,
-                            userID: sourceValue
+                            userID: sourceValue,
+                            c: ENGLISH_TRANSLATED_ANIME_CATEGORY
                         })).map(pantsuResultToSearchResult.bind(this, source)));
                     else
                         results.push(...(await pantsu.search({
                             term: name,
-                            userID: sourceValue
+                            userID: sourceValue,
+                            c: ENGLISH_TRANSLATED_ANIME_CATEGORY
                         })).map(pantsuResultToSearchResult.bind(this, source)));
                 }
                 if (results.length === 0 && Object.keys(apiSource).length === 0) {
                     if (fetchAll)
-                        results.push(...(await si.searchAll(name).map(siResultToSearchResult.bind(this, source))));
+                        results.push(...(await si.searchAll(name, { category: ENGLISH_TRANSLATED_ANIME_CATEGORY }).map(siResultToSearchResult.bind(this, source))));
                     else
-                        results.push(...(await si.searchPage(name, 1)).map(siResultToSearchResult.bind(this, source)));
+                        results.push(...(await si.search(name, DEFAULT_MAX_RESULTS, {
+                            category: ENGLISH_TRANSLATED_ANIME_CATEGORY
+                        })).map(siResultToSearchResult.bind(this, source)));
                 }
                 if (results.length === 0 && Object.keys(apiSource).length === 0) {
                     if (fetchAll)
                         results.push(...(await pantsu.searchAll({
-                            term: name
+                            term: name,
+                            c: ENGLISH_TRANSLATED_ANIME_CATEGORY
                         })).map(pantsuResultToSearchResult.bind(this, source)));
                     else
                         results.push(...(await pantsu.search({
-                            term: name
+                            term: name,
+                            c: ENGLISH_TRANSLATED_ANIME_CATEGORY
                         })).map(pantsuResultToSearchResult.bind(this, source)));
                 }
                 if (results.length)
@@ -114,14 +119,14 @@ export default class TorrentUtils {
             responseHTML = new DOMParser().parseFromString(await response.text(), 'text/html');
         return {
             description: responseHTML.querySelector("#torrent-description")?.textContent ?? "",
-            fileList: [...responseHTML.querySelectorAll(".torrent-file-list")].map(ele => ele.textContent ?? ""),
+            fileList: [...responseHTML.querySelectorAll(".torrent-file-list .fa.fa-file")].map(ele => ele.nextSibling?.textContent ?? ""),
             comments: [...responseHTML.querySelectorAll(".comment-panel")].map(element => ({
                 text: element.querySelector(".comment-content")?.textContent ?? "",
                 author: element.querySelector("a[title=\"User\"]")?.textContent ?? "",
                 authorImage: element.querySelector("img")?.src ?? "",
                 date: new Date(element.querySelector("[data-timestamp]")?.textContent ?? "")
             }))
-        }
+        };
     }
 
     static async latest(page = 1, source: Sources = Sources.Any): Promise<SearchResult[]> {
@@ -211,14 +216,6 @@ export function episodeDataFromFilename(name: string, source?: Sources): Episode
                 quality: Number((name.match(/(?<=\s-\s[0-9]+(\.[0-9]+)?\s\[)[0-9]+(?=p)/g) || [])[0])
             };
             break;
-        case Sources.Ohys:
-            episodeData = {
-                episodeNumber: Number((name.match(/(?<=\s-\s)[0-9]+(\.[0-9]+)?(?=\s)/g) || [])[0]),
-                seriesName: (name.match(/(?<=\[Ohys-Raws\]\s).+(?=\s-\s[0-9]+)/g) || [])[0],
-                quality: Number((name.match(/(?<=\s[0-9]+x)[0-9]+(?=\sx264)/g) || [])[0]),
-                episodeType: (name.match(/(?<=\s-\s[0-9]+(\.[0-9]+)?\s)[a-zA-Z]+/g) || [])[0]
-            };
-            break;
         case Sources["Erai-raws"]:
             episodeData = {
                 episodeNumber: Number((name.match(/(?<=\s-\s)[0-9]+(\.[0-9]+)?(?=\s)/g) || [])[0]),
@@ -229,9 +226,10 @@ export function episodeDataFromFilename(name: string, source?: Sources): Episode
             break;
         case Sources.Any:
             episodeData = {
-                episodeNumber: Number((name.match(/(?<=\s-\s)[0-9]+(\.[0-9]+)?(?=\s)/g) || [])[0]),
+                episodeNumber: Number((name.match(/(?<=\s-\s)[0-9]+(\.[0-9]+)?(?=\s)/g) || [])[0]) ||
+                    Number((name.match(/(?<=(s|season)[0-9\s-]+(e|episode)\s?)[0-9]+/gi) || [])[0]),
                 seriesName: ((name.match(/(?<=((\[|\()[a-zA-Z0-9\s]*(\]|\)))?)[^[\])(]+(?=\s-\s)/g) || [])[0] || "").trim(),
-                quality: Number((name.match(/(?<=(\[|\()([a-zA-Z0-9]\s)*)[0-9]+(?=p([a-zA-Z0-9\s])*(\]|\)))/g) || [])[0])
+                quality: Number((name.match(/(?<=(\[|\()([a-zA-Z0-9\s])*)[0-9]+(?=p([a-zA-Z0-9\s])*(\]|\)))/g) || [])[0])
             }
     }
     return episodeData;
@@ -243,8 +241,6 @@ export function findSourceFromFilename(fileName: string): Sources {
         return Sources.HorribleSubs;
     if (lowerCased.startsWith("[erai-raws]"))
         return Sources["Erai-raws"];
-    if (lowerCased.startsWith("[ohys-raws]"))
-        return Sources.Ohys;
     return Sources.Any;
 }
 

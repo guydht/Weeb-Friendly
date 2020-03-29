@@ -134,8 +134,8 @@ class DisplayLatestTorrents extends Component<{ source?: Sources }>{
                     <Spinner animation="grow" />
                 </div>
             )
-        const handleSelect = (index: number, direction: string) => {
-            if (direction === "next" && index + 1 >= this.state.torrents.length / (SeasonalCarousel.GRID_SIZE_X * SeasonalCarousel.GRID_SIZE_Y)) {
+        const handleSelect = (selectedIndex: number) => {
+            if (selectedIndex + 1 >= this.state.torrents.length / (SeasonalCarousel.GRID_SIZE_X * SeasonalCarousel.GRID_SIZE_Y)) {
                 this.loadMoreUpdated();
             }
         };

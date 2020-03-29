@@ -26,6 +26,7 @@
     max-height: 200px;
     overflow-y: auto;
     margin-bottom: .5rem;
+    overflow-x: hidden;
 }
 
 .commentBox:not(:last-child) {

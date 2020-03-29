@@ -74,7 +74,7 @@ export default class Consts {
     }
 
     static SOURCE_PREFERENCE_STORAGE_KEY = "default-source";
-    static DEFAULT_SOURCE_PREFERENCE: Sources[] = [Sources.HorribleSubs, Sources["Erai-raws"], Sources.Ohys, Sources.Any];
+    static DEFAULT_SOURCE_PREFERENCE: Sources[] = [Sources.HorribleSubs, Sources["Erai-raws"], Sources.Any];
     static SOURCE_PREFERENCE: Sources[] = (storage.get(Consts.SOURCE_PREFERENCE_STORAGE_KEY) || Consts.DEFAULT_SOURCE_PREFERENCE).map(Number);
     static get SOURCE_REFERENCE_KEYS(): string[] {
         return Consts.SOURCE_PREFERENCE.map(ele => Object.keys(Sources).find(source => (Sources as any)[source] === ele)!);

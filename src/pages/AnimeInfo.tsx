@@ -5,7 +5,6 @@ import { Col, Container, Row, Tab, Tabs } from "react-bootstrap";
 import { LazyLoadComponent } from "react-lazy-load-image-component";
 import ImageZoom from "react-medium-image-zoom";
 import AnimeEntry from "../classes/AnimeEntry";
-import { hasInternet } from "../utils/general";
 import MALUtils from "../utils/MAL";
 import Recommendations from "./animeInfo/ Recommendations";
 import Details from "./animeInfo/Details";
@@ -15,7 +14,6 @@ import News from "./animeInfo/News";
 import Pictures from "./animeInfo/Pictures";
 import Reviews from "./animeInfo/Reviews";
 import Stats from "./animeInfo/Stats";
-const qwantApi = window.require("qwant-api");
 
 export interface AnimeInfoProps {
     info: AnimeById;
@@ -79,10 +77,9 @@ export default class AnimeInfo extends Component<{ anime?: AnimeEntry } & React.
 
     private PAGE_LINKS = { Details, Episodes, Reviews, Recommendations, Stats, News, Forum, Pictures };
 
-    state: { info?: AnimeById, anime: AnimeEntry, highResPhoto: string } = {
+    state: { info?: AnimeById, anime: AnimeEntry } = {
         anime: this.props.anime ||
-            (((this.props as any).location.state || {}).animeEntry || new AnimeEntry({ malId: Number((this.props as any).match.params.id) })) as AnimeEntry,
-        highResPhoto: ""
+            (((this.props as any).location.state || {}).animeEntry || new AnimeEntry({ malId: Number((this.props as any).match.params.id) })) as AnimeEntry
     }
 
     componentDidUpdate() {
@@ -126,10 +123,6 @@ export default class AnimeInfo extends Component<{ anime?: AnimeEntry } & React.
                                 src: this.state.anime.imageURL || "",
                                 alt: this.state.anime.name
                             }}
-                            zoomImage={{
-                                src: this.state.highResPhoto || this.state.anime.imageURL || "",
-                                alt: this.state.anime.name
-                            }}
                             shouldReplaceImage={false}
                             defaultStyles={{
                                 overlay: {
@@ -141,8 +134,7 @@ export default class AnimeInfo extends Component<{ anime?: AnimeEntry } & React.
                                 zoomImage: {
                                     cursor: "pointer"
                                 }
-                            }}
-                            onZoom={() => (hasInternet() && !this.state.highResPhoto && this.searchHighResPhoto(this.state.anime)) as object} />
+                            }} />
                     </Col>
                     <Col md="auto" style={{ flex: 1 }}>
                         <Tabs id="mal-links" defaultActiveKey={"Details"} className="justify-content-start">
@@ -164,17 +156,5 @@ export default class AnimeInfo extends Component<{ anime?: AnimeEntry } & React.
                 </Row>
             </div>
         );
-    }
-    async searchHighResPhoto(anime: AnimeEntry) {
-        qwantApi.search("images", {
-            query: anime.name + " Cover",
-            count: 10
-        }, (err: any, data: any) => {
-            if (!err && data.data) {
-                let highResPhoto = data.data.result.items[0].media;
-                if (highResPhoto)
-                    this.setState({ highResPhoto });
-            }
-        });
     }
 }
