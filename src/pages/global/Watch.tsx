@@ -68,9 +68,11 @@ export default class Watch extends Component<{ downloadedItem: DownloadedItem }>
                     ))
                         updateEpisodeInMal();
                     else
-                        Confirm(`Do you want to update ${this.props.downloadedItem.episodeName} in MAL?`, (ok: boolean) => {
-                            if (ok) updateEpisodeInMal()
-                        });
+                        Confirm(`Do you want to update ${this.props.downloadedItem.animeEntry.name} to episode ${
+                            this.props.downloadedItem.episodeData.episodeNumber
+                            } in MAL?`, (ok: boolean) => {
+                                if (ok) updateEpisodeInMal()
+                            });
                 }
             }, 500) as unknown as number;
     }
