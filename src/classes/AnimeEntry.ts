@@ -1,5 +1,5 @@
-import { MALStatuses } from "./MalStatuses";
 import { get, sync, ThumbnailManager } from "./AnimeStorage";
+import { MALStatuses } from "./MalStatuses";
 const fs = window.require("fs"),
     request = window.require("request");
 
@@ -51,7 +51,7 @@ export default class AnimeEntry {
         this.malId = malId;
         this.malUrl = malUrl;
         this.genres = new Set(genres);
-        this.synonyms = new Set(Array.from(synonyms || []).sort());
+        this._synonyms = new Set(Array.from(synonyms || []).sort());
         this.totalEpisodes = totalEpisodes;
         this.startDate = startDate ? new Date(startDate) : startDate;
         this.endDate = endDate ? new Date(endDate) : endDate;
@@ -66,7 +66,15 @@ export default class AnimeEntry {
         if (sync && (malId || name))
             this.syncGet();
     }
-    synonyms: Set<string>;
+    _synonyms: Set<string>;
+    get synonyms() {
+        if (this.name)
+            this._synonyms.add(this.name);
+        return this._synonyms;
+    }
+    set synonyms(value: Set<string>) {
+        this._synonyms = value;
+    }
     malId?: number;
     score?: number;
     malUrl?: string;
@@ -104,15 +112,7 @@ export default class AnimeEntry {
             });
         }
     }
-    private _name?: string;
-    set name(val: string | undefined) {
-        if (val)
-            this.synonyms.add(val);
-        this._name = val;
-    }
-    get name(): string | undefined {
-        return this._name;
-    }
+    name?: string;
     syncPut(forceSynonyms: boolean = false) {
         sync(this, forceSynonyms);
         return this;
