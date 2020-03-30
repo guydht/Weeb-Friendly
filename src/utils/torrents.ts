@@ -215,6 +215,7 @@ export function episodeDataFromFilename(name: string, source?: Sources): Episode
             episodeData = {
                 episodeNumber: Number((name.match(/[0-9]+(\.[0-9]+)?(?=\s\[[0-9]+p\])/g) || [])[0]),
                 seriesName: (name.match(/(?<=\[HorribleSubs\]\s).+(?=\s-\s[0-9]+)/g) || [])[0],
+                episodeString: ((name.match(/(?<=\s-\s(\([a-zA-Z0-9\s]*\))?)[a-zA-Z0-9\s]+/g) || [])[0] || "").trim(),
                 quality: Number((name.match(/(?<=\s-\s[0-9]+(\.[0-9]+)?\s\[)[0-9]+(?=p)/g) || [])[0])
             };
             break;
@@ -222,6 +223,7 @@ export function episodeDataFromFilename(name: string, source?: Sources): Episode
             episodeData = {
                 episodeNumber: Number((name.match(/(?<=\s-\s)[0-9]+(\.[0-9]+)?(?=\s)/g) || [])[0]),
                 seriesName: (name.match(/(?<=\[Erai-raws\]\s).+(?=\s-\s[0-9]+)/g) || [])[0],
+                episodeString: ((name.match(/(?<=\s-\s(\([a-zA-Z0-9\s]*\))?)[a-zA-Z0-9\s]+/g) || [])[0] || "").trim(),
                 quality: Number((name.match(/[0-9]+(?=p)/g) || [])[0]),
                 episodeType: (name.match(/(?<=\[[0-9]+p\]\[])[^[]]+(?=\])+/g) || name.match(/(?<=\s-\s[0-9]+(\.[0-9]+)?\s)[a-zA-Z]+/g) || [])[0]
             };
@@ -230,6 +232,7 @@ export function episodeDataFromFilename(name: string, source?: Sources): Episode
             episodeData = {
                 episodeNumber: Number((name.match(/(?<=\s-\s)[0-9]+(\.[0-9]+)?(?=\s)/g) || [])[0]) ||
                     Number((name.match(/(?<=(s|season)[0-9\s-]+(e|episode)\s?)[0-9]+/gi) || [])[0]),
+                episodeString: ((name.match(/(?<=\s-\s(\([a-zA-Z0-9\s]*\))?)[a-zA-Z0-9\s]+/g) || [])[0] || "").trim(),
                 seriesName: ((name.match(/(?<=((\[|\()[a-zA-Z0-9\s]*(\]|\)))?)[^[\])(]+(?=\s-\s)/g) || [])[0] || "").trim(),
                 quality: Number((name.match(/(?<=(\[|\()([a-zA-Z0-9\s])*)[0-9]+(?=p([a-zA-Z0-9\s])*(\]|\)))/g) || [])[0])
             }
@@ -297,6 +300,7 @@ export class SearchResult {
 export class EpisodeData {
     episodeNumber!: number;
     seriesName!: string;
+    episodeString!: string;
     quality!: number;
     episodeType?: string; // strings like "OVA" and "END"
 }

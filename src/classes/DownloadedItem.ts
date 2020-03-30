@@ -16,6 +16,8 @@ export default class DownloadedItem {
         this.animeEntry = animeEntry || new AnimeEntry({ name: this.episodeData.seriesName });
         if (!isNaN(this.episodeData.episodeNumber) && this.episodeData.seriesName)
             this.episodeName = `${this.episodeData.seriesName} Episode ${this.episodeData.episodeNumber}`;
+        else if(this.episodeData.seriesName && this.episodeData.episodeString)
+            this.episodeName = `${this.episodeData.seriesName} - ${this.episodeData.episodeString}`
         else
             this.episodeName = this.fileName;
     }
