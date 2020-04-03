@@ -57,7 +57,6 @@ class DisplayTorrentEntry extends Component<{ searchResult: SearchResult; }> {
                     </Link>
                 </div>
             )
-        console.log(this.props.searchResult.animeEntry)
         return (
             <div className="position-relative pb-4">
                 <div style={{ overflowY: "hidden" }}>
@@ -65,8 +64,13 @@ class DisplayTorrentEntry extends Component<{ searchResult: SearchResult; }> {
                         showImage={true}
                         placeholder="Search in MAL"
                         gotoAnimePageOnChoose={false}
-                        onInputClick={e =>
-                            (e.target as any).value = this.props.searchResult.episodeData.seriesName}
+                        onInputClick={e => {
+                            const target = e.target as HTMLInputElement,
+                                prevValue = target.value;
+                            target.value = this.props.searchResult.episodeData.seriesName;
+                            if (!prevValue)
+                                e.doSearch();
+                        }}
                         onItemClick={entry => this.setMALLink(this.props.searchResult, entry)} />
                 </div>
                 <span

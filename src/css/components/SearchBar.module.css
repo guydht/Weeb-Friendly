@@ -2,17 +2,10 @@
     float: right;
 }
 
-.container {
-    position: relative;
-    height: 0;
-    z-index: 99;
-}
-
 .wrapper {
     position: absolute;
     max-height: 30vh;
     overflow-y: auto;
-    width: 100%;
 }
 
 .image{

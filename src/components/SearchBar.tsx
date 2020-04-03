@@ -9,10 +9,11 @@ import MALUtils from "../utils/MAL";
 
 interface SearchBarProps {
     placeholder?: string;
+    defaultValue?: string;
     gotoAnimePageOnChoose?: boolean;
-    onItemClick?: (animeEntry: AnimeEntry) => any;
-    onInputClick?: (e: React.MouseEvent) => any;
-    onInputChange?: (e: React.MouseEvent & { setResults: (resuslts: AnimeEntry[]) => any }) => any;
+    onItemClick?: (animeEntry: AnimeEntry) => void;
+    onInputClick?: (e: React.MouseEvent & { doSearch: () => void }) => void;
+    onInputChange?: (e: React.MouseEvent & { setResults: (resuslts: AnimeEntry[]) => void }) => void;
     showImage?: boolean;
     style?: object;
 }
@@ -23,7 +24,6 @@ export default class SearchBar extends Component<SearchBarProps> {
     state = {
         displayEntries: true,
         entries: [],
-        loading: false,
         loadingText: ""
     };
 
@@ -40,59 +40,60 @@ export default class SearchBar extends Component<SearchBarProps> {
             onBlur = () => {
                 setTimeout(() => {
                     this.setState({
-                        loading: false,
                         loadingText: "",
                         displayEntries: false
                     });
                 });
             };
         return (
-            <Form onBlur={onBlur} onFocus={onFocus} style={(this.props.style || {})}>
+            <Form onBlur={onBlur} onFocus={onFocus} onSubmit={() => false} style={(this.props.style || {})}>
                 <FormControl type="text" placeholder={this.props.placeholder || "Search"} className="mr-sm-2"
-                    onClick={(e: React.MouseEvent) => (this.props.onInputClick || function () { })(e) && this.searchAnime(e)}
+                    onClick={(e: any) => {
+                        e.doSearch = this.searchAnime.bind(this, e);
+                        (this.props.onInputClick || function () { })(e);
+                    }}
                     onChange={(e: any) => this.searchAnime(e)}
-                    onBlur={() => this.setState({ loading: false, loadingText: "" })} />
-                <ListGroup className={styles.container}>
-                    <ListGroup className={styles.wrapper}>
-                        {
-                            this.state.entries.length && this.state.displayEntries ?
-                                this.state.entries.map((entry: AnimeEntry) => {
-                                    return (
-                                        <ListGroupItem onClick={() => this.chooseEntry(entry)}
-                                            title={Array.from(entry.synonyms).join(", ")} key={entry.name}>
-                                            <Row>
+                    defaultValue={this.props.defaultValue || ""}
+                    onBlur={() => this.setState({ loadingText: "" })} />
+                <ListGroup className={styles.wrapper}>
+                    {
+                        this.state.entries.length && this.state.displayEntries ?
+                            this.state.entries.map((entry: AnimeEntry) => {
+                                return (
+                                    <ListGroupItem onClick={() => this.chooseEntry(entry)}
+                                        title={Array.from(entry.synonyms).join(", ")} key={entry.name}>
+                                        <Row>
+                                            {
+                                                this.props.showImage && (
+                                                    <Col>
+                                                        <LazyLoadImage className={styles.image} src={entry.imageURL} />
+                                                    </Col>
+                                                )
+                                            }
+                                            <Col>
                                                 {
-                                                    this.props.showImage && (
-                                                        <Col>
-                                                            <LazyLoadImage className={styles.image} src={entry.imageURL} />
-                                                        </Col>
-                                                    )
+                                                    (this.props.gotoAnimePageOnChoose !== false) ?
+                                                        <Link to={{
+                                                            pathname: "/anime/" + entry.malId,
+                                                            state: {
+                                                                animeEntry: entry
+                                                            }
+                                                        }}>
+                                                            {entry.name}
+                                                        </Link>
+                                                        : entry.name
                                                 }
-                                                <Col>
-                                                    {
-                                                        (this.props.gotoAnimePageOnChoose !== false) ?
-                                                            <Link to={{
-                                                                pathname: "/anime/" + entry.malId,
-                                                                state: {
-                                                                    animeEntry: entry
-                                                                }
-                                                            }}>
-                                                                {entry.name}
-                                                            </Link>
-                                                            : entry.name
-                                                    }
-                                                </Col>
-                                            </Row>
-                                        </ListGroupItem>
-                                    )
-                                }) : !this.state.loading ||
+                                            </Col>
+                                        </Row>
+                                    </ListGroupItem>
+                                )
+                            }) : !!this.state.loadingText ?
                                 <ListGroupItem>
                                     <span>{this.state.loadingText}</span>
                                     <Spinner animation="border" role="status" size="sm" as="span"
                                         className={styles.spinner} />
-                                </ListGroupItem>
-                        }
-                    </ListGroup>
+                                </ListGroupItem> : null
+                    }
                 </ListGroup>
             </Form>
         )
@@ -103,18 +104,18 @@ export default class SearchBar extends Component<SearchBarProps> {
         let searchName = e.target.value;
         clearTimeout(this.searchInputTimeout);
         this.setState({
-            loading: true,
             loadingText: "Loading...",
             entries: []
         });
         this.searchInputTimeout = setTimeout(
             async () => {
+                console.log(this.inputValidForSearch(searchName), this.props)
                 if (this.inputValidForSearch(searchName)) {
                     this.setState({
                         loadingText: "Loading..."
                     });
                     if (this.props.onInputChange) {
-                        e.setResults = (results: AnimeEntry[]) => this.setState({ entries: results, loading: false, loadingText: "" });
+                        e.setResults = (results: AnimeEntry[]) => this.setState({ entries: results, loadingText: "" });
                         return this.props.onInputChange(e);
                     }
                     let results = await MALUtils.searchAnime(new AnimeEntry({ name: searchName })),
@@ -122,7 +123,6 @@ export default class SearchBar extends Component<SearchBarProps> {
                             result.name!.toLowerCase().match(/[a-z0-9]+/g)!.join(""));
                     this.setState({
                         entries: results,
-                        loading: false,
                         loadingText: ""
                     });
                     if (equal.length === 1)
@@ -131,7 +131,7 @@ export default class SearchBar extends Component<SearchBarProps> {
                 else
                     this.setState({
                         loadingText: "I need a longer input..."
-                    })
+                    });
             }, SearchBar.SEARCH_INPUT_TIMEOUT);
     }
     inputValidForSearch(value: string): boolean {
