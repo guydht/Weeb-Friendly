@@ -33,7 +33,6 @@ export default class MALUtils {
             fromData.malId = result.mal_id;
             fromData.totalEpisodes = result.episodes;
             fromData.imageURL = result.image_url;
-            fromData.myMalRating = result.rated as any;
             fromData.score = result.score;
             fromData.startDate = parseStupidAmericanDateString(result.start_date);
             fromData.endDate = parseStupidAmericanDateString(result.end_date);

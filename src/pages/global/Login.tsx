@@ -34,8 +34,6 @@ export default class Login extends Component<{ username?: string, password?: str
                 html.innerHTML = responseText;
                 Consts.setCsrfToken(html.querySelector("meta[name='csrf_token']")!.getAttribute("content")!);
             });
-        if (this.userInput.current)
-            this.userInput.current.focus()
     }
     render() {
         const tryLogin = () => {

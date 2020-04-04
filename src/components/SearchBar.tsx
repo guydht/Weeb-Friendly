@@ -109,7 +109,6 @@ export default class SearchBar extends Component<SearchBarProps> {
         });
         this.searchInputTimeout = setTimeout(
             async () => {
-                console.log(this.inputValidForSearch(searchName), this.props)
                 if (this.inputValidForSearch(searchName)) {
                     this.setState({
                         loadingText: "Loading..."
