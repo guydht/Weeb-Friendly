@@ -19,7 +19,6 @@ type HasMalId = {
     malId: Number
 }
 
-
 export default class MALUtils {
     static readonly MAX_ANIMES_PER_PAGE = 300;
     static readonly MINIMUM_ANIMENAME_SIMILARITY = 0.8;
@@ -265,7 +264,6 @@ export default class MALUtils {
             ok: boolean = true;
         if (!downloadedItem.animeEntry.myMalStatus)
             ok = await MALUtils.addAnime(downloadedItem.animeEntry as AnimeEntry & HasMalId);
-        if (!ok) return ok;
         ok = await MALUtils.updateAnime(downloadedItem.animeEntry as AnimeEntry & HasMalId, { episodes: episode, status });
         Consts.MAL_USER.animeList.loadAnime(downloadedItem.animeEntry);
         Consts.setMALUser(Consts.MAL_USER);
