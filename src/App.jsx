@@ -26,7 +26,7 @@ export default class App extends Component {
     videoItem: null,
     username: "",
     password: ""
-  }
+  };
 
   router = React.createRef();
 
@@ -48,6 +48,14 @@ export default class App extends Component {
         window.location.reload();
     });
 
+    window.addEventListener("click", event => {
+      const pressedLink = event.target?.href;
+      if (pressedLink && new URL(pressedLink).protocol !== "file:") {
+        event.preventDefault();
+        window.open(pressedLink);
+      }
+    });
+
   }
 
   static loadLoginModal(username, password) {
@@ -55,7 +63,7 @@ export default class App extends Component {
     window.setAppState({
       username,
       password
-    })
+    });
   }
 
   render() {
@@ -71,7 +79,7 @@ export default class App extends Component {
                 Object.entries(routerConfig).map(([thePath, TheComponent]) => {
                   return (
                     <Route path={thePath} component={TheComponent} key={thePath} />
-                  )
+                  );
                 })
               }
             </Switch>
@@ -85,6 +93,6 @@ export default class App extends Component {
           <ToastMessage />
         </MemoryRouter>
       </div>
-    )
+    );
   }
 }
