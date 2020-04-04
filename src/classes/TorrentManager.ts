@@ -25,7 +25,7 @@ export default class TorrentManager {
     static waitingForDownload: { name: string, magnetURI: string }[] = [];
     private static client = new webtorrent();
     static add({ magnetURL }: { magnetURL: string; }) {
-        if (Consts.SAVED_TORRENTS && Consts.SAVED_TORRENTS.some(torrent => torrent.magnetURI === magnetURL)) return;
+        if ((Consts.SAVED_TORRENTS && Consts.SAVED_TORRENTS.some(torrent => torrent.magnetURI === magnetURL)) || !magnetURL) return;
         let returnedTorrent: any;
         if (this.client.torrents.length < TorrentManager.MAX_NUMBER_OF_SIMULTANIOUS_TORRENTS)
             returnedTorrent = this.client.add(magnetURL, {
@@ -40,12 +40,7 @@ export default class TorrentManager {
                             if (newAbsolutePath !== absolutePath)
                                 fs.rename(absolutePath, newAbsolutePath);
                             Consts.removeFromSavedTorrents(returnedTorrent);
-                            Consts.reloadDownloads()
-                            if (TorrentManager.waitingForDownload.length) {
-                                TorrentManager.add({
-                                    magnetURL: TorrentManager.waitingForDownload.pop()?.magnetURI ?? ''
-                                });
-                            }
+                            Consts.reloadDownloads();
                             (window as any).reloadPage();
                         });
                     });
