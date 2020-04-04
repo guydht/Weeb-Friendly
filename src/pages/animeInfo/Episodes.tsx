@@ -33,7 +33,8 @@ class CustomOverlayButton extends Component<{ episode: any, quality: any, i: num
                     onPointerLeave={() => this.setState({ isHovering: false })}
                     onClick={() => this.setState({ didClick: !this.state.didClick })}
                     ref={this.mainButtonRef as any} variant="outline-dark">{
-                        `${this.props.quality}p${this.props.episode.episodeTypes[this.props.i] ? " - " + this.props.episode.episodeTypes[this.props.i] : ""}`
+                        isNaN(this.props.quality) ? "Unknown Quality" :
+                            `${this.props.quality}p${this.props.episode.episodeTypes[this.props.i] ? " - " + this.props.episode.episodeTypes[this.props.i] : ""}`
                     }</Button>
                 <Overlay target={this.mainButtonRef?.current as any} show={this.state.isHovering && !this.state.didClick} placement="top">
                     <Tooltip id={this.props.i}>{this.props.episode.names[this.props.i]}</Tooltip>
@@ -233,7 +234,10 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
                                     <Card.Title className={episode.animeEntry.isUserInterested() ? (
                                         episode.seenThisEpisode() ? animeStyles.seenEpisode : animeStyles.notSeenEpisode
                                     ) : ""}>
-                                        Episode {episode.episodeData.episodeNumber}
+                                        {
+                                            isNaN(episode.episodeData.episodeNumber) ? "Unknown Episode" :
+                                                `Episode ${episode.episodeData.episodeNumber}`
+                                        }
                                     </Card.Title>
                                     <Card.Subtitle>
                                         {
@@ -306,7 +310,7 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
         TorrentManager.add({ magnetURL: magnetLink });
         (window as any).displayToast({
             title: "Download Successfully started",
-            body: `Started downloading ${episode.episodeData.seriesName} Episode ${episode.episodeData.episodeNumber}.`
+            body: `Started downloading ${episode.episodeData.seriesName}${episode.episodeData.episodeNumber ? " Episode" + episode.episodeData.episodeNumber : ""}.`
         });
     }
     confirmDownloadEpisodes([episodeStart, episodeEnd]: number[]) {
@@ -327,7 +331,6 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
         episodes.sort((a, b) => {
             return b.episodeData.episodeNumber - a.episodeData.episodeNumber;
         });
-        console.log(episodes);
         return episodes;
     }
     userChoseAnime = (anime: AnimeEntry) => {
