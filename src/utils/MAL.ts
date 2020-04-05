@@ -228,7 +228,7 @@ export default class MALUtils {
         let ok = (request.ok || (await request.json()).errors[0].message === "The anime is already in your list.") && request.url === this.ADD_ANIME_URL;
         if (ok) {
             anime.syncGet();
-            anime.myMalStatus = MALStatuses.Watching;
+            anime.myMalStatus = MALStatuses["Plan To Watch"];
             anime.myWatchedEpisodes = 0;
             anime.syncPut();
             Consts.MAL_USER.animeList.loadAnime(anime);
