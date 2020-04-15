@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button, Navbar as BootstrapNavbar, NavDropdown, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
+import { Button, Navbar as BootstrapNavbar, NavDropdown, OverlayTrigger, Row, Spinner, Tooltip } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { ReactComponent as SettingsIcon } from "../../assets/settings.svg";
 import Consts from "../../classes/Consts";
@@ -7,13 +7,15 @@ import ChooseDirectoryText from "../../components/ChooseDirectoryText";
 import SearchBar from "../../components/SearchBar";
 import CustomMiddleClick from "../../jsHelpers/CustomMiddleClick";
 import { checkScrollSpeed } from "../../utils/general";
+import MALUtils from "../../utils/MAL";
 
 
 export default class NavBar extends Component {
 
     state = {
         theme: Consts.CURRENT_THEME,
-        visible: true
+        visible: true,
+        reloadingAnimeList: false
     }
 
     chooseFolder(val: string) {
@@ -81,10 +83,24 @@ export default class NavBar extends Component {
                             })}
                         </NavDropdown>
                         <SearchBar />
+                        {Consts.MAL_USER.isLoggedIn &&
+                            <OverlayTrigger trigger={["hover", "focus"]}
+                                placement="bottom"
+                                overlay={<Tooltip id="malListReload">Reload Anime List from MAL</Tooltip>} >
+                                <Button className="ml-2" onClick={() => {
+                                    this.setState({
+                                        reloadingAnimeList: true
+                                    });
+                                    this.reloadAnimeList().then(() => this.setState({ reloadingAnimeList: false }));
+                                }}>
+                                    {this.state.reloadingAnimeList ? <><Spinner size="sm" animation="border" /> Loading List...</> : "Reload"}
+                                </Button>
+                            </OverlayTrigger>
+                        }
                         {Consts.MAL_USER.isLoggedIn ?
                             <Button className="ml-2" onClick={() => this.logout()}>
                                 Log Out
-                    </Button> :
+                            </Button> :
                             <Button className="ml-2" onClick={() => this.showLogin()}>
                                 Login
                         </Button>}
@@ -99,6 +115,16 @@ export default class NavBar extends Component {
     showLogin() {
         Consts.setWantsToLogin(true);
         (window as any).reloadPage();
+    }
+    async reloadAnimeList() {
+        const animeList = await MALUtils.getUserAnimeList(Consts.MAL_USER)
+        Consts.MAL_USER.animeList = animeList;
+        Consts.setMALUser(Consts.MAL_USER);
+        (window as any).reloadPage();
+        (window as any).displayToast({
+            title: "Success",
+            body: `Successfully Loaded all of your anime list info`
+        });
     }
     setTheme(theme = Consts.CURRENT_THEME) {
         [...document.querySelectorAll("style[data-theme]")].forEach(ele => {
