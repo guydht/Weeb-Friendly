@@ -1,5 +1,6 @@
 import { Seasons } from "jikants/dist/src/interfaces/season/Season";
 import moment from "moment";
+import Consts from "../classes/Consts";
 import DownloadedItem from "../classes/DownloadedItem";
 
 function levenshteinDistance(s1: string, s2: string): number {
@@ -152,10 +153,12 @@ function chunkArray<T>(myArray: T[], chunk_size: number): T[][] {
     return results;
 }
 
-function groupBy<T>(arr: T[], propertyPath: string[]): T[][] {
+function groupBy<T>(arr: T[], propertyPath: (keyof T)[] | keyof T): T[][] {
     let obj = new Map<any, T[]>();
+    if (!Array.isArray(propertyPath))
+        propertyPath = [propertyPath];
     for (let ele of arr) {
-        let value: any = (ele as any)[propertyPath[0]];
+        let value: any = ele[propertyPath[0]];
         for (let property of propertyPath.slice(1))
             value = value[property];
         obj.set(value, [ele].concat(obj.get(value) || []));
@@ -324,5 +327,8 @@ function parseStupidAmericanDateString(dateString: string) {
     return moment(dateString).toDate();
 }
 
-export { stringCompare, stringRelativeSimilarity, levenshteinDistance, getCurrentSeason, hasInternet, CacheLocalStorage, chunkArray, groupBy, Confirm, checkScrollSpeed, parseStupidAmericanDateString, walkDir };
+function closestQualityInQualityPreference(quality: number) {
+    return [...Consts.QUALITY_PREFERENCE].sort((qualityA, qualityB) => Math.abs(qualityA - quality) - Math.abs(qualityB - quality))[0];
+}
 
+export { stringCompare, stringRelativeSimilarity, levenshteinDistance, getCurrentSeason, hasInternet, CacheLocalStorage, chunkArray, groupBy, Confirm, checkScrollSpeed, parseStupidAmericanDateString, walkDir, closestQualityInQualityPreference };

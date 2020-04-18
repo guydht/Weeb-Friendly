@@ -233,13 +233,9 @@ export function episodeDataFromFilename(name: string, source?: Sources): Episode
                 episodeNumber: Number((name.match(/(?<=\s-\s)[0-9]+(\.[0-9]+)?(?=\s)/g) || [])[0]) ||
                     Number((name.match(/(?<=(s|season)[0-9\s-]+(e|episode)\s?)[0-9]+/gi) || [])[0]),
                 episodeString: ((name.match(/(?<=\s-\s(\([a-zA-Z0-9\s]*\))?)[a-zA-Z0-9\s]+/g) || [])[0] || "").trim(),
-                seriesName: ((name.match(/(?<=((\[|\()[a-zA-Z0-9\s]*(\]|\)))?)[^[\])(]+(?=\s-\s)/g) || [])[0] || "").trim(),
+                seriesName: ((name.match(/(?<=((\[|\()[a-zA-Z0-9\s]*(\]|\)))?)[^[\])(]+(?=(\s-\s|\[|$))/g) || [])[0] || "").trim(),
                 quality: Number((name.match(/[0-9]+(?=p)/g) || [])[0])
             }
-    }
-    if (!name.match(/]?[^[]+-/g) && episodeData) {
-        episodeData.episodeNumber = 1;
-        episodeData.seriesName = (name.match(/((?<=])|^)[^[\]]+((?=\[?)|$)/g) || [""])[0].trim();
     }
     return episodeData;
 }

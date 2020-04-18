@@ -19,8 +19,9 @@ import TorrentUtils, { DownloadStatus, SearchResult, Sources } from "../../utils
 import { DisplayEpisodes } from "../animeInfo/Episodes";
 import SeasonalCarousel from "./SeasonalCarousel";
 
+type GroupedSearchResult = ReturnType<typeof DisplayEpisodes.groupByQuality>[0];
 
-class DisplayTorrentEntry extends Component<{ searchResult: SearchResult; }> {
+class DisplayTorrentEntry extends Component<{ searchResult: GroupedSearchResult; }> {
     render() {
         const downloadStatus = this.props.searchResult.downloadStatus;
         if (this.props.searchResult.animeEntry.malId)
@@ -84,9 +85,9 @@ class DisplayTorrentEntry extends Component<{ searchResult: SearchResult; }> {
         searchResult.animeEntry = animeEntry;
         this.setState({});
     }
-    static downloadNow(searchResult: any, promptDownload: boolean = true) {
+    static downloadNow(searchResult: GroupedSearchResult, promptDownload: boolean = true) {
         const downloadName = `${searchResult.episodeData.seriesName} Episode ${searchResult.episodeData.episodeNumber}`,
-            doDownload = () => TorrentManager.add({ magnetURL: (searchResult as any).links[0].magnet });
+            doDownload = () => TorrentManager.add({ magnetURL: searchResult.links[0].magnet });
         if (promptDownload)
             Confirm(`Download ${downloadName}?`, (ok: boolean) => {
                 if (ok && searchResult.links && searchResult.links[0] && searchResult.links[0].magnet)
@@ -98,7 +99,7 @@ class DisplayTorrentEntry extends Component<{ searchResult: SearchResult; }> {
 }
 class DisplayLatestTorrents extends Component<{ source?: Sources }>{
 
-    state: { torrents: ReturnType<typeof DisplayEpisodes.groupByQuality>, nextPageToLoad: number } = {
+    state: { torrents: GroupedSearchResult[], nextPageToLoad: number } = {
         torrents: [],
         nextPageToLoad: 1
     }
@@ -150,7 +151,7 @@ class DisplayLatestTorrents extends Component<{ source?: Sources }>{
                 <Carousel interval={null} className="px-5 mx-5 mt-5" onSelect={handleSelect}>
                     {
                         chunkArray(this.state.torrents, SeasonalCarousel.GRID_SIZE_X * SeasonalCarousel.GRID_SIZE_Y)
-                            .map((arrayChunk: SearchResult[], i) => {
+                            .map((arrayChunk: GroupedSearchResult[], i) => {
                                 return (
                                     <Carousel.Item key={i} className={styles.carousel}>
                                         <div className={downloadedAnimeStyle.grid}>

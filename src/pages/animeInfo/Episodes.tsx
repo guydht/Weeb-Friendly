@@ -12,7 +12,7 @@ import DownloadedFileThumbnail from "../../components/DownloadedFileThumbnail";
 import SearchBar from "../../components/SearchBar";
 import animeStyles from "../../css/pages/DownloadedAnime.module.css";
 import styles from "../../css/pages/Episodes.module.css";
-import { groupBy } from "../../utils/general";
+import { closestQualityInQualityPreference, groupBy } from "../../utils/general";
 import TorrentUtils, { SearchResult, SearchResultExtraInfo, Sources } from "../../utils/torrents";
 import { AnimeInfoProps } from "../AnimeInfo";
 
@@ -290,16 +290,18 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
         return groupBy(episodes.map(ele => {
             (ele as any).asd = ele.episodeData.seriesName + ele.episodeData.episodeNumber;
             return ele;
-        }), ['asd']).map(episodes => {
-            let result: any = episodes[0];
+        }) as any[], 'asd').map(grouped => {
+            grouped.sort((a, b) =>
+                Consts.QUALITY_PREFERENCE.indexOf(closestQualityInQualityPreference(a.episodeData.quality)) -
+                Consts.QUALITY_PREFERENCE.indexOf(closestQualityInQualityPreference(b.episodeData.quality)));
+            let result: any = grouped[0];
             delete result.asd;
-            episodes = episodes.sort((a, b) => b.episodeData.quality - a.episodeData.quality);
-            result.episodeData.qualities = episodes.map(episode => episode.episodeData.quality);
-            result.seedersArr = episodes.map(episode => episode.seeders);
-            result.leechersArr = episodes.map(episode => episode.leechers);
-            result.links = episodes.map(episode => episode.link);
-            result.names = episodes.map(episode => episode.name);
-            result.episodeTypes = episodes.map(ele => ele.episodeData.episodeType);
+            result.episodeData.qualities = grouped.map(episode => episode.episodeData.quality);
+            result.seedersArr = grouped.map(episode => episode.seeders);
+            result.leechersArr = grouped.map(episode => episode.leechers);
+            result.links = grouped.map(episode => episode.link);
+            result.names = grouped.map(episode => episode.name);
+            result.episodeTypes = grouped.map(ele => ele.episodeData.episodeType);
             return result;
         })
     }
