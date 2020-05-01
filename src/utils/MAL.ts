@@ -299,7 +299,7 @@ export default class MALUtils {
         let response = await fetch(topic.url).then(r => r.text());
         let html = document.createElement("html");
         html.innerHTML = response;
-        let messages = [...html.querySelectorAll(".forum_border_around ")].map(msg => {
+        let messages = [...html.querySelectorAll(".forum_border_around[id*=\"forumMsg\"]")].map(msg => {
             let userData = msg.querySelector("td:first-child")!.textContent!.split("\n").map(ele => ele.trim()).filter(ele => ele.length),
                 msgHTML = msg.querySelector("[id^=\"message\"]:not([id^=\"messageuser\"]).clearfix")!.innerHTML,
                 msgId = Number(msg.querySelector("[id^=\"message\"]:not([id^=\"messageuser\"]).clearfix")!.id.replace("message", ""));
