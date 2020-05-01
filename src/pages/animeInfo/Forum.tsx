@@ -176,10 +176,10 @@ export default class Forum extends Component<AnimeInfoProps> {
             this.setState({
                 forumEntry,
                 loading: false
-            });
+			});
             if (this.transitionController.current)
                 this.transitionController.current.moveTo(1);
-        }).catch(() => this.setState({ loading: false }));
+        }).catch(e => this.setState({ loading: false, errorMessage: e.toString(), errorFetching: true }));
     }
 }
 
