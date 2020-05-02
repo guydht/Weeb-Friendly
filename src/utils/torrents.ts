@@ -68,7 +68,7 @@ export default class TorrentUtils {
 					if (fetchAll)
 						try {
 							results.push(...(await si.searchAllByUser(sourceValue, name, { category: ENGLISH_TRANSLATED_ANIME_CATEGORY })).map(siResultToSearchResult.bind(this, source)));
-						} catch(e){ console.error(e); }
+						} catch (e) { console.error(e); }
 					else
 						try {
 							results.push(...(await si.searchByUser(sourceValue, name, DEFAULT_MAX_RESULTS, { category: ENGLISH_TRANSLATED_ANIME_CATEGORY })).map(siResultToSearchResult.bind(this, source)));
@@ -83,7 +83,7 @@ export default class TorrentUtils {
 								userID: sourceValue,
 								c: ENGLISH_TRANSLATED_ANIME_CATEGORY
 							})).map(pantsuResultToSearchResult.bind(this, source)));
-						} catch(e){ console.error(e); }
+						} catch (e) { console.error(e); }
 					else
 						try {
 							results.push(...(await pantsu.search({
@@ -91,20 +91,20 @@ export default class TorrentUtils {
 								userID: sourceValue,
 								c: ENGLISH_TRANSLATED_ANIME_CATEGORY
 							})).map(pantsuResultToSearchResult.bind(this, source)));
-						} catch(e){ console.error(e); }
+						} catch (e) { console.error(e); }
 				}
 				if (results.length === 0 && Object.keys(apiSource).length === 0) {
 					if (fetchAll)
 						try {
 							results.push(...(await si.searchAll(name, { category: ENGLISH_TRANSLATED_ANIME_CATEGORY }).map(siResultToSearchResult.bind(this, source))));
-						} catch(e){ console.error(e); }
+						} catch (e) { console.error(e); }
 					else
 
 						try {
 							results.push(...(await si.search(name, DEFAULT_MAX_RESULTS, {
 								category: ENGLISH_TRANSLATED_ANIME_CATEGORY
 							})).map(siResultToSearchResult.bind(this, source)));
-						} catch(e){ console.error(e); }
+						} catch (e) { console.error(e); }
 				}
 				if (results.length === 0 && Object.keys(apiSource).length === 0) {
 					if (fetchAll)
@@ -113,14 +113,14 @@ export default class TorrentUtils {
 								term: name,
 								c: ENGLISH_TRANSLATED_ANIME_CATEGORY
 							})).map(pantsuResultToSearchResult.bind(this, source)));
-						} catch(e){ console.error(e); }
+						} catch (e) { console.error(e); }
 					else
 						try {
 							results.push(...(await pantsu.search({
 								term: name,
 								c: ENGLISH_TRANSLATED_ANIME_CATEGORY
 							})).map(pantsuResultToSearchResult.bind(this, source)));
-						} catch(e){ console.error(e); }
+						} catch (e) { console.error(e); }
 				}
 				if (results.length)
 					return results;
@@ -172,7 +172,7 @@ export default class TorrentUtils {
 		if (apiSource.si)
 			try {
 				results.push(...(await si.searchByUserAndByPage(apiSource.si, '', page)).map(siResultToSearchResult.bind(this, source)));
-			} catch(e){ console.error(e); }
+			} catch (e) { console.error(e); }
 		if (apiSource.pantsu)
 			try {
 				results.push(...(await pantsu.search({
@@ -181,7 +181,7 @@ export default class TorrentUtils {
 					page,
 					c: "3_5"
 				})).map(pantsuResultToSearchResult.bind(this, source)));
-			} catch(e){ console.error(e); }
+			} catch (e) { console.error(e); }
 		return results;
 	}
 }
