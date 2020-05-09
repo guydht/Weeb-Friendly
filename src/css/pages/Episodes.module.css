@@ -1,16 +1,34 @@
 .grid {
-    display: grid;
-    grid-template-areas: "a a a a";
-    max-height: 1000px;
-    overflow-y: auto;
-    overflow-x: hidden;
+	display: grid;
+	grid-template-areas: "a a a a";
+	max-height: 1000px;
+	overflow-y: auto;
+	overflow-x: hidden;
 }
-.qualities{
-    float: right;
+
+.qualities {
+	float: right;
 }
-.svgText{
-    width: 100%;
+
+.svgText {
+	width: 100%;
 }
-.svgText > text{
-    transform: translateY(100%);
+
+.svgText>text {
+	transform: translateY(100%);
+}
+
+.commenterAvatar {
+	width: 100%;
+}
+
+.commentsContainer, .fileListContainer, .descriptionContainer {
+	max-height: 200px;
+	overflow-y: auto;
+	margin-bottom: .5rem;
+	overflow-x: hidden;
+}
+
+.commentBox:not(:last-child) {
+	margin-bottom: 1rem;
 }

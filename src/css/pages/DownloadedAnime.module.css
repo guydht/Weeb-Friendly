@@ -1,106 +1,121 @@
 .title {
-    z-index: 4;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.2) 10%, rgba(0, 0, 0, 0.6) 60%, rgba(0, 0, 0, 0.8) 90%);
-    left: 0;
-    color: white;
-    bottom: 0;
-    position: absolute;
-    width: 100%;
+	z-index: 4;
+	background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.2) 10%, rgba(0, 0, 0, 0.6) 60%, rgba(0, 0, 0, 0.8) 90%);
+	left: 0;
+	color: white;
+	bottom: 0;
+	position: absolute;
+	width: 100%;
 }
 
 .image {
-    z-index: 1;
-    height: 100%;
-    width: 100%;
+	z-index: 1;
+	height: 100%;
+	width: 100%;
 }
 
 @media (max-width: 1500px) {
-    .grid {
-        grid-template-columns: repeat(3, 1fr) !important;
-        grid-auto-rows: minmax(calc(50% - .25rem), 1fr) !important;
-    }
+	.grid {
+		grid-template-columns: repeat(3, 1fr) !important;
+		grid-auto-rows: minmax(calc(50% - .25rem), 1fr) !important;
+	}
 }
 
 @media (max-width: 1000px) {
-    .grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        grid-auto-rows: minmax(calc(100% - .25rem), 1fr) !important;
-    }
+	.grid {
+		grid-template-columns: repeat(2, 1fr) !important;
+		grid-auto-rows: minmax(calc(100% - .25rem), 1fr) !important;
+	}
 }
 
 .thumbnail {
-    height: 100%;
-    width: 100%;
+	height: 100%;
+	width: 100%;
 }
 
 .grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-auto-rows: minmax(calc(33% - .25rem), 1fr);
-    max-height: 1000px;
-    height: 80%;
-    overflow-y: auto;
-    overflow-x: hidden;
-    width: 100%;
-    grid-gap: .5rem;
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	grid-auto-rows: minmax(calc(33% - .25rem), 1fr);
+	max-height: 1000px;
+	height: 80%;
+	overflow-y: auto;
+	overflow-x: hidden;
+	width: 100%;
+	grid-gap: .5rem;
 }
 
-
-
-.grid > *:hover {
-    background: rgba(0, 0, 0, 0.1) !important;
+.coverElement {
+	height: 100%;
+	width: 100%;
+	background: none;
+	position: absolute;
+	z-index: 1;
+	transition: background-color .1s;
+	cursor: pointer;
 }
 
-.grid > *, .gridElement {
-    height: 100%;
-    transition: background-color .1s;
-    position: relative;
-    z-index: 5;
+.coverElement:hover {
+	background: rgba(0, 0, 0, 0.3);
+}
+
+.grid>*, .gridElement {
+	height: 100%;
+	position: relative;
+	z-index: 5;
 }
 
 .cover:hover {
-    background: rgba(0, 0, 0, 0.4);
+	background: rgba(0, 0, 0, 0.4);
 }
 
 .cover {
-    transition: background-color .1s;
-    position: absolute;
-    left: 0;
-    top: 0;
-    z-index: 3;
-    height: 100%;
-    width: 100%;
+	transition: background-color .1s;
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 3;
+	height: 100%;
+	width: 100%;
 }
 
 .arrowUp, .arrowDown {
-    padding-right: 8px;
+	padding-right: 8px;
 }
 
 .arrowUp:before, .arrowDown:after {
-    border: 6px solid transparent;
-    content: "";
-    display: block;
-    height: 0;
-    right: 5px;
-    top: 50%;
-    position: absolute;
-    width: 0;
+	border: 6px solid transparent;
+	content: "";
+	display: block;
+	height: 0;
+	right: 5px;
+	top: 50%;
+	position: absolute;
+	width: 0;
 }
 
 .arrowUp:before {
-    border-bottom-color: #666;
-    margin-top: -9px;
+	border-bottom-color: #666;
+	margin-top: -9px;
 }
 
 .arrowDown:after {
-    border-top-color: #666;
-    margin-top: 1px;
+	border-top-color: #666;
+	margin-top: 1px;
 }
 
 .seenEpisode {
-    color: rgb(80, 245, 80) !important;
+	color: rgb(80, 245, 80) !important;
 }
 
 .notSeenEpisode {
-    color: rgb(255, 120, 120) !important;
+	color: rgb(255, 120, 120) !important;
+}
+
+.deleteButton {
+	position: absolute;
+	z-index: 5;
+	right: 0;
+	top: 0;
+	cursor: pointer;
 }

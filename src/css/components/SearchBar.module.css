@@ -1,21 +1,14 @@
 .spinner {
-    float: right;
-}
-
-.container {
-    position: relative;
-    height: 0;
-    z-index: 99;
+	float: right;
 }
 
 .wrapper {
-    position: absolute;
-    max-height: 30vh;
-    overflow-y: auto;
-    width: 100%;
+	position: absolute;
+	max-height: 30vh;
+	overflow-y: auto;
 }
 
-.image{
-    width: 100%;
-    height: 100%;
+.image {
+	width: 100%;
+	height: 100%;
 }
