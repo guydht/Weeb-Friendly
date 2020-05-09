@@ -11,18 +11,10 @@ type RenderParams = {
 
 let waitingForVideo = 0;
 const rendererVideo = document.createElement("video"),
+	numberOfParallelVideoWorkers = 5,
 	queue: [RenderParams, (canvas: HTMLCanvasElement) => void][] = [],
 	tryLoadingNextInQueue = () => {
-		if (waitingForVideo === 0 && queue.length) {
-			waitingForVideo++;
-			let params = queue.splice(0, 1)[0];
-			renderVideo(params[0]).then(canvas => {
-				params[1](canvas);
-				waitingForVideo--;
-				tryLoadingNextInQueue();
-			});
-		}
-		if (waitingForVideo === 1 && queue.length) {
+		if (waitingForVideo < numberOfParallelVideoWorkers && queue.length) {
 			waitingForVideo++;
 			let params = queue.splice(0, 1)[0];
 			renderVideo(params[0]).then(canvas => {
