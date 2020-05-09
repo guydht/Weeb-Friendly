@@ -44,12 +44,12 @@ function createWindow() {
 			protocol: 'http'
 		}));
 	else {
-		mainWindow.webContents.on("did-fail-load", () => {
-			mainWindow.loadURL(url.format({
-				pathname: path.join(__dirname, 'index.html'),
-				protocol: 'file'
-			}));
-		});
+		// mainWindow.webContents.on("did-fail-load", () => {
+		// 	mainWindow.loadURL(url.format({
+		// 		pathname: path.join(__dirname, 'index.html'),
+		// 		protocol: 'file'
+		// 	}));
+		// });
 		mainWindow.loadURL(url.format({
 			pathname: path.join(__dirname, 'index.html'),
 			protocol: 'file'
