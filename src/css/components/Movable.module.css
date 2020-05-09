@@ -1,5 +1,6 @@
 .container {
 	will-change: left, top, height, width;
+	user-select: none;
 }
 
 .directions {
