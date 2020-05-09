@@ -30,14 +30,14 @@ class DisplayTorrentEntry extends Component<{ searchResult: GroupedSearchResult;
 					{
 						this.props.searchResult.seenThisEpisode() ? <HasSeen className={styles.downloadIcon} hasSeen={true} />
 							: downloadStatus === DownloadStatus.downloaded ?
-								<OverlayTrigger overlay={<Tooltip id={this.props.searchResult.animeEntry.malId}>Already Downloaded</Tooltip>} placement="auto">
+								<OverlayTrigger overlay={<Tooltip id={this.props.searchResult.animeEntry.malId.toString()}>Already Downloaded</Tooltip>} placement="auto">
 									<DownloadIcon className={styles.downloadIcon} style={{ cursor: "not-allowed", opacity: 0.4 }} />
 								</OverlayTrigger>
 								: downloadStatus === DownloadStatus.currentlyDownloading ?
-									<OverlayTrigger overlay={<Tooltip id={this.props.searchResult.animeEntry.malId}>Currently Downloading Episode</Tooltip>}>
+									<OverlayTrigger overlay={<Tooltip id={this.props.searchResult.animeEntry.malId.toString()}>Currently Downloading Episode</Tooltip>}>
 										<DownloadingIcon className={styles.downloadIcon} style={{ cursor: "progress" }} />
 									</OverlayTrigger>
-									: <OverlayTrigger overlay={<Tooltip id={this.props.searchResult.animeEntry.malId}>Download Episode</Tooltip>}>
+									: <OverlayTrigger overlay={<Tooltip id={this.props.searchResult.animeEntry.malId.toString()}>Download Episode</Tooltip>}>
 										<DownloadIcon className={styles.downloadIcon} onClick={() => DisplayTorrentEntry.downloadNow(this.props.searchResult)} />
 									</OverlayTrigger>
 					}
@@ -86,11 +86,12 @@ class DisplayTorrentEntry extends Component<{ searchResult: GroupedSearchResult;
 		this.setState({});
 	}
 	static downloadNow(searchResult: GroupedSearchResult, promptDownload: boolean = true) {
+		if(!searchResult.links.length) return;
 		const downloadName = `${searchResult.episodeData.seriesName} Episode ${searchResult.episodeData.episodeNumber}`,
-			doDownload = () => TorrentManager.add({ magnetURL: searchResult.links[0].magnet });
+			doDownload = () => TorrentManager.add({ magnetURL: searchResult.links[0]?.magnet });
 		if (promptDownload)
 			Confirm(`Download ${downloadName}?`, (ok: boolean) => {
-				if (ok && searchResult.links && searchResult.links[0] && searchResult.links[0].magnet)
+				if (ok && searchResult.links[0]?.magnet)
 					doDownload();
 			});
 		else

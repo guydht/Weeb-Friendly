@@ -37,7 +37,7 @@ class CustomOverlayButton extends Component<{ episode: any, quality: any, i: num
 							`${this.props.quality}p${this.props.episode.episodeTypes[this.props.i] ? " - " + this.props.episode.episodeTypes[this.props.i] : ""}`
 					}</Button>
 				<Overlay target={this.mainButtonRef?.current as any} show={this.state.isHovering && !this.state.didClick} placement="top">
-					<Tooltip id={this.props.i}>{this.props.episode.names[this.props.i]}</Tooltip>
+					<Tooltip id={this.props.i.toString()}>{this.props.episode.names[this.props.i]}</Tooltip>
 				</Overlay>
 				<Overlay target={this.mainButtonRef.current as any}
 					show={this.state.didClick}
