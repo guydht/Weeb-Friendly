@@ -1,0 +1,27 @@
+stages:
+  - build-windows
+  - build-linux
+
+build-windows:
+  image: stefanscherer/node-windows:latest
+  script:
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+  only:
+    - dev
+    - master
+
+build-linux:
+  image: node:14-alpine
+  script:
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+  only:
+    - dev
+    - master
