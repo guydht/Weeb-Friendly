@@ -125,8 +125,6 @@ export default class Login extends Component<{ username?: string, password?: str
 		this.setState({ errorMessage, loading: false });
 	}
 	async tryLogin() {
-		if (this.state.successMessage)
-			return;
 		if (!this.checkInput())
 			return this.errorMessage("Invalid Input!");
 		if (this.state.loading)
@@ -172,6 +170,9 @@ export default class Login extends Component<{ username?: string, password?: str
 				});
 				Consts.setMALUser(Consts.MAL_USER);
 				setTimeout(() => {
+					this.setState({
+						successMessage: ''
+					});
 					(window as any).reloadPage();
 				}, Login.Alert_SHOW_TIMEOUT / 2);
 			});
