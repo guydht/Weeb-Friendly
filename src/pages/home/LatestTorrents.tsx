@@ -86,12 +86,13 @@ class DisplayTorrentEntry extends Component<{ searchResult: GroupedSearchResult;
 		this.setState({});
 	}
 	static downloadNow(searchResult: GroupedSearchResult, promptDownload: boolean = true) {
-		if(!searchResult.links.length) return;
+		console.log(searchResult);
+		if (!searchResult.searchResults.length) return;
 		const downloadName = `${searchResult.episodeData.seriesName} Episode ${searchResult.episodeData.episodeNumber}`,
-			doDownload = () => TorrentManager.add({ magnetURL: searchResult.links[0]?.magnet });
+			doDownload = () => TorrentManager.add({ magnetURL: searchResult.searchResults[0]?.link.magnet });
 		if (promptDownload)
 			Confirm(`Download ${downloadName}?`, (ok: boolean) => {
-				if (ok && searchResult.links[0]?.magnet)
+				if (ok && searchResult.searchResults[0]?.link.magnet)
 					doDownload();
 			});
 		else
@@ -125,7 +126,7 @@ class DisplayLatestTorrents extends Component<{ source?: Sources }>{
 		this.state.torrents.forEach(torrentEntry => {
 			if ((torrentEntry.animeEntry.myMalStatus === MALStatuses.Watching || torrentEntry.animeEntry.myMalStatus === MALStatuses["Plan To Watch"])
 				&& !torrentEntry.seenThisEpisode() && torrentEntry.downloadStatus === DownloadStatus.notDownloaded
-				&& torrentEntry.episodeData.qualities[0] === Consts.QUALITY_PREFERENCE[0])
+				&& torrentEntry.searchResults[0]?.episodeData.quality === Consts.QUALITY_PREFERENCE[0])
 				DisplayTorrentEntry.downloadNow(torrentEntry, false);
 		});
 	}

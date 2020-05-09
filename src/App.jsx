@@ -50,7 +50,7 @@ export default class App extends Component {
 
 		window.addEventListener("click", event => {
 			const pressedLink = event.target?.href;
-			if (pressedLink && new URL(pressedLink).protocol !== "file:") {
+			if (pressedLink && new URL(pressedLink).origin !== window.location.origin) {
 				event.preventDefault();
 				window.open(pressedLink);
 			}

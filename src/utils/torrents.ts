@@ -99,7 +99,6 @@ export default class TorrentUtils {
 							results.push(...(await si.searchAll(name, { category: ENGLISH_TRANSLATED_ANIME_CATEGORY }).map(siResultToSearchResult.bind(this, source))));
 						} catch (e) { console.error(e); }
 					else
-
 						try {
 							results.push(...(await si.search(name, DEFAULT_MAX_RESULTS, {
 								category: ENGLISH_TRANSLATED_ANIME_CATEGORY
@@ -186,24 +185,11 @@ export default class TorrentUtils {
 	}
 }
 function siResultToSearchResult(source: Sources, siResult: any): SearchResult {
-	let result = new SearchResult()
-	result.category = siResult.category;
-	result.fileSize = siResult.fileSize;
-	result.leechers = Number(siResult.leechers);
-	result.link = siResult.links;
-	result.name = siResult.name;
-	result.nbDownload = Number(siResult.nbDownload);
-	result.seeders = Number(siResult.seeders);
-	result.timestamp = new Date(siResult.timestamp);
-	result.episodeData = episodeDataFromFilename(result.name, source)!;
-	result.animeEntry = new AnimeEntry({
-		name: result.episodeData.seriesName
-	});
-	return result;
+	return pantsuResultToSearchResult(source, siResult); //They changed it in the new update to look just like pantsu result!
 }
 function pantsuResultToSearchResult(source: Sources, pantsuResult: any) {
 	let categoryMapping: any = {
-		"5": { label: "English-translated" },
+		"1_2": { label: "English-translated" },
 		"6": { label: "Raw" },
 		"13": { label: "Non-English-Translated" }
 	};

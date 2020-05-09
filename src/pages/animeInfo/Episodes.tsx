@@ -16,7 +16,7 @@ import { closestQualityInQualityPreference, groupBy } from "../../utils/general"
 import TorrentUtils, { SearchResult, SearchResultExtraInfo, Sources } from "../../utils/torrents";
 import { AnimeInfoProps } from "../AnimeInfo";
 
-class CustomOverlayButton extends Component<{ episode: any, quality: any, i: number, startDownload: any }>{
+class CustomOverlayButton extends Component<{ episode: SearchResult, startDownload: any }>{
 
 	state = {
 		isHovering: false,
@@ -33,22 +33,22 @@ class CustomOverlayButton extends Component<{ episode: any, quality: any, i: num
 					onPointerLeave={() => this.setState({ isHovering: false })}
 					onClick={() => this.setState({ didClick: !this.state.didClick })}
 					ref={this.mainButtonRef as any} variant="outline-dark">{
-						isNaN(this.props.quality) ? "Unknown Quality" :
-							`${this.props.quality}p${this.props.episode.episodeTypes[this.props.i] ? " - " + this.props.episode.episodeTypes[this.props.i] : ""}`
+						isNaN(this.props.episode.episodeData.quality) ? "?p" :
+							`${this.props.episode.episodeData.quality}p${this.props.episode.episodeData.episodeType || ""}`
 					}</Button>
 				<Overlay target={this.mainButtonRef?.current as any} show={this.state.isHovering && !this.state.didClick} placement="top">
-					<Tooltip id={this.props.i.toString()}>{this.props.episode.names[this.props.i]}</Tooltip>
+					<Tooltip id={this.props.episode.name}>{this.props.episode.name}</Tooltip>
 				</Overlay>
 				<Overlay target={this.mainButtonRef.current as any}
 					show={this.state.didClick}
 					rootClose={true} rootCloseEvent="mousedown"
 					placement="bottom"
 					onHide={() => this.setState({ didClick: false })}>
-					<Popover id={"popover-basic-" + this.props.quality}>
+					<Popover id={"popover-basic-" + this.props.episode.episodeData.quality}>
 						<Popover.Title as="h3">
-							Download {this.props.episode.names[this.props.i]}:
+							Download {this.props.episode.name}:
                             </Popover.Title>
-						<CustomPopover episode={this.props.episode} i={this.props.i} startDownload={this.props.startDownload} />
+						<CustomPopover episode={this.props.episode} startDownload={this.props.startDownload} />
 					</Popover>
 				</Overlay>
 			</>
@@ -56,32 +56,32 @@ class CustomOverlayButton extends Component<{ episode: any, quality: any, i: num
 	}
 }
 
-class CustomPopover extends Component<{ episode: any, i: number, startDownload: any }> {
+class CustomPopover extends Component<{ episode: SearchResult, startDownload: any }> {
 	state: { extraInfo?: SearchResultExtraInfo } = {}
 	async componentDidMount() {
 		this.setState({
-			extraInfo: await TorrentUtils.torrentExtraInfo(this.props.episode.links[this.props.i].page as string)
+			extraInfo: await TorrentUtils.torrentExtraInfo(this.props.episode.link.page as string)
 		});
 	}
 	render() {
-		const { episode, i, startDownload } = this.props;
+		const { episode, startDownload } = this.props;
 		return (
 			<Popover.Content>
 				<Row className="mb-2">
 					<Col style={{ minHeight: 0 }}>
-						<DownloadIcon style={{ cursor: "pointer" }} onClick={() => startDownload(episode.links[i].magnet, episode)} />
+						<DownloadIcon style={{ cursor: "pointer" }} onClick={() => startDownload(episode.link.magnet, episode)} />
 					</Col>
 					<Col style={{ minHeight: 0 }}>
 						<svg viewBox="0 0 56 18" className={styles.svgText}>
 							<text fill="green">Seeders:</text>
 						</svg>
-						<span className={styles.seedersText}>{episode.seedersArr[i]}</span>
+						<span className={styles.seedersText}>{episode.seeders}</span>
 					</Col>
 					<Col style={{ minHeight: 0 }}>
 						<svg viewBox="0 0 56 18" className={styles.svgText}>
 							<text fill="red">Leechers:</text>
 						</svg>
-						<span className={styles.seedersText}>{episode.leechersArr[i]}</span>
+						<span className={styles.seedersText}>{episode.leechers}</span>
 					</Col>
 					{
 						!!this.state.extraInfo?.size &&
@@ -211,61 +211,65 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
 			)
 		if (!this.state.episodes.length)
 			return this.couldntFindEpisodesComponent;
-		return [(
-			grouped.length > 1 && (
-				<div key={1} className="mb-3">
-					<TooltipRange max={grouped.length} min={1}
-						value={chosenForDownload}
-						onChange={chosenForDownload => this.setState({ chosenForDownload })} />
-					<Button onClick={() => this.confirmDownloadEpisodes(chosenForDownload)}>
-						Download Episode {chosenForDownload[0]} - {chosenForDownload[1]} ({chosenForDownload[1] - chosenForDownload[0] + 1} Episodes)?
+		return (
+			<>
+				{
+					grouped.length > 1 && (
+						<div className="mb-3">
+							<TooltipRange max={grouped.length} min={1}
+								value={chosenForDownload}
+								onChange={chosenForDownload => this.setState({ chosenForDownload })} />
+							<Button onClick={() => this.confirmDownloadEpisodes(chosenForDownload)}>
+								Download Episode {chosenForDownload[0]} - {chosenForDownload[1]} ({chosenForDownload[1] - chosenForDownload[0] + 1} Episodes)?
                         </Button>
                     (In {Consts.QUALITY_PREFERENCE[0]}p, according to your quality preferences in the settings.)
-				</div>
-			)
-		), (
-			<Container className={styles.grid} key={0}>
-				{
-					grouped.map((episode, i) => {
-						const downloadedItemOfEpisode = this.downloadedItemOfEpisode(episode);
-						return (
-							<Card key={i} className="m-1">
-								<Card.Header>
-									<Card.Title className={episode.animeEntry.isUserInterested() ? (
-										episode.seenThisEpisode() ? animeStyles.seenEpisode : animeStyles.notSeenEpisode
-									) : ""}>
-										{
-											isNaN(episode.episodeData.episodeNumber) ? "Unknown Episode" :
-												`Episode ${episode.episodeData.episodeNumber}`
-										}
-									</Card.Title>
-									<Card.Subtitle>
-										{
-											episode.category.label
-										}
-									</Card.Subtitle>
-									<ButtonGroup size="sm" className="mt-1 flex-wrap">
-										{
-											episode.episodeData.qualities.map((quality, i) => {
-												const startDownload = this.startDownload.bind(this);
-												return (
-													<CustomOverlayButton episode={episode} i={i} quality={quality} startDownload={startDownload} />
-												);
-											})
-										}
-									</ButtonGroup>
-								</Card.Header>
-								<Card.Body>
-									{
-										!!downloadedItemOfEpisode && <DownloadedFileThumbnail downloadedItem={downloadedItemOfEpisode} />
-									}
-								</Card.Body>
-							</Card>
-						);
-					})
+						</div>
+					)
 				}
-			</Container>
-		)]
+				<Container className={styles.grid}>
+					{
+						grouped.map((episode, i) => {
+							const downloadedItemOfEpisode = this.downloadedItemOfEpisode(episode);
+							console.log(episode);
+							return (
+								<Card key={i} className="m-1">
+									<Card.Header>
+										<Card.Title className={episode.animeEntry.isUserInterested() ? (
+											episode.seenThisEpisode() ? animeStyles.seenEpisode : animeStyles.notSeenEpisode
+										) : ""}>
+											{
+												isNaN(episode.episodeData.episodeNumber) ? "Unknown Episode" :
+													`Episode ${episode.episodeData.episodeNumber}`
+											}
+										</Card.Title>
+										<Card.Subtitle>
+											{
+												episode.category.label
+											}
+										</Card.Subtitle>
+										<ButtonGroup size="sm" className="mt-1 flex-wrap">
+											{
+												episode.searchResults.map((episode, i) => {
+													const startDownload = this.startDownload.bind(this);
+													return (
+														<CustomOverlayButton episode={episode} key={i} startDownload={startDownload} />
+													);
+												})
+											}
+										</ButtonGroup>
+									</Card.Header>
+									<Card.Body>
+										{
+											!!downloadedItemOfEpisode && <DownloadedFileThumbnail downloadedItem={downloadedItemOfEpisode} />
+										}
+									</Card.Body>
+								</Card>
+							);
+						})
+					}
+				</Container>
+			</>
+		)
 	}
 
 	get chosenForDownload() {
@@ -280,13 +284,7 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
 		});
 	}
 
-	static groupByQuality(episodes: SearchResult[]): Array<SearchResult & {
-		episodeData: { qualities: number[] }, seedersArr: number[], leechersArr: number[], names: string[], episodeTypes: (string | undefined)[], links: {
-			page: string,
-			file: string,
-			magnet: string
-		}[]
-	}> {
+	static groupByQuality(episodes: SearchResult[]): (SearchResult & { searchResults: SearchResult[] })[] {
 		return groupBy(episodes.map(ele => {
 			(ele as any).asd = ele.episodeData.seriesName + ele.episodeData.episodeNumber;
 			return ele;
@@ -294,16 +292,12 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
 			grouped.sort((a, b) =>
 				Consts.QUALITY_PREFERENCE.indexOf(closestQualityInQualityPreference(a.episodeData.quality)) -
 				Consts.QUALITY_PREFERENCE.indexOf(closestQualityInQualityPreference(b.episodeData.quality)));
-			let result: any = grouped[0];
-			delete result.asd;
-			result.episodeData.qualities = grouped.map(episode => episode.episodeData.quality);
-			result.seedersArr = grouped.map(episode => episode.seeders);
-			result.leechersArr = grouped.map(episode => episode.leechers);
-			result.links = grouped.map(episode => episode.link);
-			result.names = grouped.map(episode => episode.name);
-			result.episodeTypes = grouped.map(ele => ele.episodeData.episodeType);
-			return result;
-		})
+			grouped.forEach(group => {
+				delete group.asd;
+				group.searchResults = grouped;
+			});
+			return grouped[0];
+		});
 	}
 	startDownload(magnetLink: string, episode: SearchResult) {
 		let anime = this.props.anime.syncGet();
@@ -318,13 +312,12 @@ export class DisplayEpisodes extends Component<AnimeInfoProps & { source: Source
 	confirmDownloadEpisodes([episodeStart, episodeEnd]: number[]) {
 		const episodes = DisplayEpisodes.groupByQuality(this.state.episodes);
 		episodes.slice(episodes.length - episodeEnd, episodes.length - episodeStart + 1).forEach(episode => {
-			const qualityOfBiggestPriority = episode.episodeData.qualities.sort((a: number, b: number) => {
-				a = Consts.QUALITY_PREFERENCE.indexOf([...Consts.QUALITY_PREFERENCE].sort((q1, q2) => Math.abs(q1 - a) - Math.abs(q2 - a))[0]);
-				b = Consts.QUALITY_PREFERENCE.indexOf([...Consts.QUALITY_PREFERENCE].sort((q1, q2) => Math.abs(q1 - b) - Math.abs(q2 - b))[0]);
-				return b - a;
-			})[0],
-				indexOfChosenQuality = episode.episodeData.qualities.indexOf(qualityOfBiggestPriority);
-			this.startDownload(episode.links[indexOfChosenQuality].magnet, episode);
+			const chosenEpisode = episode.searchResults.sort((a, b) => {
+				const aVal = Consts.QUALITY_PREFERENCE.indexOf([...Consts.QUALITY_PREFERENCE].sort((q1, q2) => Math.abs(q1 - a.episodeData.quality) - Math.abs(q2 - a.episodeData.quality))[0]),
+					bVal = Consts.QUALITY_PREFERENCE.indexOf([...Consts.QUALITY_PREFERENCE].sort((q1, q2) => Math.abs(q1 - b.episodeData.quality) - Math.abs(q2 - b.episodeData.quality))[0]);
+				return bVal - aVal;
+			})[0];
+			this.startDownload(chosenEpisode.link.magnet, episode);
 		});
 	}
 	async searchAnime(anime: AnimeEntry, source: Sources = Sources.Any, fetchAll = false): Promise<SearchResult[]> {
