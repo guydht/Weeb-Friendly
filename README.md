@@ -1,3 +1,4 @@
+### NOTICE: This repo has moved to [gitlab](https://gitlab.com/guydht/Weeb-Friendly)
 # Weeb-Friendly
 Desktop app for downloading/managing anime in torrents/myanimelist.
 
